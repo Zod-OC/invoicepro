@@ -35,7 +35,7 @@ export default function PricingPage() {
                 <p className="text-sm text-muted-foreground">Forever free</p>
               </CardHeader>
               <CardContent className="space-y-3">
-                {['3 invoices per month', 'Basic templates', 'PDF export', 'localStorage save', 'Watermark on PDF'].map(f => (
+                {['3 invoices per month', 'Basic templates', 'PDF export', 'Auto-save', 'Watermark on PDF'].map(f => (
                   <div key={f} className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-primary" />
                     {f}

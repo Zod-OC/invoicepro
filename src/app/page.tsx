@@ -93,7 +93,7 @@ export default function LandingPage() {
                 <div>✓ 3 invoices/month</div>
                 <div>✓ Basic templates</div>
                 <div>✓ PDF export</div>
-                <div>✓ localStorage save</div>
+                <div>✓ Auto-save</div>
               </CardContent>
             </Card>
             <Card className="border-2 border-primary relative">
@@ -106,7 +106,7 @@ export default function LandingPage() {
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
                 <div>✓ Unlimited invoices</div>
-                <div>✓ All 10+ templates</div>
+                <div>✓ All templates</div>
                 <div>✓ Custom branding</div>
                 <div>✓ Invoice history</div>
                 <div>✓ No watermark</div>
@@ -121,7 +121,7 @@ export default function LandingPage() {
                 <div>✓ Everything in Pro</div>
                 <div>✓ Multiple users</div>
                 <div>✓ Shared templates</div>
-                <div>✓ API access (soon)</div>
+                <div>✓ Priority support</div>
               </CardContent>
             </Card>
           </div>
