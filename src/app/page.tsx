@@ -14,7 +14,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-bold text-lg">InvoicePro</span>
+            <span className="font-bold text-lg">Billify</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/templates" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Templates</Link>
@@ -133,9 +133,9 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="font-semibold">InvoicePro</span>
+            <span className="font-semibold">Billify</span>
           </div>
-          <p className="text-sm text-muted-foreground">© 2026 InvoicePro. Built for freelancers.</p>
+          <p className="text-sm text-muted-foreground">© 2026 Billify. Built for freelancers.</p>
         </div>
       </footer>
     </div>

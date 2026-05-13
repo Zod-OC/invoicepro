@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "InvoicePro — Beautiful Invoices in Seconds",
-  description: "Professional PDF invoices. No signup. No credit card. Your data stays in your browser.",
+    title: "Billify — Beautiful Invoices in Seconds",
+    description: "Create professional invoices in seconds with Billify. Free, fast, and beautiful PDF invoices.",
 };
 
 export default function RootLayout({

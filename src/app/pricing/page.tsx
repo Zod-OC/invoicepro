@@ -11,7 +11,7 @@ export default function PricingPage() {
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-bold text-lg">InvoicePro</span>
+            <span className="font-bold text-lg">Billify</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/app" className="text-sm text-muted-foreground hover:text-foreground">App</Link>
@@ -81,7 +81,7 @@ export default function PricingPage() {
                   </div>
                 ))}
                 <Button asChild variant="outline" className="w-full mt-4">
-                  <Link href="mailto:team@invoicepro.app">Contact Sales</Link>
+                  <Link href="mailto:team@billify.app">Contact Sales</Link>
                 </Button>
               </CardContent>
             </Card>

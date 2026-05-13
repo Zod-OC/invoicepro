@@ -13,7 +13,7 @@ export default function TemplatesPage() {
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-bold text-lg">InvoicePro</span>
+            <span className="font-bold text-lg">Billify</span>
           </Link>
           <Button asChild variant="ghost" size="sm">
             <Link href="/" className="flex items-center gap-2">
