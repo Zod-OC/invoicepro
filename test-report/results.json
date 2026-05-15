@@ -96,7 +96,7 @@
           "specs": [
             {
               "title": "creates invoice, fills all fields, and downloads PDF",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -109,18 +109,50 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 972,
-                      "errors": [],
+                      "status": "timedOut",
+                      "duration": 31980,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/e2e-app.spec.ts",
+                            "column": 16,
+                            "line": 19
+                          },
+                          "message": "Error: page.waitForSelector: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder=\"Company name\"]') to be visible\u001b[22m\n\n\n  17 |\n  18 |     await page.goto('/app');\n> 19 |     await page.waitForSelector('input[placeholder=\"Company name\"]', { state: 'visible' });\n     |                ^\n  20 |\n  21 |     // Fill \"From\" company using placeholder locators\n  22 |     await page.getByPlaceholder('Company name').fill('Test Company Ltd');\n    at /root/projects/invoicepro/tests/e2e-app.spec.ts:19:16"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:12:59.749Z",
+                      "startTime": "2026-05-15T10:00:31.354Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-e2589-ll-fields-and-downloads-PDF-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-e2589-ll-fields-and-downloads-PDF-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-e2589-ll-fields-and-downloads-PDF-chromium/error-context.md"
+                        }
+                      ]
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "517b873a6cfc724b47a0-cb48e6aafef9ea25e7d4",
@@ -130,7 +162,7 @@
             },
             {
               "title": "auto-save persists to localStorage and survives page reload",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -143,18 +175,50 @@
                     {
                       "workerIndex": 1,
                       "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 1544,
-                      "errors": [],
+                      "status": "timedOut",
+                      "duration": 32057,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/e2e-app.spec.ts",
+                            "column": 49,
+                            "line": 48
+                          },
+                          "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByPlaceholder('Company name')\u001b[22m\n\n\n  46 |   test('auto-save persists to localStorage and survives page reload', async ({ page }) => {\n  47 |     await page.goto('/app');\n> 48 |     await page.getByPlaceholder('Company name').fill('Persistence Test Co');\n     |                                                 ^\n  49 |\n  50 |     // Wait for auto-save debounce\n  51 |     await page.waitForTimeout(800);\n    at /root/projects/invoicepro/tests/e2e-app.spec.ts:48:49"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:12:59.727Z",
+                      "startTime": "2026-05-15T10:00:31.347Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-d3c2c-ge-and-survives-page-reload-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-d3c2c-ge-and-survives-page-reload-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-d3c2c-ge-and-survives-page-reload-chromium/error-context.md"
+                        }
+                      ]
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "517b873a6cfc724b47a0-69ab1e8e0d03d2f435cc",
@@ -164,7 +228,7 @@
             },
             {
               "title": "each template produces visually different preview",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -177,18 +241,50 @@
                     {
                       "workerIndex": 2,
                       "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 2101,
-                      "errors": [],
+                      "status": "timedOut",
+                      "duration": 31965,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/e2e-app.spec.ts",
+                            "column": 43,
+                            "line": 73
+                          },
+                          "message": "Error: locator.selectOption: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('select').nth(1)\u001b[22m\n\n\n  71 |     const previews: string[] = [];\n  72 |     for (const tmpl of ['modern', 'classic', 'minimal']) {\n> 73 |       await page.locator('select').nth(1).selectOption(tmpl);\n     |                                           ^\n  74 |       await page.waitForTimeout(300);\n  75 |       const previewHtml = await page.locator('.bg-white').first().innerHTML();\n  76 |       previews.push(previewHtml);\n    at /root/projects/invoicepro/tests/e2e-app.spec.ts:73:43"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:12:59.771Z",
+                      "startTime": "2026-05-15T10:00:31.371Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-5cf9b--visually-different-preview-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-5cf9b--visually-different-preview-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-5cf9b--visually-different-preview-chromium/error-context.md"
+                        }
+                      ]
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "517b873a6cfc724b47a0-7e0a310d3a0ee9cb3a07",
@@ -212,12 +308,12 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 883,
+                      "duration": 450,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:12:59.765Z",
+                      "startTime": "2026-05-15T10:00:31.353Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -232,7 +328,7 @@
             },
             {
               "title": "footer has correct branding",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -245,18 +341,50 @@
                     {
                       "workerIndex": 4,
                       "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 663,
-                      "errors": [],
+                      "status": "timedOut",
+                      "duration": 32007,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/e2e-app.spec.ts",
+                            "column": 53,
+                            "line": 111
+                          },
+                          "message": "Error: locator.innerText: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('footer')\u001b[22m\n\n\n  109 |   test('footer has correct branding', async ({ page }) => {\n  110 |     await page.goto('/');\n> 111 |     const footerText = await page.locator('footer').innerText();\n      |                                                     ^\n  112 |     expect(footerText).toContain('Billify');\n  113 |     expect(footerText).toContain('2026');\n  114 |   });\n    at /root/projects/invoicepro/tests/e2e-app.spec.ts:111:53"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:12:59.773Z",
+                      "startTime": "2026-05-15T10:00:31.389Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Builder-footer-has-correct-branding-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Builder-footer-has-correct-branding-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Builder-footer-has-correct-branding-chromium/error-context.md"
+                        }
+                      ]
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "517b873a6cfc724b47a0-8a126feb9c1a41a17ce7",
@@ -266,7 +394,7 @@
             },
             {
               "title": "landing page has no InvoicePro references",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -279,18 +407,58 @@
                     {
                       "workerIndex": 5,
                       "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 611,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 382,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"<html><head><meta name=\\\"color-scheme\\\" content=\\\"light dark\\\"></head><body><pre style=\\\"word-wrap: break-word; white-space: pre-wrap;\\\">Bad Gateway</pre></body></html>\"\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"<html><head><meta name=\\\"color-scheme\\\" content=\\\"light dark\\\"></head><body><pre style=\\\"word-wrap: break-word; white-space: pre-wrap;\\\">Bad Gateway</pre></body></html>\"\u001b[39m\n    at /root/projects/invoicepro/tests/e2e-app.spec.ts:120:18",
+                        "location": {
+                          "file": "/root/projects/invoicepro/tests/e2e-app.spec.ts",
+                          "column": 18,
+                          "line": 120
+                        },
+                        "snippet": "  118 |     const html = await page.content();\n  119 |     expect(html).not.toMatch(/InvoicePro/i);\n> 120 |     expect(html).toMatch(/Billify/);\n      |                  ^\n  121 |   });\n  122 | });\n  123 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/e2e-app.spec.ts",
+                            "column": 18,
+                            "line": 120
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"<html><head><meta name=\\\"color-scheme\\\" content=\\\"light dark\\\"></head><body><pre style=\\\"word-wrap: break-word; white-space: pre-wrap;\\\">Bad Gateway</pre></body></html>\"\u001b[39m\n\n  118 |     const html = await page.content();\n  119 |     expect(html).not.toMatch(/InvoicePro/i);\n> 120 |     expect(html).toMatch(/Billify/);\n      |                  ^\n  121 |   });\n  122 | });\n  123 |\n    at /root/projects/invoicepro/tests/e2e-app.spec.ts:120:18"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:12:59.788Z",
+                      "startTime": "2026-05-15T10:00:31.375Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-c082f-as-no-InvoicePro-references-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-c082f-as-no-InvoicePro-references-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/e2e-app-E2E-—-Invoice-Buil-c082f-as-no-InvoicePro-references-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/root/projects/invoicepro/tests/e2e-app.spec.ts",
+                        "column": 18,
+                        "line": 120
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "517b873a6cfc724b47a0-266974ba0486cb7eed39",
@@ -317,75 +485,7 @@
           "specs": [
             {
               "title": "[desktop] landing renders correctly",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 991,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-05-13T21:13:00.584Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "78e23c5201ba1ea12e76-fafe8d007283f9b6bdfa",
-              "file": "visual-regression.spec.ts",
-              "line": 25,
-              "column": 9
-            },
-            {
-              "title": "[desktop] templates renders correctly",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 911,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-05-13T21:13:00.621Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "78e23c5201ba1ea12e76-ef6515608af341d0c43d",
-              "file": "visual-regression.spec.ts",
-              "line": 25,
-              "column": 9
-            },
-            {
-              "title": "[desktop] pricing renders correctly",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -398,18 +498,206 @@
                     {
                       "workerIndex": 3,
                       "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 912,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 5942,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:35:26",
+                        "location": {
+                          "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                          "column": 26,
+                          "line": 35
+                        },
+                        "snippet": "  33 |       });\n  34 |       // Basic asserts\n> 35 |       await expect(page).toHaveTitle(/Billify/);\n     |                          ^\n  36 |     });\n  37 |   }\n  38 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                            "column": 26,
+                            "line": 35
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n\n\n  33 |       });\n  34 |       // Basic asserts\n> 35 |       await expect(page).toHaveTitle(/Billify/);\n     |                          ^\n  36 |     });\n  37 |   }\n  38 |\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:35:26"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:13:00.792Z",
+                      "startTime": "2026-05-15T10:00:31.926Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-e3a6c-p-landing-renders-correctly-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-e3a6c-p-landing-renders-correctly-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-e3a6c-p-landing-renders-correctly-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                        "column": 26,
+                        "line": 35
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
+                }
+              ],
+              "id": "78e23c5201ba1ea12e76-fafe8d007283f9b6bdfa",
+              "file": "visual-regression.spec.ts",
+              "line": 25,
+              "column": 9
+            },
+            {
+              "title": "[desktop] templates renders correctly",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 5999,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:35:26",
+                        "location": {
+                          "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                          "column": 26,
+                          "line": 35
+                        },
+                        "snippet": "  33 |       });\n  34 |       // Basic asserts\n> 35 |       await expect(page).toHaveTitle(/Billify/);\n     |                          ^\n  36 |     });\n  37 |   }\n  38 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                            "column": 26,
+                            "line": 35
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n\n\n  33 |       });\n  34 |       // Basic asserts\n> 35 |       await expect(page).toHaveTitle(/Billify/);\n     |                          ^\n  36 |     });\n  37 |   }\n  38 |\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:35:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-15T10:00:32.614Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-19c7c-templates-renders-correctly-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-19c7c-templates-renders-correctly-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-19c7c-templates-renders-correctly-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                        "column": 26,
+                        "line": 35
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "78e23c5201ba1ea12e76-ef6515608af341d0c43d",
+              "file": "visual-regression.spec.ts",
+              "line": 25,
+              "column": 9
+            },
+            {
+              "title": "[desktop] pricing renders correctly",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 5948,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:35:26",
+                        "location": {
+                          "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                          "column": 26,
+                          "line": 35
+                        },
+                        "snippet": "  33 |       });\n  34 |       // Basic asserts\n> 35 |       await expect(page).toHaveTitle(/Billify/);\n     |                          ^\n  36 |     });\n  37 |   }\n  38 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                            "column": 26,
+                            "line": 35
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n\n\n  33 |       });\n  34 |       // Basic asserts\n> 35 |       await expect(page).toHaveTitle(/Billify/);\n     |                          ^\n  36 |     });\n  37 |   }\n  38 |\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:35:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-15T10:00:38.601Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-05903-p-pricing-renders-correctly-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-05903-p-pricing-renders-correctly-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-05903-p-pricing-renders-correctly-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                        "column": 26,
+                        "line": 35
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "78e23c5201ba1ea12e76-126dbdff392bcbef1e95",
@@ -419,7 +707,7 @@
             },
             {
               "title": "[desktop] app-page renders correctly",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -430,20 +718,60 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 940,
-                      "errors": [],
+                      "workerIndex": 8,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 5977,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:35:26",
+                        "location": {
+                          "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                          "column": 26,
+                          "line": 35
+                        },
+                        "snippet": "  33 |       });\n  34 |       // Basic asserts\n> 35 |       await expect(page).toHaveTitle(/Billify/);\n     |                          ^\n  36 |     });\n  37 |   }\n  38 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                            "column": 26,
+                            "line": 35
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Billify/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"\"\u001b[22m\n\n\n  33 |       });\n  34 |       // Basic asserts\n> 35 |       await expect(page).toHaveTitle(/Billify/);\n     |                          ^\n  36 |     });\n  37 |   }\n  38 |\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:35:26"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:13:00.856Z",
+                      "startTime": "2026-05-15T10:00:39.387Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-d14d5--app-page-renders-correctly-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-d14d5--app-page-renders-correctly-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-d14d5--app-page-renders-correctly-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                        "column": 26,
+                        "line": 35
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "78e23c5201ba1ea12e76-57adcdadb34f44540837",
@@ -453,7 +781,7 @@
             },
             {
               "title": "template gallery shows three distinct cards",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -464,20 +792,60 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 850,
-                      "errors": [],
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 772,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:43:19",
+                        "location": {
+                          "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                          "column": 19,
+                          "line": 43
+                        },
+                        "snippet": "  41 |     await page.waitForLoadState('networkidle');\n  42 |     const cards = await page.locator('div.grid > div').count();\n> 43 |     expect(cards).toBe(3);\n     |                   ^\n  44 |\n  45 |     // Verify distinct template names exist\n  46 |     const names = await page.locator('h3').allTextContents();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                            "column": 19,
+                            "line": 43
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n\n  41 |     await page.waitForLoadState('networkidle');\n  42 |     const cards = await page.locator('div.grid > div').count();\n> 43 |     expect(cards).toBe(3);\n     |                   ^\n  44 |\n  45 |     // Verify distinct template names exist\n  46 |     const names = await page.locator('h3').allTextContents();\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:43:19"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:13:01.392Z",
+                      "startTime": "2026-05-15T10:00:45.345Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-6831d--shows-three-distinct-cards-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-6831d--shows-three-distinct-cards-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-6831d--shows-three-distinct-cards-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                        "column": 19,
+                        "line": 43
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "78e23c5201ba1ea12e76-eb5bbf150e4f37f5f657",
@@ -487,7 +855,7 @@
             },
             {
               "title": "landing page has brand \"Billify\" everywhere",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -498,20 +866,60 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 285,
-                      "errors": [],
+                      "workerIndex": 10,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 224,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:60:28",
+                        "location": {
+                          "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                          "column": 28,
+                          "line": 60
+                        },
+                        "snippet": "  58 |\n  59 |     const billifyMatches = (html.match(/Billify/g) || []).length;\n> 60 |     expect(billifyMatches).toBeGreaterThanOrEqual(2);\n     |                            ^\n  61 |   });\n  62 |\n  63 |   test('pricing page shows three tiers', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                            "column": 28,
+                            "line": 60
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  58 |\n  59 |     const billifyMatches = (html.match(/Billify/g) || []).length;\n> 60 |     expect(billifyMatches).toBeGreaterThanOrEqual(2);\n     |                            ^\n  61 |   });\n  62 |\n  63 |   test('pricing page shows three tiers', async ({ page }) => {\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:60:28"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:13:01.550Z",
+                      "startTime": "2026-05-15T10:00:46.147Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-a8802-as-brand-Billify-everywhere-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-a8802-as-brand-Billify-everywhere-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-a8802-as-brand-Billify-everywhere-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                        "column": 28,
+                        "line": 60
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "78e23c5201ba1ea12e76-b7e4a2a56fcc64256b44",
@@ -521,7 +929,7 @@
             },
             {
               "title": "pricing page shows three tiers",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -532,20 +940,60 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 309,
-                      "errors": [],
+                      "workerIndex": 11,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 214,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:66:19",
+                        "location": {
+                          "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                          "column": 19,
+                          "line": 66
+                        },
+                        "snippet": "  64 |     await page.goto('/pricing');\n  65 |     const cards = await page.locator('div.grid > div').count();\n> 66 |     expect(cards).toBeGreaterThanOrEqual(3);\n     |                   ^\n  67 |\n  68 |     const prices = await page.locator('text=/\\\\$\\\\d+/').allTextContents();\n  69 |     expect(prices.length).toBeGreaterThanOrEqual(3);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                            "column": 19,
+                            "line": 66
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  64 |     await page.goto('/pricing');\n  65 |     const cards = await page.locator('div.grid > div').count();\n> 66 |     expect(cards).toBeGreaterThanOrEqual(3);\n     |                   ^\n  67 |\n  68 |     const prices = await page.locator('text=/\\\\$\\\\d+/').allTextContents();\n  69 |     expect(prices.length).toBeGreaterThanOrEqual(3);\n    at /root/projects/invoicepro/tests/visual-regression.spec.ts:66:19"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-13T21:13:01.594Z",
+                      "startTime": "2026-05-15T10:00:46.898Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-bf76a-cing-page-shows-three-tiers-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-bf76a-cing-page-shows-three-tiers-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/root/projects/invoicepro/test-results/visual-regression-Visual-R-bf76a-cing-page-shows-three-tiers-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/root/projects/invoicepro/tests/visual-regression.spec.ts",
+                        "column": 19,
+                        "line": 66
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "78e23c5201ba1ea12e76-0730c2052fe7a225c3f9",
@@ -560,11 +1008,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-05-13T21:12:58.858Z",
-    "duration": 3460.6500000000005,
-    "expected": 13,
+    "startTime": "2026-05-15T10:00:30.583Z",
+    "duration": 33016.986,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 12,
     "flaky": 0
   }
 }
