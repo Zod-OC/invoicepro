@@ -1,0 +1,12 @@
+{
+  "name": "billify-stripe-api",
+  "version": "1.0.0",
+  "description": "Billify Stripe checkout and webhook API",
+  "main": "stripe-server.js",
+  "scripts": {
+    "start": "node stripe-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
