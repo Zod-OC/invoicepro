@@ -140,3 +140,5 @@ Want me to:
 - **Secret**: Set in Coolify (`manual_webhook_secret_github`) and GitHub webhook config
 - **Events**: `push` to `master`
 - **Tested**: 2026-06-25 — ping delivered (200), auto-deploy on push verified
+
+_Last verified: webhook auto-deploy chain working end-to-end._
