@@ -1,0 +1,61 @@
+# Billify production deployment
+# Two services: billify-nginx (static site + Stripe proxy) + billify-stripe-api (Node/Express)
+# Both run on the coolify Docker network so Traefik can route to billify-nginx.
+#
+# Deploy with:
+#   docker compose up -d --build
+#
+# Or via Coolify: register this repo as a "Docker Compose" build pack in the Coolify UI.
+# Coolify will respect the labels below and route billify.me → billify-nginx via Traefik.
+
+services:
+  # 1. Static site + reverse proxy for /api/stripe/
+  # Serves the Next.js static export from /dist and proxies Stripe API calls to the api service.
+  nginx:
+    build:
+      context: .
+      dockerfile: docker-billify/Dockerfile
+    image: billify:latest
+    container_name: billify-nginx
+    restart: unless-stopped
+    networks:
+      - coolify
+    # Traefik labels (Coolify's coolify-proxy container reads these)
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.billify.entrypoints=https
+      - "traefik.http.routers.billify.rule=Host(`billify.me`) || Host(`www.billify.me`)"
+      - traefik.http.routers.billify.tls=true
+      - traefik.http.routers.billify.tls.certresolver=letsencrypt
+      - traefik.http.services.billify.loadbalancer.server.port=80
+
+  # 2. Stripe API (Node/Express)
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    image: billify-stripe-api:latest
+    container_name: billify-stripe-api
+    restart: unless-stopped
+    networks:
+      - coolify
+    # Env vars MUST be provided at deploy time. NEVER commit secrets to the repo.
+    # Options:
+    #   (a) Place in api/.env (gitignored). Docker Compose reads it automatically
+    #       when env_file is specified.
+    #   (b) Set as shell env vars before running `docker compose up`.
+    #   (c) Configure in Coolify UI → Environment Variables.
+    env_file:
+      - ./api/.env
+    # Health check: hits the / health endpoint
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# Use the existing coolify Docker network (created by Coolify itself)
+networks:
+  coolify:
+    name: coolify
+    external: true
