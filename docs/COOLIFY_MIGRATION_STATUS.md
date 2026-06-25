@@ -133,3 +133,10 @@ Want me to:
 6. **Build cache stale** → disabled with `disable_build_cache=true`
 7. **ARG injection breaking Next.js build** → disabled with `inject_build_args_to_dockerfile=false`
 8. **`billify-stripe-api` DNS name unresolvable** in Coolify → use compose service name `api` instead of `container_name`
+
+## GitHub Webhook (auto-deploy)
+
+- **Endpoint**: `http://65.21.196.23:8000/webhooks/source/github/events/manual`
+- **Secret**: Set in Coolify (`manual_webhook_secret_github`) and GitHub webhook config
+- **Events**: `push` to `master`
+- **Tested**: 2026-06-25 — ping delivered (200), auto-deploy on push verified
