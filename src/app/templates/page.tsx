@@ -1,10 +1,22 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, ArrowLeft } from 'lucide-react';
 import { templates } from '@/types';
+
+export const metadata: Metadata = {
+  title: 'Templates',
+  description: 'Browse 10+ professional invoice templates on Billify. Modern, Classic, and Minimal designs. All free.',
+  alternates: { canonical: '/templates' },
+  openGraph: {
+    title: 'Billify Templates — Professional Invoice Designs',
+    description: 'Modern, Classic, and Minimal invoice templates. Free forever.',
+    url: 'https://billify.me/templates',
+  },
+};
 
 export default function TemplatesPage() {
   return (
