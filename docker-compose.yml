@@ -39,25 +39,13 @@ services:
     restart: unless-stopped
     networks:
       - coolify
-    # Env vars sourced from Coolify's app-level env vars (configured in
-    # Coolify UI → Environment Variables, or via PATCH /applications/{uuid}/envs).
-    # The $$VAR_NAME syntax is Coolify's marker; Coolify substitutes real values
-    # from its encrypted secrets store at deploy time. NEVER hardcode here.
-    #
-    # For standalone deployment without Coolify, run with:
+    # Env vars are auto-injected by Coolify at deploy time. Coolify writes all
+    # configured env vars (JWT_SECRET, STRIPE_*, SUCCESS_URL, etc.) to a .env
+    # file in the project directory, then mounts it into each service via
+    # env_file: .env (added automatically by Coolify). The api/ Dockerfile's
+    # `ENV PORT=3000` provides the default port; all other vars come from .env.
+    # For standalone deployment without Coolify:
     #   docker compose --env-file api/.env up -d --build
-    # In standalone mode, Coolify's $$VAR markers are passed through literally
-    # and would NOT be substituted — so the standalone path is only useful for
-    # local development with env_file. Production deploys via Coolify.
-    environment:
-      - NODE_ENV=production
-      - JWT_SECRET=$$JWT_SECRET
-      - STRIPE_SECRET_KEY=$$STRIPE_SECRET_KEY
-      - STRIPE_WEBHOOK_SECRET=$$STRIPE_WEBHOOK_SECRET
-      - STRIPE_PRICE_PRO_MONTHLY=$$STRIPE_PRICE_PRO_MONTHLY
-      - STRIPE_PRICE_PRO_YEARLY=$$STRIPE_PRICE_PRO_YEARLY
-      - FRONTEND_URL=$$FRONTEND_URL
-      - PORT=3000
     # Health check: hits the / health endpoint
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
