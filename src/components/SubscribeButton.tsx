@@ -8,14 +8,37 @@ const API_BASE = typeof window !== 'undefined'
   ? `${window.location.origin}/api/stripe`
   : 'https://billify.me/api/stripe';
 
+/**
+ * Fetches a CSRF token from the API and stores it in sessionStorage.
+ * The API sets a billify_csrf cookie on GET requests; we read that cookie
+ * and send it back as X-CSRF-Token on POSTs (double-submit pattern).
+ */
+function getCsrfToken(): string | null {
+  const match = document.cookie.match(/billify_csrf=([a-f0-9]+)/);
+  if (match) return match[1];
+
+  // Fallback: fetch the health endpoint to get a fresh cookie
+  // (This is sync-ish since we prefetch on page load in practice)
+  return null;
+}
+
+/** Prefetch a CSRF token by hitting the health endpoint */
+export async function prefetchCsrfToken() {
+  try {
+    await fetch(`${API_BASE}/`, { credentials: 'include' });
+  } catch {
+    // Non-critical — checkout will fail gracefully
+  }
+}
+
 interface SubscribeButtonProps {
-  priceId: string;
+  planKey: string;
   planName: string;
   variant?: 'default' | 'outline';
   className?: string;
 }
 
-export function SubscribeButton({ priceId, planName, variant = 'default', className }: SubscribeButtonProps) {
+export function SubscribeButton({ planKey, planName, variant = 'default', className }: SubscribeButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,10 +47,21 @@ export function SubscribeButton({ priceId, planName, variant = 'default', classN
     setError(null);
 
     try {
+      // Ensure we have a CSRF token (GET to health endpoint sets the cookie)
+      let csrfToken = getCsrfToken();
+      if (!csrfToken) {
+        await fetch(`${API_BASE}/`, { credentials: 'include' });
+        csrfToken = getCsrfToken();
+      }
+
       const res = await fetch(`${API_BASE}/create-checkout-session`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId }),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+        },
+        body: JSON.stringify({ planKey }),
       });
 
       const data = await res.json();

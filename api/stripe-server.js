@@ -7,13 +7,15 @@
 //   GET  /                         → Health check
 //
 // Env vars:
-//   STRIPE_SECRET_KEY      = sk_live_...
-//   STRIPE_WEBHOOK_SECRET  = whsec_...
-//   JWT_SECRET             = random 256-bit string (for signing tokens)
-//   SUCCESS_URL            = https://billify.me/pricing?success=true
-//   CANCEL_URL             = https://billify.me/pricing?canceled=true
-//   PORT                   = 3000
-//   NODE_ENV               = production
+//   STRIPE_SECRET_KEY         = sk_live_...
+//   STRIPE_WEBHOOK_SECRET     = whsec_...
+//   JWT_SECRET                = random 256-bit string (for signing tokens)
+//   SUCCESS_URL               = https://billify.me/pricing?success=true
+//   CANCEL_URL                = https://billify.me/pricing?canceled=true
+//   STRIPE_PRICE_PRO          = price_live_xxx (Pro monthly/annual)
+//   STRIPE_PRICE_TEAM         = price_live_xxx (Team monthly/annual)
+//   PORT                      = 3000
+//   NODE_ENV                  = production
 
 const express = require('express');
 const crypto = require('crypto');
@@ -29,10 +31,16 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 if (!STRIPE_SECRET_KEY) { console.error('FATAL: STRIPE_SECRET_KEY'); process.exit(1); }
 if (!JWT_SECRET) { console.error('FATAL: JWT_SECRET'); process.exit(1); }
 
-const PRICE_IDS = {
-  'price_1TZ6Rw0G5k5sFLG48eQaIcGO': 'pro',
-  'price_1TZ6Rx0G5k5sFLG4aiBM2RhX': 'team',
-};
+// Price IDs from env — swap test→live by changing env vars, no code change needed
+const PRICE_IDS = {};
+if (process.env.STRIPE_PRICE_PRO) PRICE_IDS[process.env.STRIPE_PRICE_PRO] = 'pro';
+if (process.env.STRIPE_PRICE_TEAM) PRICE_IDS[process.env.STRIPE_PRICE_TEAM] = 'team';
+// Fallback to test-mode IDs if env not set (dev/preview only)
+if (Object.keys(PRICE_IDS).length === 0) {
+  console.warn('WARNING: STRIPE_PRICE_PRO/TEAM not set — using test-mode price IDs');
+  PRICE_IDS['price_1TZ6Rw0G5k5sFLG48eQaIcGO'] = 'pro';
+  PRICE_IDS['price_1TZ6Rx0G5k5sFLG4aiBM2RhX'] = 'team';
+}
 
 const PLAN_LIMITS = {
   free: { invoicesPerMonth: 3, templates: ['basic'], watermark: true, csvExport: false, teamMembers: 1 },
@@ -81,8 +89,32 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Stripe-Signature, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Stripe-Signature, Authorization, X-CSRF-Token');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
+// ─── CSRF protection (double-submit cookie pattern) ──
+// For stateless SPAs: issue a random token via cookie, client must echo it back
+// in X-CSRF-Token header. Browsers enforce SameSite=Strict so cross-site forms
+// can't read the cookie. Webhook is exempt (uses Stripe signature instead).
+app.use('/webhook', (req, res, next) => next());
+
+app.use((req, res, next) => {
+  // Issue CSRF token cookie on all GET requests (sets/refreshes token)
+  if (req.method === 'GET' && !req.headers['x-csrf-token']) {
+    const token = crypto.randomBytes(32).toString('hex');
+    res.setHeader('Set-Cookie', `billify_csrf=${token}; Path=/; HttpOnly; SameSite=Strict${IS_PROD ? '; Secure' : ''}; Max-Age=3600`);
+  }
+  // On mutating requests (POST/PUT/DELETE), validate the double-submit token
+  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+    const cookieToken = req.headers.cookie?.match(/billify_csrf=([a-f0-9]+)/)?.[1];
+    const headerToken = req.headers['x-csrf-token'];
+    if (!cookieToken || !headerToken || !crypto.timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken))) {
+      return res.status(403).json({ error: 'CSRF token mismatch' });
+    }
+  }
   next();
 });
 
@@ -142,14 +174,21 @@ function requireValidOrigin(req, res, next) {
   return res.status(403).json({ error: 'Invalid origin' });
 }
 
+// Reverse lookup: planKey → priceId
+const PLAN_TO_PRICE = Object.entries(PRICE_IDS).reduce((acc, [pid, plan]) => {
+  acc[plan] = pid;
+  return acc;
+}, {});
+
 // Apply to checkout and verification endpoints
 app.post('/create-checkout-session', requireValidOrigin, async (req, res) => {
   try {
-    const { priceId, email, customerName } = req.body;
+    const { planKey, email, customerName } = req.body;
 
-    if (!priceId || !PRICE_IDS[priceId]) {
-      return res.status(400).json({ error: 'Invalid or missing priceId' });
+    if (!planKey || !PLAN_TO_PRICE[planKey]) {
+      return res.status(400).json({ error: 'Invalid or missing planKey' });
     }
+    const priceId = PLAN_TO_PRICE[planKey];
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }

@@ -42,3 +42,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /api/data/
+
+# Stale build output from abandoned GitHub Pages pivot
+/docs/
+!/docs/COOLIFY_MIGRATION_STATUS.md
+
+# Playwright test artifacts
+/test-results/
+/test-report/

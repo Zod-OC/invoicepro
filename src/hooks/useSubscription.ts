@@ -6,6 +6,34 @@ const API_BASE = typeof window !== 'undefined'
   ? `${window.location.origin}/api/stripe`
   : 'https://billify.me/api/stripe';
 
+/** Get CSRF token from cookie for double-submit pattern */
+function getCsrfToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/billify_csrf=([a-f0-9]+)/);
+  return match?.[1] ?? null;
+}
+
+/** Ensure we have a CSRF token (prefetch from health endpoint if needed) */
+async function ensureCsrfToken(): Promise<string | null> {
+  let token = getCsrfToken();
+  if (token) return token;
+  try {
+    await fetch(`${API_BASE}/`, { credentials: 'include' });
+    token = getCsrfToken();
+  } catch { /* non-critical */ }
+  return token;
+}
+
+/** Build headers with CSRF + content-type for POST requests */
+async function postHeaders(extra?: Record<string, string>): Promise<Record<string, string>> {
+  const csrf = await ensureCsrfToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(csrf ? { 'X-CSRF-Token': csrf } : {}),
+    ...extra,
+  };
+}
+
 const TOKEN_KEY = 'billify_sub_token';
 const PLAN_KEY = 'billify_plan';
 const LIMITS_KEY = 'billify_limits';
@@ -93,6 +121,7 @@ export function useSubscription() {
     // Validate stored token with server
     fetch(`${API_BASE}/validate-token`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
     })
@@ -116,7 +145,8 @@ export function useSubscription() {
     try {
       const res = await fetch(`${API_BASE}/verify-session`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: await postHeaders(),
         body: JSON.stringify({ sessionId }),
       });
       const data = await res.json();
@@ -144,7 +174,8 @@ export function useSubscription() {
     try {
       const res = await fetch(`${API_BASE}/verify-subscription`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: await postHeaders(),
         body: JSON.stringify({ email }),
       });
       const data = await res.json();

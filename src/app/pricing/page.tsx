@@ -35,7 +35,9 @@ const PLANS = [
     subPeriod: 'or €79/year (27% off)',
     note: 'Flat rate. One user.',
     features: ['Unlimited invoices', '6 premium templates', 'Custom branding colors', 'Invoice history & search', 'Export CSV/Excel', 'No watermark'],
-    priceId: 'price_1TZ6Rw0G5k5sFLG48eQaIcGO',
+    // Price ID sent to server; server validates against its own PRICE_IDS map.
+    // Backend resolves the actual Stripe price ID from env — frontend just tags the plan.
+    planKey: 'pro',
     cta: 'Subscribe to Pro',
     ctaVariant: 'default' as const,
     popular: true,
@@ -47,7 +49,7 @@ const PLANS = [
     subPeriod: 'or €249/year (29% off)',
     note: 'Up to 5 team members included.',
     features: ['Everything in Pro', 'Up to 5 team members', 'Shared templates', 'Admin dashboard', 'API access (soon)', 'Priority support'],
-    priceId: 'price_1TZ6Rx0G5k5sFLG4aiBM2RhX',
+    planKey: 'team',
     cta: 'Subscribe to Team',
     ctaVariant: 'outline' as const,
     popular: false,
@@ -132,9 +134,9 @@ export default function PricingPage() {
                       {f}
                     </div>
                   ))}
-                  {plan.priceId ? (
+                  {plan.planKey ? (
                     <SubscribeButton
-                      priceId={plan.priceId}
+                      planKey={plan.planKey}
                       planName={plan.name}
                       variant={plan.ctaVariant}
                       className="mt-4"
