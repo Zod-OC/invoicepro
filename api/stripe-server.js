@@ -12,8 +12,10 @@
 //   JWT_SECRET                = random 256-bit string (for signing tokens)
 //   SUCCESS_URL               = https://billify.me/pricing?success=true
 //   CANCEL_URL                = https://billify.me/pricing?canceled=true
-//   STRIPE_PRICE_PRO          = price_live_xxx (Pro monthly/annual)
-//   STRIPE_PRICE_TEAM         = price_live_xxx (Team monthly/annual)
+//   STRIPE_PRICE_PRO_MONTHLY  = price_live_xxx (Pro monthly)
+//   STRIPE_PRICE_PRO_YEARLY   = price_live_xxx (Pro annual)
+//   STRIPE_PRICE_TEAM_MONTHLY = price_live_xxx (Team monthly)
+//   STRIPE_PRICE_TEAM_YEARLY  = price_live_xxx (Team annual)
 //   PORT                      = 3000
 //   NODE_ENV                  = production
 
@@ -32,14 +34,36 @@ if (!STRIPE_SECRET_KEY) { console.error('FATAL: STRIPE_SECRET_KEY'); process.exi
 if (!JWT_SECRET) { console.error('FATAL: JWT_SECRET'); process.exit(1); }
 
 // Price IDs from env — swap test→live by changing env vars, no code change needed
+// Maps priceId → plan (for webhook/verification reverse-lookup)
 const PRICE_IDS = {};
-if (process.env.STRIPE_PRICE_PRO) PRICE_IDS[process.env.STRIPE_PRICE_PRO] = 'pro';
-if (process.env.STRIPE_PRICE_TEAM) PRICE_IDS[process.env.STRIPE_PRICE_TEAM] = 'team';
+
+// Plan → { monthly, yearly } price IDs (for checkout session creation)
+const PLAN_PRICES = { pro: {}, team: {} };
+
+function registerPrice(envKey, plan, period) {
+  const priceId = process.env[envKey];
+  if (priceId) {
+    PRICE_IDS[priceId] = plan;
+    PLAN_PRICES[plan][period] = priceId;
+  }
+}
+registerPrice('STRIPE_PRICE_PRO_MONTHLY',  'pro',  'monthly');
+registerPrice('STRIPE_PRICE_PRO_YEARLY',   'pro',  'yearly');
+registerPrice('STRIPE_PRICE_TEAM_MONTHLY', 'team', 'monthly');
+registerPrice('STRIPE_PRICE_TEAM_YEARLY',  'team', 'yearly');
+
 // Fallback to test-mode IDs if env not set (dev/preview only)
 if (Object.keys(PRICE_IDS).length === 0) {
-  console.warn('WARNING: STRIPE_PRICE_PRO/TEAM not set — using test-mode price IDs');
-  PRICE_IDS['price_1TZ6Rw0G5k5sFLG48eQaIcGO'] = 'pro';
-  PRICE_IDS['price_1TZ6Rx0G5k5sFLG4aiBM2RhX'] = 'team';
+  console.warn('WARNING: STRIPE_PRICE_* env vars not set — using test-mode price IDs');
+  const TEST_PRICES = {
+    'pro':  { monthly: 'price_1TmDYJ0G5k5sFLG4xMEjuHL1', yearly: 'price_1TmDbW0G5k5sFLG4l9YiH5ve' },
+    'team': { monthly: 'price_1TmDbX0G5k5sFLG4kYYoLj2N', yearly: 'price_1TmDbX0G5k5sFLG4Ur9Dmh5w' },
+  };
+  for (const [plan, periods] of Object.entries(TEST_PRICES)) {
+    PRICE_IDS[periods.monthly] = plan;
+    PRICE_IDS[periods.yearly]  = plan;
+    PLAN_PRICES[plan] = periods;
+  }
 }
 
 const PLAN_LIMITS = {
@@ -174,21 +198,19 @@ function requireValidOrigin(req, res, next) {
   return res.status(403).json({ error: 'Invalid origin' });
 }
 
-// Reverse lookup: planKey → priceId
-const PLAN_TO_PRICE = Object.entries(PRICE_IDS).reduce((acc, [pid, plan]) => {
-  acc[plan] = pid;
-  return acc;
-}, {});
-
 // Apply to checkout and verification endpoints
 app.post('/create-checkout-session', requireValidOrigin, async (req, res) => {
   try {
-    const { planKey, email, customerName } = req.body;
+    const { planKey, billingPeriod, email, customerName } = req.body;
 
-    if (!planKey || !PLAN_TO_PRICE[planKey]) {
+    if (!planKey || !PLAN_PRICES[planKey]) {
       return res.status(400).json({ error: 'Invalid or missing planKey' });
     }
-    const priceId = PLAN_TO_PRICE[planKey];
+    const period = billingPeriod === 'yearly' ? 'yearly' : 'monthly';
+    const priceId = PLAN_PRICES[planKey][period];
+    if (!priceId) {
+      return res.status(400).json({ error: `No price configured for ${planKey}/${period}` });
+    }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }

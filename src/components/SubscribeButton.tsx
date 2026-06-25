@@ -34,11 +34,12 @@ export async function prefetchCsrfToken() {
 interface SubscribeButtonProps {
   planKey: string;
   planName: string;
+  billingPeriod?: 'monthly' | 'yearly';
   variant?: 'default' | 'outline';
   className?: string;
 }
 
-export function SubscribeButton({ planKey, planName, variant = 'default', className }: SubscribeButtonProps) {
+export function SubscribeButton({ planKey, planName, billingPeriod = 'monthly', variant = 'default', className }: SubscribeButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,7 +62,7 @@ export function SubscribeButton({ planKey, planName, variant = 'default', classN
           'Content-Type': 'application/json',
           ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
         },
-        body: JSON.stringify({ planKey }),
+        body: JSON.stringify({ planKey, billingPeriod }),
       });
 
       const data = await res.json();

@@ -1,10 +1,8 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Sparkles, Check, Shield, Lock, RefreshCcw, CreditCard } from 'lucide-react';
-import { SubscribeButton } from '@/components/SubscribeButton';
+import { Sparkles, Shield, Lock, RefreshCcw, CreditCard } from 'lucide-react';
+import { PricingCards } from '@/components/PricingCards';
 
 export const metadata: Metadata = {
   title: 'Pricing',
@@ -16,45 +14,6 @@ export const metadata: Metadata = {
     url: 'https://billify.me/pricing',
   },
 };
-
-const PLANS = [
-  {
-    name: 'Free',
-    price: '€0',
-    period: 'Forever free',
-    features: ['3 invoices per month', '2 basic templates', 'PDF export', 'Auto-save', 'Watermark on PDF'],
-    cta: 'Start Free',
-    ctaVariant: 'outline' as const,
-    href: '/app',
-    popular: false,
-  },
-  {
-    name: 'Pro',
-    price: '€9',
-    period: '/mo',
-    subPeriod: 'or €79/year (27% off)',
-    note: 'Flat rate. One user.',
-    features: ['Unlimited invoices', '6 premium templates', 'Custom branding colors', 'Invoice history & search', 'Export CSV/Excel', 'No watermark'],
-    // Price ID sent to server; server validates against its own PRICE_IDS map.
-    // Backend resolves the actual Stripe price ID from env — frontend just tags the plan.
-    planKey: 'pro',
-    cta: 'Subscribe to Pro',
-    ctaVariant: 'default' as const,
-    popular: true,
-  },
-  {
-    name: 'Team',
-    price: '€29',
-    period: '/mo',
-    subPeriod: 'or €249/year (29% off)',
-    note: 'Up to 5 team members included.',
-    features: ['Everything in Pro', 'Up to 5 team members', 'Shared templates', 'Admin dashboard', 'API access (soon)', 'Priority support'],
-    planKey: 'team',
-    cta: 'Subscribe to Team',
-    ctaVariant: 'outline' as const,
-    popular: false,
-  },
-];
 
 export default function PricingPage() {
   return (
@@ -99,65 +58,7 @@ export default function PricingPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left items-start">
-            {PLANS.map((plan) => (
-              <Card
-                key={plan.name}
-                className={`relative transition-shadow ${
-                  plan.popular
-                    ? 'border-2 border-primary shadow-lg shadow-primary/10 scale-[1.02] z-10'
-                    : 'border'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-3 py-0.5">Most Popular</Badge>
-                  </div>
-                )}
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">{plan.name}</CardTitle>
-                  <div className="text-3xl font-bold">
-                    {plan.price}
-                    <span className="text-base font-normal text-muted-foreground">{plan.period}</span>
-                  </div>
-                  {plan.subPeriod && (
-                    <p className="text-sm text-muted-foreground">{plan.subPeriod}</p>
-                  )}
-                  {plan.note && (
-                    <p className="text-xs text-muted-foreground mt-1">{plan.note}</p>
-                  )}
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {plan.features.map((f) => (
-                    <div key={f} className="flex items-center gap-2 text-sm">
-                      <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                      {f}
-                    </div>
-                  ))}
-                  {plan.planKey ? (
-                    <SubscribeButton
-                      planKey={plan.planKey}
-                      planName={plan.name}
-                      variant={plan.ctaVariant}
-                      className="mt-4"
-                    />
-                  ) : plan.href ? (
-                    <Button
-                      asChild
-                      variant={plan.ctaVariant}
-                      className="w-full mt-4"
-                    >
-                      {plan.href.startsWith('/') ? (
-                        <Link href={plan.href}>{plan.cta}</Link>
-                      ) : (
-                        <a href={plan.href}>{plan.cta}</a>
-                      )}
-                    </Button>
-                  ) : null}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <PricingCards />
 
           {/* FAQ / trust footer */}
           <div className="mt-16 max-w-2xl mx-auto text-left space-y-6">
