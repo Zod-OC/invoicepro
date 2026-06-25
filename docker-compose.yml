@@ -39,14 +39,25 @@ services:
     restart: unless-stopped
     networks:
       - coolify
-    # Env vars MUST be provided at deploy time. NEVER commit secrets to the repo.
-    # Options:
-    #   (a) Place in api/.env (gitignored). Docker Compose reads it automatically
-    #       when env_file is specified.
-    #   (b) Set as shell env vars before running `docker compose up`.
-    #   (c) Configure in Coolify UI → Environment Variables.
-    env_file:
-      - ./api/.env
+    # Env vars sourced from Coolify's app-level env vars (configured in
+    # Coolify UI → Environment Variables, or via PATCH /applications/{uuid}/envs).
+    # The $$VAR_NAME syntax is Coolify's marker; Coolify substitutes real values
+    # from its encrypted secrets store at deploy time. NEVER hardcode here.
+    #
+    # For standalone deployment without Coolify, run with:
+    #   docker compose --env-file api/.env up -d --build
+    # In standalone mode, Coolify's $$VAR markers are passed through literally
+    # and would NOT be substituted — so the standalone path is only useful for
+    # local development with env_file. Production deploys via Coolify.
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=$$JWT_SECRET
+      - STRIPE_SECRET_KEY=$$STRIPE_SECRET_KEY
+      - STRIPE_WEBHOOK_SECRET=$$STRIPE_WEBHOOK_SECRET
+      - STRIPE_PRICE_PRO_MONTHLY=$$STRIPE_PRICE_PRO_MONTHLY
+      - STRIPE_PRICE_PRO_YEARLY=$$STRIPE_PRICE_PRO_YEARLY
+      - FRONTEND_URL=$$FRONTEND_URL
+      - PORT=3000
     # Health check: hits the / health endpoint
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
