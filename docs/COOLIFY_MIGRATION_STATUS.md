@@ -108,3 +108,28 @@ Want me to:
 - (a) Generate the deploy key and paste the public key for you to add on GitHub?
 - (b) Skip Coolify registration and just rely on `docker-compose.yml` for now?
 - (c) Different approach?
+
+---
+
+## ✅ Final state — June 25, 2026
+
+**Billify is fully migrated to Coolify.**
+
+- Coolify App UUID: `nslz3owllqn71gaa4h0tdjl2`
+- Deploy mode: dockercompose (both services in one app)
+- Auto-deploy: enabled (poll-based; webhook secret available for GitHub-side integration)
+- All env vars stored in Coolify's encrypted env store
+- Containers: `nginx-nslz3owllqn71gaa4h0tdjl2-*` + `api-nslz3owllqn71gaa4h0tdjl2-*`
+- DNS: billify.me → Coolify proxy → nginx → static / proxy_pass to api service
+- Health: Stripe API container healthy, nginx up
+
+**Issues encountered & resolved (full chronology in this conversation):**
+
+1. **API token DB row** stored plaintext instead of SHA-256 hash → fixed
+2. **API allowed_ips** stale (old IP) → updated to current server IP
+3. **Docker Compose endpoint doesn't exist** in Coolify 4.1.2 → used `build_pack: dockercompose` via private-deploy-key
+4. **Bogus `$JWT_SECRET` env vars** auto-created by parser from `$$VAR` syntax → removed `environment:` block, use Coolify's auto-injected `.env`
+5. **`/dist` not found** in build context → multi-stage Dockerfile that runs `next build` inside the image
+6. **Build cache stale** → disabled with `disable_build_cache=true`
+7. **ARG injection breaking Next.js build** → disabled with `inject_build_args_to_dockerfile=false`
+8. **`billify-stripe-api` DNS name unresolvable** in Coolify → use compose service name `api` instead of `container_name`
