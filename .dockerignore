@@ -1,0 +1,38 @@
+# Exclude API service from nginx build context (Dockerfile is at repo root, used by both nginx and api services)
+api/
+api/.env
+
+# Standard Next.js / Node exclusions
+node_modules/
+.next/
+out/
+dist/           # build output, regenerated inside the image
+build/
+
+# Tests
+tests/
+test-results/
+test-report/
+playwright-report/
+
+# Git
+.git/
+.gitignore
+
+# Docs and meta (keep docker-billify/ because it has Dockerfile + nginx.conf needed by nginx)
+docs/
+*.md
+
+# Editor / OS files
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Docker / infra (compose file at root is for local dev only)
+docker-compose.yml
+
+# Stray files
+EOF
+EOFRULE
