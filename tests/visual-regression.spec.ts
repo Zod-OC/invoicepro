@@ -65,7 +65,7 @@ test.describe('Visual Regression — all pages', () => {
     const cards = await page.locator('div.grid > div').count();
     expect(cards).toBeGreaterThanOrEqual(3);
 
-    const prices = await page.locator('text=/\\$\\d+/').allTextContents();
+    const prices = await page.locator('text=/€\\d+/').allTextContents();
     expect(prices.length).toBeGreaterThanOrEqual(3);
   });
 });

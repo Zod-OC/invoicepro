@@ -67,10 +67,11 @@ test.describe('E2E — Invoice Builder', () => {
     await page.goto('/app');
     await page.waitForLoadState('networkidle');
 
-    // Switch templates and capture preview HTML
+    // Switch between free templates and capture preview HTML
+    // Note: 'minimal' is a Pro-only template; we test only free-accessible ones here
     const previews: string[] = [];
-    for (const tmpl of ['modern', 'classic', 'minimal']) {
-      await page.locator('select').nth(1).selectOption(tmpl);
+    for (const tmpl of ['modern', 'classic']) {
+      await page.getByTestId('template-select').selectOption(tmpl);
       await page.waitForTimeout(300);
       const previewHtml = await page.locator('.bg-white').first().innerHTML();
       previews.push(previewHtml);
@@ -79,7 +80,6 @@ test.describe('E2E — Invoice Builder', () => {
 
     // Verify previews are different from each other
     expect(previews[0]).not.toBe(previews[1]);
-    expect(previews[1]).not.toBe(previews[2]);
   });
 
   test('tax slider correctly adjusts totals', async ({ page }) => {
