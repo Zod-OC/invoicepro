@@ -9,7 +9,7 @@ COPY package.json package-lock.json* ./
 RUN npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
 # Copy source and build
-COPY next.config.mjs tsconfig.json ./
+COPY next.config.mjs tsconfig.json tailwind.config.ts postcss.config.mjs ./
 COPY src ./src
 COPY public ./public
 
