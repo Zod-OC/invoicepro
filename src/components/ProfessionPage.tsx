@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmbeddedEditor } from '@/components/EmbeddedEditor';
 import { CrossLinks } from '@/components/CrossLinks';
-import { faqJsonLd, breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/seo';
+import { faqJsonLd, breadcrumbJsonLd } from '@/lib/seo';
 import type { Profession } from '@/data/professions';
 
 const SITE = 'https://billify.me';
@@ -136,7 +136,9 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
         </div>
       </footer>
 
-      {/* Structured data — FAQ, Breadcrumb, SoftwareApplication */}
+      {/* Structured data — FAQ + Breadcrumb. The SoftwareApplication block is
+          emitted once globally by src/app/layout.tsx (single source), so it is
+          not duplicated here. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: faqJsonLd(profession.faq) }}
@@ -144,10 +146,6 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: breadcrumbJsonLd(crumbs) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: softwareApplicationJsonLd() }}
       />
     </div>
   );

@@ -1,8 +1,9 @@
 /**
  * JSON-LD builders for the programmatic-SEO profession pages. Each returns a
  * JSON string ready for `dangerouslySetInnerHTML` inside a
- * `<script type="application/ld+json">`. Shapes match the existing
- * SoftwareApplication block in src/app/layout.tsx.
+ * `<script type="application/ld+json">`. The SoftwareApplication block is also
+ * the single source used by src/app/layout.tsx (so it is not duplicated on
+ * profession pages).
  */
 
 interface FaqEntry {
@@ -15,8 +16,22 @@ interface Crumb {
   url: string;
 }
 
+/**
+ * JSON.stringify for `dangerouslySetInnerHTML` injection. Raw JSON.stringify
+ * does not escape `</script>`, so an authored string containing that literal
+ * would close the JSON-LD <script> early and let the remainder be parsed as
+ * page HTML. Escape `<`, `>`, and `--` (to defuse `<!--`/`-->`). JSON consumers
+ * parse `<` back to `<`, so schema validity is preserved.
+ */
+function safeJsonLd(obj: unknown): string {
+  return JSON.stringify(obj)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/--/g, '\\u002d\\u002d');
+}
+
 export function faqJsonLd(faq: FaqEntry[]): string {
-  return JSON.stringify({
+  return safeJsonLd({
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: faq.map((f) => ({
@@ -28,7 +43,7 @@ export function faqJsonLd(faq: FaqEntry[]): string {
 }
 
 export function breadcrumbJsonLd(items: Crumb[]): string {
-  return JSON.stringify({
+  return safeJsonLd({
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: items.map((item, i) => ({
@@ -41,7 +56,7 @@ export function breadcrumbJsonLd(items: Crumb[]): string {
 }
 
 export function softwareApplicationJsonLd(): string {
-  return JSON.stringify({
+  return safeJsonLd({
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'Billify',

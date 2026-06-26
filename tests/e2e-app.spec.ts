@@ -119,6 +119,93 @@ test.describe('E2E — Invoice Builder', () => {
     expect(html).not.toMatch(/InvoicePro/i);
     expect(html).toMatch(/Billify/);
   });
+
+  // Regression for the template-clamp data-loss race: a logged-in Pro user with
+  // a saved Pro template must NOT be downgraded to 'modern' while plan is still
+  // its synchronous initial 'free' (before /api/stripe/validate-token resolves).
+  test('logged-in Pro user keeps saved Pro template after plan resolves', async ({ page }) => {
+    const proInvoice = {
+      id: 'test-pro-1',
+      number: 'INV-EXEC-1',
+      date: '2026-06-26',
+      dueDate: '2026-07-10',
+      from: { name: 'Pro Co', email: 'pro@x.com', address: '1 Pro St', phone: '555-0100' },
+      to: { name: 'Client', email: 'c@x.com', address: '2 Client St', phone: '555-0101' },
+      items: [{ description: 'Consulting', quantity: 2, rate: 250 }],
+      notes: '',
+      terms: 'Net 14',
+      taxRate: 0,
+      currency: 'USD',
+      template: 'executive',
+      status: 'draft',
+      createdAt: 1,
+      updatedAt: 1,
+    };
+
+    // Seed a Pro subscription token + a saved invoice using a Pro template.
+    await page.evaluate((inv) => {
+      localStorage.setItem('billify_sub_token', 'fake-pro-token');
+      localStorage.setItem('billify_current', JSON.stringify(inv));
+    }, proInvoice);
+
+    // Mock the token-validation endpoint to return Pro.
+    await page.route('**/api/stripe/validate-token', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ plan: 'pro', limits: { invoicesPerMonth: Infinity, templates: 'all' } }),
+      })
+    );
+
+    const validateResponse = page.waitForResponse((r) => r.url().includes('/api/stripe/validate-token'));
+    await page.goto('/app');
+    await validateResponse; // plan has now resolved to 'pro'
+    await page.waitForSelector('input[placeholder="Company name"]', { state: 'visible' });
+
+    // The Pro template must be preserved — not clamped down to 'modern'.
+    await expect(page.getByTestId('template-select')).toHaveValue('executive');
+
+    // Wait for the debounced auto-save and confirm the Pro template is persisted
+    // (the bug would have overwritten it with 'modern').
+    await page.waitForTimeout(800);
+    const stored = await page.evaluate(() => localStorage.getItem('billify_current'));
+    expect(stored).toBeTruthy();
+    expect(JSON.parse(stored!).template).toBe('executive');
+  });
+
+  // The clamp must still fire for a FREE user who loads a Pro template via a
+  // crafted ?invoice= URL (the tier-leak defense the clamp exists for).
+  test('free user loading a crafted Pro template via ?invoice= is clamped to modern', async ({ page }) => {
+    const crafted = {
+      id: 'test-craft-1',
+      number: 'INV-CRAFT-1',
+      date: '2026-06-26',
+      dueDate: '2026-07-10',
+      from: { name: 'From Co', email: 'f@x.com', address: '1 St', phone: '555-0001' },
+      to: { name: 'To Co', email: 't@x.com', address: '2 St', phone: '555-0002' },
+      items: [{ description: 'Work', quantity: 1, rate: 100 }],
+      notes: '',
+      terms: 'Net 14',
+      taxRate: 0,
+      currency: 'USD',
+      template: 'creative', // Pro-only
+      status: 'draft',
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const b64url = Buffer.from(JSON.stringify(crafted))
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
+    // No subscription token seeded → free tier. Navigate with the crafted invoice.
+    await page.goto(`/app?invoice=${b64url}`);
+    await page.waitForSelector('input[placeholder="Company name"]', { state: 'visible' });
+
+    // Once plan resolves (no token → 'free'), the Pro template is clamped to 'modern'.
+    await expect(page.getByTestId('template-select')).toHaveValue('modern');
+  });
 });
 
 /* ===============================================================

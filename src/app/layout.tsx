@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { softwareApplicationJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -49,24 +50,7 @@ export default function RootLayout({
         <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; media-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';" />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "SoftwareApplication",
-              name: "Billify",
-              applicationCategory: "BusinessApplication",
-              description: "Create professional PDF invoices in seconds. Free forever. No signup required.",
-              url: "https://billify.me",
-              offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "USD",
-                description: "Free tier with core invoice features",
-              },
-              operatingSystem: "Web Browser",
-              featureList: "PDF export, invoice templates, auto-save, logo upload, no signup required",
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: softwareApplicationJsonLd() }}
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">

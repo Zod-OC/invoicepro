@@ -83,10 +83,12 @@ function generate(profession: (typeof professions)[number]) {
   ctx.fillText(url, WIDTH - 80 - w, HEIGHT - 60);
 
   const outPath = join(OUT_DIR, `invoice-template-${profession.slug}.png`);
-  mkdirSync(OUT_DIR, { recursive: true });
   writeFileSync(outPath, canvas.toBuffer('image/png'));
   return outPath;
 }
+
+// Ensure the output directory exists once, not once per profession.
+mkdirSync(OUT_DIR, { recursive: true });
 
 let count = 0;
 for (const p of professions) {

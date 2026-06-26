@@ -1,7 +1,6 @@
-import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
 import { bySlug } from '@/data/professions';
 import type { Profession } from '@/data/professions';
+import { ProfessionCard } from '@/components/ProfessionCard';
 
 /**
  * 2–3 crawlable internal links to related profession pages. Resolves slugs via
@@ -21,22 +20,7 @@ export function CrossLinks({ slugs }: { slugs: string[] }) {
         <h2 className="text-2xl font-bold mb-6">Other invoice templates</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {related.map((p) => (
-            <Link
-              key={p.slug}
-              href={`/invoice-template-for/${p.slug}`}
-              className="group"
-            >
-              <Card className="h-full transition-shadow hover:shadow-md">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors">
-                    {p.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {p.metaDescription}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
+            <ProfessionCard key={p.slug} profession={p} />
           ))}
         </div>
       </div>

@@ -2125,7 +2125,17 @@ export const professions: Profession[] = [
   }
 ];
 
+const bySlugMap = new Map(professions.map((p) => [p.slug, p] as const));
+
 export function bySlug(slug: string): Profession | undefined {
-  return professions.find((p) => p.slug === slug);
+  return bySlugMap.get(slug);
 }
+
+/**
+ * Last-edited date for the profession content set (ISO YYYY-MM-DD). Bumped when
+ * the authored copy is updated. Used by sitemap.ts as the lastModified for the
+ * profession pages so a rebuild alone doesn't tell crawlers every page changed
+ * (which `new Date()` at build time would do).
+ */
+export const PROFESSION_DATA_UPDATED_AT = '2026-06-26';
 

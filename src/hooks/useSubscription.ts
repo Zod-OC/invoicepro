@@ -51,7 +51,9 @@ export interface PlanLimits {
 
 const DEFAULT_LIMITS: PlanLimits = {
   invoicesPerMonth: 3,
-  templates: ['basic'],
+  // The actual free-tier template ids (see src/types/index.ts `templates`).
+  // Not 'basic' — that was a sentinel that matched no real template id.
+  templates: ['modern', 'classic'],
 };
 
 const PLAN_LIMITS: Record<Plan, PlanLimits> = {
@@ -100,6 +102,12 @@ export function useSubscription() {
   const [limits, setLimitsState] = useState<PlanLimits>(DEFAULT_LIMITS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // False until the initial validation settles (embed short-circuit, no-token,
+  // validate-token fetch, or verifySession). plan starts 'free' synchronously
+  // and only becomes authoritative after this flips true — callers must not
+  // branch on `plan` until `initialized` is true, or they act on the stale
+  // initial 'free' (e.g. wrongly downgrading a logged-in Pro user's template).
+  const [initialized, setInitialized] = useState(false);
 
   // Validate token on mount
   useEffect(() => {
@@ -109,6 +117,7 @@ export function useSubscription() {
     if (isEmbedMode()) {
       setPlanState('pro');
       setLimitsState(PLAN_LIMITS.pro);
+      setInitialized(true);
       return;
     }
 
@@ -119,7 +128,12 @@ export function useSubscription() {
       const checkout = params.get('checkout');
       const sessionId = params.get('session_id');
       if (checkout === 'success' && sessionId) {
+        // Post-payment redirect: initialized flips when verifySession resolves
+        // (in its finally), so callers gate on a resolved plan — not the
+        // synchronous initial 'free' state.
         verifySession(sessionId);
+      } else {
+        setInitialized(true);
       }
       return;
     }
@@ -142,7 +156,8 @@ export function useSubscription() {
         clearSubscription();
         setPlanState('free');
         setLimitsState(DEFAULT_LIMITS);
-      });
+      })
+      .finally(() => setInitialized(true));
   }, []);
 
   const verifySession = useCallback(async (sessionId: string) => {
@@ -171,6 +186,7 @@ export function useSubscription() {
       setError(err.message || 'Failed to verify purchase');
     } finally {
       setLoading(false);
+      setInitialized(true);
     }
   }, []);
 
@@ -214,9 +230,9 @@ export function useSubscription() {
   const hasTemplateAccess = useCallback((templateId: string) => {
     if (limits.templates === 'all') return true;
     if (Array.isArray(limits.templates)) {
-      return limits.templates.includes(templateId) || limits.templates.includes('basic');
+      return limits.templates.includes(templateId);
     }
-    return templateId === 'basic';
+    return false;
   }, [limits]);
 
   return {
@@ -224,6 +240,7 @@ export function useSubscription() {
     limits,
     loading,
     error,
+    initialized,
     verifySession,
     restoreByEmail,
     clear,

@@ -14,7 +14,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { SubscriptionManager } from '@/components/SubscriptionManager';
 import { Sparkles, Plus, Trash2, Download, RotateCcw, FileText, Lock } from 'lucide-react';
 import { PaywallModal } from '@/components/PaywallModal';
-import { isEmbedMode, embedKey, decodeInvoice } from '@/lib/embed';
+import { isEmbedMode, embedKey, decodeInvoice, takeHandoff } from '@/lib/embed';
 
 const STORAGE_KEY = 'billify_current';
 
@@ -36,7 +36,7 @@ function escapeHtml(str: string): string {
 }
 
 export default function AppPage() {
-  const { plan, limits, canCreateInvoice, hasTemplateAccess } = useSubscription();
+  const { plan, limits, canCreateInvoice, hasTemplateAccess, initialized } = useSubscription();
   // Lazy init returns an empty invoice on BOTH server prerender and client
   // first render — so the two HTML trees match. Saved-session restore and the
   // embed prefill both happen in the mount effect below (no hydration mismatch,
@@ -55,22 +55,37 @@ export default function AppPage() {
     setIsEmbed(embed);
     try {
       const params = new URLSearchParams(window.location.search);
-      const decoded = decodeInvoice(params.get('invoice'));
       if (embed) {
         // Embed: prefill from ?invoice=<base64url>. Throwaway scratch pad —
-        // never read from or write to the host's billify_current.
+        // never read from or write to the host's billify_current. Don't strip
+        // ?invoice= here: the embed is a scratch pad, so re-prefilling on
+        // reload (which discards scratch edits) is the intended behavior.
+        const decoded = decodeInvoice(params.get('invoice'));
         if (decoded) setInvoice(prev => ({ ...prev, ...decoded }));
-      } else if (decoded) {
-        // Host + handoff: "Edit in full-screen" carried the scratch invoice in
-        // via ?invoice=. Load it; the debounced auto-save persists it to
-        // billify_current so it becomes the user's real working invoice.
-        setInvoice(prev => ({ ...prev, ...decoded }));
       } else {
-        // Host: restore the user's saved invoice.
-        const raw = localStorage.getItem(embedKey('current'));
-        if (raw) {
-          const validated = validateInvoice(JSON.parse(raw));
-          if (validated) setInvoice(validated);
+        // Host + handoff: "Edit in full-screen" stashed the scratch invoice in
+        // localStorage and carried a short ?handoff=<token> (the full invoice —
+        // including an uploaded logo — is too large for a URL param). Fall back
+        // to a directly-crafted ?invoice= for backwards compatibility. Load it;
+        // the debounced auto-save persists it to billify_current. Then strip the
+        // consumed param so a reload/restore doesn't re-apply the stale handoff
+        // snapshot over the user's post-handoff edits (mirrors the checkout
+        // strip in useSubscription).
+        const handedOff = takeHandoff(params.get('handoff'));
+        const decoded = handedOff ?? decodeInvoice(params.get('invoice'));
+        if (decoded) {
+          setInvoice(prev => ({ ...prev, ...decoded }));
+          const url = new URL(window.location.href);
+          url.searchParams.delete('handoff');
+          url.searchParams.delete('invoice');
+          window.history.replaceState({}, '', url.toString());
+        } else {
+          // Host: restore the user's saved invoice.
+          const raw = localStorage.getItem(embedKey('current'));
+          if (raw) {
+            const validated = validateInvoice(JSON.parse(raw));
+            if (validated) setInvoice(validated);
+          }
         }
       }
     } catch { /* ignore corrupt storage/param */ }
@@ -107,15 +122,38 @@ export default function AppPage() {
 
   // Embed up-channel: mirror the live invoice up to the parent frame so the
   // "Edit in full-screen" handoff can carry the user's scratch edits losslessly.
+  // Debounced — the parent only consumes `live` when the user clicks "Edit in
+  // full-screen", so there's no need to post (and re-render the parent) on every
+  // keystroke. A short trailing delay keeps the handoff payload current.
   useEffect(() => {
     if (!isEmbed || typeof window === 'undefined') return;
     if (window.parent === window) return; // not actually framed
-    window.parent.postMessage({ type: 'billify-invoice', invoice }, window.location.origin);
+    const timer = setTimeout(() => {
+      window.parent.postMessage({ type: 'billify-invoice', invoice }, window.location.origin);
+    }, 200);
+    return () => clearTimeout(timer);
   }, [invoice, isEmbed]);
 
   const update = useCallback((patch: Partial<Invoice>) => {
     setInvoice(prev => ({ ...prev, ...patch, updatedAt: Date.now() }));
   }, []);
+
+  // Clamp a free user's loaded Pro template down to a free one — but only once
+  // `plan` has actually resolved. validateInvoice accepts all 12 template ids
+  // with no tier check, and the <select> paywall only fires on user onChange,
+  // so a Pro template arriving via the handoff or a crafted ?invoice= URL would
+  // otherwise load and render for a free user. useSubscription initializes plan
+  // to 'free' synchronously and only flips to 'pro' after /api/stripe/
+  // validate-token resolves, so gating on plan alone would downgrade a
+  // logged-in Pro user's saved Pro template (and persist that via auto-save)
+  // before validation completes. The `initialized` flag is false until the
+  // hook's initial validation settles, so this effect cannot fire on the stale
+  // initial 'free' state. Embed is exempt (all 12 templates are free there).
+  useEffect(() => {
+    if (isEmbed || !initialized || plan !== 'free') return;
+    const t = templates.find(t => t.id === invoice.template);
+    if (t && t.tier !== 'free') update({ template: 'modern' });
+  }, [plan, isEmbed, invoice.template, update, initialized]);
 
   const updateFrom = useCallback((patch: Partial<Invoice['from']>) => {
     setInvoice(prev => ({ ...prev, from: { ...prev.from, ...patch }, updatedAt: Date.now() }));
@@ -181,10 +219,22 @@ export default function AppPage() {
   }, [updateFrom, updateTo]);
 
   const handleDownload = useCallback(async () => {
-    // Gate: free tier limited to 3 invoices/month — disabled in embed mode,
-    // where the editor is genuinely unlimited with no signup, no paywall.
-    if (!isEmbed && plan === 'free' && monthlyCount >= 3) {
+    // Gates are skipped until `plan` has resolved (useSubscription initializes
+    // plan to 'free' synchronously and only flips to 'pro' after validate-token).
+    // Without the `initialized` gate, a logged-in Pro user who downloads during
+    // that window would hit a false paywall (and `!initialized` here is an
+    // effectively zero-length window for free users, whose no-token path flips
+    // initialized synchronously). Embed mode is always unlimited.
+    if (!isEmbed && initialized && plan === 'free' && monthlyCount >= 3) {
       setShowPaywall({ open: true, feature: 'Unlimited Invoices' });
+      return;
+    }
+    // Defense in depth: the <select> paywall only fires on user onChange, so a
+    // Pro template that arrived via the handoff or a crafted ?invoice= URL (and
+    // survived the load-time clamp) must still be gated at download. Embed is
+    // exempt — all 12 templates are free there.
+    if (!isEmbed && initialized && plan === 'free' && !hasTemplateAccess(invoice.template)) {
+      setShowPaywall({ open: true, feature: 'Pro Template' });
       return;
     }
     setDownloading(true);
@@ -205,7 +255,7 @@ export default function AppPage() {
     } finally {
       setDownloading(false);
     }
-  }, [invoice, plan, monthlyCount, isEmbed, incrementMonthlyCount]);
+  }, [invoice, plan, monthlyCount, isEmbed, initialized, incrementMonthlyCount, hasTemplateAccess]);
 
   const { subtotal, tax, total } = calculateTotals(invoice.items, invoice.taxRate);
   const sym = currencySymbols[invoice.currency] || '$';
@@ -614,7 +664,9 @@ export default function AppPage() {
                       const required = t?.tier ?? 'free';
                       // Embed mode unlocks all 12 templates — the marketing point:
                       // every Pro template is free to use in the SEO page editor.
-                      if (!isEmbed && required !== 'free' && plan === 'free') {
+                      // Gate on `initialized` too so a logged-in Pro user isn't
+                      // falsely paywalled during the validate-token window.
+                      if (!isEmbed && initialized && required !== 'free' && plan === 'free') {
                         setShowPaywall({ open: true, feature: t?.name ?? 'Pro Template' });
                         return;
                       }
@@ -625,7 +677,7 @@ export default function AppPage() {
                     {templates.map(t => (
                       <option key={t.id} value={t.id}>
                         {t.name}
-                        {!isEmbed && t.tier !== 'free' && plan === 'free' ? ' 🔒 Pro' : ''}
+                        {!isEmbed && initialized && t.tier !== 'free' && plan === 'free' ? ' 🔒 Pro' : ''}
                       </option>
                     ))}
                   </select>
