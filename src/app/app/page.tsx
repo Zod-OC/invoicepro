@@ -144,11 +144,11 @@ export default function AppPage() {
   // so a Pro template arriving via the handoff or a crafted ?invoice= URL would
   // otherwise load and render for a free user. useSubscription initializes plan
   // to 'free' synchronously and only flips to 'pro' after /api/stripe/
-  // validate-token resolves, so gating on plan alone would downgrade a
-  // logged-in Pro user's saved Pro template (and persist that via auto-save)
-  // before validation completes. The `initialized` flag is false until the
-  // hook's initial validation settles, so this effect cannot fire on the stale
-  // initial 'free' state. Embed is exempt (all 12 templates are free there).
+  // validate-token resolves. The `initialized` flag is false until the hook's
+  // validation settles. On a transient validate-token failure (network blip,
+  // 5xx), the hook now restores the stored plan instead of collapsing to 'free',
+  // so this clamp cannot fire on a momentary outage and downgrade a logged-in
+  // Pro user's saved template. Embed is exempt (all 12 templates are free).
   useEffect(() => {
     if (isEmbed || !initialized || plan !== 'free') return;
     const t = templates.find(t => t.id === invoice.template);

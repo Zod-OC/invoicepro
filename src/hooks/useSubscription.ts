@@ -146,16 +146,28 @@ export function useSubscription() {
       body: JSON.stringify({ token }),
     })
       .then(async (res) => {
-        if (!res.ok) throw new Error('Token invalid');
+        if (res.status === 401 || res.status === 403) {
+          // Token explicitly rejected by the server (expired, revoked, or
+          // malformed). This is a *permanent* rejection — clear and downgrade.
+          clearSubscription();
+          setPlanState('free');
+          setLimitsState(DEFAULT_LIMITS);
+          return;
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setPlanState(data.plan);
         setLimitsState(data.limits);
       })
       .catch(() => {
-        // Token expired or invalid — clear and fall back to free
-        clearSubscription();
-        setPlanState('free');
-        setLimitsState(DEFAULT_LIMITS);
+        // Network error or transient server failure (5xx, DNS, timeout).
+        // Do NOT collapse this into plan='free' — that would downgrade a
+        // logged-in Pro user's subscription (and trigger the template clamp
+        // in page.tsx, persisting the downgrade via auto-save) on a momentary
+        // network blip. Restore the stored plan optimistically instead.
+        const storedPlan = getStoredPlan();
+        setPlanState(storedPlan);
+        setLimitsState(storedPlan === 'pro' ? PLAN_LIMITS.pro : DEFAULT_LIMITS);
       })
       .finally(() => setInitialized(true));
   }, []);
