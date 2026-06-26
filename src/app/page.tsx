@@ -58,7 +58,7 @@ export default function LandingPage() {
       <section className="w-full bg-muted/50 py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl font-bold text-center mb-10">Everything you need</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
             {[
               { icon: FileText, title: `${templates.length} Stunning Templates`, desc: 'Modern, Classic, Minimal, Clean, Bold, Corporate, Startup, Freelancer, Executive, Agency, Consulting, and Creative designs.' },
               { icon: Download, title: 'PDF Export', desc: 'Generate professional PDFs instantly. No server needed.' },
@@ -67,7 +67,7 @@ export default function LandingPage() {
               { icon: Check, title: 'Free Forever', desc: 'Core features cost nothing. Pro tier adds superpowers.' },
               { icon: Sparkles, title: 'Auto-Save', desc: 'Never lose work. Everything is saved automatically.' },
             ].map((f) => (
-              <Card key={f.title} className="border-0 shadow-none bg-transparent">
+              <Card key={f.title} className="border-0 shadow-none bg-transparent h-full">
                 <CardContent className="p-6">
                   <f.icon className="w-8 h-8 text-primary mb-3" />
                   <h3 className="font-semibold mb-1">{f.title}</h3>
@@ -84,8 +84,8 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold mb-4">Simple Pricing</h2>
           <p className="text-muted-foreground mb-8">Start free. Upgrade when you need more.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-            <Card className="border-2 border-transparent">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto text-left">
+            <Card className="border-2 border-transparent flex flex-col">
               <CardHeader>
                 <CardTitle className="text-lg">Free</CardTitle>
                 <div className="text-3xl font-bold">$0</div>
@@ -97,7 +97,7 @@ export default function LandingPage() {
                 <div>✓ Auto-save</div>
               </CardContent>
             </Card>
-            <Card className="border-2 border-primary relative">
+            <Card className="border-2 border-primary relative flex flex-col">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
               </div>

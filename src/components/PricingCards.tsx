@@ -75,11 +75,11 @@ export function PricingCards() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto text-left">
         {PLANS.map((plan) => (
           <Card
             key={plan.name}
-            className={`relative transition-shadow ${
+            className={`relative transition-shadow flex flex-col ${
               plan.popular
                 ? 'border-2 border-primary shadow-lg shadow-primary/10 scale-[1.02] z-10'
                 : 'border'
@@ -107,13 +107,15 @@ export function PricingCards() {
                 <p className="text-xs text-muted-foreground mt-1">{plan.note}</p>
               )}
             </CardHeader>
-            <CardContent className="space-y-3">
-              {plan.features.map((f) => (
-                <div key={f} className="flex items-center gap-2 text-sm">
-                  <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                  {f}
-                </div>
-              ))}
+            <CardContent className="space-y-3 flex-1 flex flex-col">
+              <div className="flex-1 space-y-3">
+                {plan.features.map((f) => (
+                  <div key={f} className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                    {f}
+                  </div>
+                ))}
+              </div>
               {plan.planKey ? (
                 <SubscribeButton
                   planKey={plan.planKey}
