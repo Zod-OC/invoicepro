@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { embedKey } from '@/lib/embed';
 
 export default function ErrorBoundary({
   error,
@@ -32,7 +33,7 @@ export default function ErrorBoundary({
           <button
             onClick={() => {
               if (typeof window !== 'undefined') {
-                localStorage.removeItem('billify_current');
+                localStorage.removeItem(embedKey('current'));
                 window.location.reload();
               }
             }}

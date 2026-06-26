@@ -14,23 +14,14 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { SubscriptionManager } from '@/components/SubscriptionManager';
 import { Sparkles, Plus, Trash2, Download, RotateCcw, FileText, Lock } from 'lucide-react';
 import { PaywallModal } from '@/components/PaywallModal';
-const STORAGE_KEY = 'billify_current';
+import { isEmbedMode, embedKey, decodeInvoice } from '@/lib/embed';
 
-function loadInvoice(): Invoice {
-  if (typeof window === 'undefined') return createEmptyInvoice();
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      const validated = validateInvoice(parsed);
-      if (validated) return validated;
-    }
-  } catch {}
-  return createEmptyInvoice();
-}
+const STORAGE_KEY = 'billify_current';
 
 function saveInvoice(inv: Invoice) {
   if (typeof window === 'undefined') return;
+  // Host session persists to billify_current. Embed mode skips auto-save
+  // entirely (see the mount effect), so it never lands here.
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...inv, updatedAt: Date.now() }));
 }
 
@@ -46,16 +37,49 @@ function escapeHtml(str: string): string {
 
 export default function AppPage() {
   const { plan, limits, canCreateInvoice, hasTemplateAccess } = useSubscription();
-  const [invoice, setInvoice] = useState<Invoice>(loadInvoice);
+  // Lazy init returns an empty invoice on BOTH server prerender and client
+  // first render — so the two HTML trees match. Saved-session restore and the
+  // embed prefill both happen in the mount effect below (no hydration mismatch,
+  // and embed never touches the host's billify_current).
+  const [invoice, setInvoice] = useState<Invoice>(createEmptyInvoice);
+  const [isEmbed, setIsEmbed] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [showPaywall, setShowPaywall] = useState<{ open: boolean; feature: string } | null>(null);
   const [monthlyCount, setMonthlyCount] = useState(0);
 
+  // Mount: detect embed mode, then hydrate from storage (host) or prefill from
+  // the embed/handoff URL param (embed). Runs once, client-side only.
+  useEffect(() => {
+    const embed = isEmbedMode();
+    setIsEmbed(embed);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const decoded = decodeInvoice(params.get('invoice'));
+      if (embed) {
+        // Embed: prefill from ?invoice=<base64url>. Throwaway scratch pad —
+        // never read from or write to the host's billify_current.
+        if (decoded) setInvoice(prev => ({ ...prev, ...decoded }));
+      } else if (decoded) {
+        // Host + handoff: "Edit in full-screen" carried the scratch invoice in
+        // via ?invoice=. Load it; the debounced auto-save persists it to
+        // billify_current so it becomes the user's real working invoice.
+        setInvoice(prev => ({ ...prev, ...decoded }));
+      } else {
+        // Host: restore the user's saved invoice.
+        const raw = localStorage.getItem(embedKey('current'));
+        if (raw) {
+          const validated = validateInvoice(JSON.parse(raw));
+          if (validated) setInvoice(validated);
+        }
+      }
+    } catch { /* ignore corrupt storage/param */ }
+  }, []);
+
   // Load monthly invoice count
   useEffect(() => {
     try {
-      const key = `billify_count_${new Date().toISOString().slice(0, 7)}`;
+      const key = embedKey(`count_${new Date().toISOString().slice(0, 7)}`);
       const count = Number(localStorage.getItem(key) || '0');
       setMonthlyCount(count);
     } catch { /* ignore */ }
@@ -63,20 +87,31 @@ export default function AppPage() {
 
   const incrementMonthlyCount = useCallback(() => {
     try {
-      const key = `billify_count_${new Date().toISOString().slice(0, 7)}`;
+      const key = embedKey(`count_${new Date().toISOString().slice(0, 7)}`);
       const next = monthlyCount + 1;
       localStorage.setItem(key, String(next));
       setMonthlyCount(next);
     } catch { /* ignore */ }
   }, [monthlyCount]);
 
-  // Debounced save to localStorage — prevents jank on every keystroke
+  // Debounced save to localStorage — prevents jank on every keystroke.
+  // Skipped entirely in embed mode: the embed is a throwaway scratch pad that
+  // never persists (the user's real work happens in the full-screen /app).
   useEffect(() => {
+    if (isEmbed) return;
     const timer = setTimeout(() => {
       saveInvoice(invoice);
     }, 500);
     return () => clearTimeout(timer);
-  }, [invoice]);
+  }, [invoice, isEmbed]);
+
+  // Embed up-channel: mirror the live invoice up to the parent frame so the
+  // "Edit in full-screen" handoff can carry the user's scratch edits losslessly.
+  useEffect(() => {
+    if (!isEmbed || typeof window === 'undefined') return;
+    if (window.parent === window) return; // not actually framed
+    window.parent.postMessage({ type: 'billify-invoice', invoice }, window.location.origin);
+  }, [invoice, isEmbed]);
 
   const update = useCallback((patch: Partial<Invoice>) => {
     setInvoice(prev => ({ ...prev, ...patch, updatedAt: Date.now() }));
@@ -146,8 +181,9 @@ export default function AppPage() {
   }, [updateFrom, updateTo]);
 
   const handleDownload = useCallback(async () => {
-    // Gate: free tier limited to 3 invoices/month
-    if (plan === 'free' && monthlyCount >= 3) {
+    // Gate: free tier limited to 3 invoices/month — disabled in embed mode,
+    // where the editor is genuinely unlimited with no signup, no paywall.
+    if (!isEmbed && plan === 'free' && monthlyCount >= 3) {
       setShowPaywall({ open: true, feature: 'Unlimited Invoices' });
       return;
     }
@@ -162,14 +198,14 @@ export default function AppPage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      incrementMonthlyCount();
+      if (!isEmbed) incrementMonthlyCount();
     } catch (err) {
       console.error(err);
       alert('PDF generation failed. Please try again.');
     } finally {
       setDownloading(false);
     }
-  }, [invoice, plan, monthlyCount, incrementMonthlyCount]);
+  }, [invoice, plan, monthlyCount, isEmbed, incrementMonthlyCount]);
 
   const { subtotal, tax, total } = calculateTotals(invoice.items, invoice.taxRate);
   const sym = currencySymbols[invoice.currency] || '$';
@@ -406,13 +442,17 @@ export default function AppPage() {
               <Download className="w-4 h-4 sm:mr-1" />
               <span className="hidden sm:inline">{downloading ? 'Generating...' : 'Download PDF'}</span>
             </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/pricing">
-                <span className={`text-xs font-semibold ${plan !== 'free' ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {plan === 'free' ? 'Free' : 'Pro'}
-                </span>
-              </Link>
-            </Button>
+            {/* Hide the plan badge / pricing link in embed mode — the embed has
+                no signup flow, so there's nothing to upgrade to. */}
+            {!isEmbed && (
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/pricing">
+                  <span className={`text-xs font-semibold ${plan !== 'free' ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {plan === 'free' ? 'Free' : 'Pro'}
+                  </span>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </nav>
@@ -420,7 +460,8 @@ export default function AppPage() {
       <div className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full">
         {/* Editor */}
         <div className="flex-1 p-3 sm:p-4 space-y-4 overflow-y-auto lg:max-h-[calc(100vh-3.5rem)]">
-          <SubscriptionManager />
+          {/* Hide subscription management in embed mode — no signup flow. */}
+          {!isEmbed && <SubscriptionManager />}
 
           <Card>
             <CardHeader className="pb-2">
@@ -571,7 +612,9 @@ export default function AppPage() {
                       const selected = e.target.value as TemplateType;
                       const t = templates.find(t => t.id === selected);
                       const required = t?.tier ?? 'free';
-                      if (required !== 'free' && plan === 'free') {
+                      // Embed mode unlocks all 12 templates — the marketing point:
+                      // every Pro template is free to use in the SEO page editor.
+                      if (!isEmbed && required !== 'free' && plan === 'free') {
                         setShowPaywall({ open: true, feature: t?.name ?? 'Pro Template' });
                         return;
                       }
@@ -582,7 +625,7 @@ export default function AppPage() {
                     {templates.map(t => (
                       <option key={t.id} value={t.id}>
                         {t.name}
-                        {t.tier !== 'free' && plan === 'free' ? ' 🔒 Pro' : ''}
+                        {!isEmbed && t.tier !== 'free' && plan === 'free' ? ' 🔒 Pro' : ''}
                       </option>
                     ))}
                   </select>
@@ -604,7 +647,7 @@ export default function AppPage() {
       </div>
 
       <PaywallModal
-        open={showPaywall?.open ?? false}
+        open={!isEmbed && (showPaywall?.open ?? false)}
         onClose={() => setShowPaywall(null)}
         feature={showPaywall?.feature ?? ''}
       />
