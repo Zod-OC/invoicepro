@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Sparkles, ArrowLeft } from 'lucide-react';
 import { templates, TemplateType } from '@/types';
+import { BrowseProfessions } from '@/components/BrowseProfessions';
 
 export const metadata: Metadata = {
   title: 'Templates',
@@ -328,6 +329,8 @@ export default function TemplatesPage() {
           </div>
         </div>
       </div>
+
+      <BrowseProfessions limit={12} />
     </div>
   );
 }

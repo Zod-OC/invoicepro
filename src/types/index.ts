@@ -101,7 +101,7 @@ export function validateInvoice(raw: unknown): Invoice | null {
   const items = Array.isArray(o.items) ? o.items.filter(isValidItem) : [];
   if (!items.length) return null;
   if (!isValidCompanyInfo(o.from) || !isValidCompanyInfo(o.to)) return null;
-  const template = isValidString(o.template) && ['modern', 'classic', 'minimal', 'clean', 'bold', 'executive'].includes(o.template)
+  const template = isValidString(o.template) && templates.some((t) => t.id === o.template)
     ? (o.template as TemplateType)
     : 'modern';
   return {

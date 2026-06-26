@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Shield, Zap, Download, Check, Sparkles } from 'lucide-react';
 import { templates } from '@/types';
+import { BrowseProfessions } from '@/components/BrowseProfessions';
 
 export default function LandingPage() {
   return (
@@ -117,6 +118,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Browse by profession */}
+      <BrowseProfessions />
 
       {/* Footer */}
       <footer className="w-full border-t py-8 px-4">

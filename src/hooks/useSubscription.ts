@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { isEmbedMode, embedKey } from '@/lib/embed';
 
 const API_BASE = typeof window !== 'undefined'
   ? `${window.location.origin}/api/stripe`
@@ -34,9 +35,12 @@ async function postHeaders(extra?: Record<string, string>): Promise<Record<strin
   };
 }
 
-const TOKEN_KEY = 'billify_sub_token';
-const PLAN_KEY = 'billify_plan';
-const LIMITS_KEY = 'billify_limits';
+// Namespaced per session: host uses billify_*, the embed iframe uses
+// billify_embed_* so the two never read or write each other's subscription
+// state. Evaluated at module load — a given page is either embed or not.
+const TOKEN_KEY = embedKey('sub_token');
+const PLAN_KEY = embedKey('plan');
+const LIMITS_KEY = embedKey('limits');
 
 export type Plan = 'free' | 'pro';
 
@@ -99,6 +103,15 @@ export function useSubscription() {
 
   // Validate token on mount
   useEffect(() => {
+    // Embed mode: the SEO page editor is genuinely unlimited with no signup.
+    // Short-circuit the whole subscription flow — treat as pro, write nothing,
+    // and never fire verifySession from the iframe's ?checkout=success quirk.
+    if (isEmbedMode()) {
+      setPlanState('pro');
+      setLimitsState(PLAN_LIMITS.pro);
+      return;
+    }
+
     const token = getToken();
     if (!token) {
       // Check for checkout success redirect
