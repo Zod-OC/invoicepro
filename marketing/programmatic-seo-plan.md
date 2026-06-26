@@ -36,8 +36,9 @@ From the GTM research (see commit history):
 3. **Privacy claim must be verifiable** — embedded editor uses localStorage, not our servers
 4. **Mobile-first** — most freelancer traffic is mobile
 5. **No regressions** — all 54 existing Playwright tests must still pass
-6. **Coolify deployment is automatic** — push to main → webhook → redeploy
+6. **Coolify deployment is automatic** — push to `master` (the repo's default branch) → webhook → redeploy
 7. **No backend changes** — pages are pure static export
+8. **Embed isolation is engineered, not free** — same-origin iframes share `localStorage`/cookies with `/app`; embed mode must namespace all storage keys (`billify_embed_*`), disable both paywall gates, and skip auto-save (see Task 4)
 
 ---
 
@@ -49,8 +50,7 @@ src/
 │   ├── invoice-template-for/
 │   │   └── [profession]/
 │   │       └── page.tsx                          # Dynamic route, 30 pages
-│   ├── (root)/
-│   │   └── sitemap.ts                            # Auto-generates sitemap from data file
+│   ├── sitemap.ts                                # Auto-generates sitemap from data file
 ├── data/
 │   └── professions.ts                            # 30 profession entries: slug, name, h1, copy sections, related slugs
 ├── components/
@@ -287,63 +287,114 @@ git commit -m "feat(seo): add reusable ProfessionPage component"
 
 ---
 
-## Task 4: Build `EmbeddedEditor` Component
+## Task 4: Build `EmbeddedEditor` Component (Real Embed Mode)
 
-**Objective:** Embed the existing Billify editor (`/app`) on the SEO page as an iframe, with pre-filled line items and currency from the profession data.
+**Objective:** Embed the existing Billify editor (`/app`) on the SEO page as an iframe, prefilled from the profession data, and make `/app` fully embed-aware so the iframe is a genuinely unlimited, no-signup, no-persistence scratch pad that **never touches the user's real `/app` data**.
 
 **Files:**
 - Create: `src/components/EmbeddedEditor.tsx`
+- Modify: `src/app/app/page.tsx` (embed-mode gating)
+- Modify: `src/app/app/error.tsx` (namespaced clear-and-reload)
+- Modify: `src/hooks/useSubscription.ts` (short-circuit in embed mode)
+
+**Critical premise — the iframe is NOT an isolation boundary.** The iframe is same-origin (`billify.me/app` inside `billify.me/invoice-template-for/...`), so it **shares `localStorage` and cookies with the top-level `/app` session**. Without explicit embed-mode handling, the iframe will: (a) read and overwrite the user's saved `billify_current` invoice (data loss for returning users), (b) read the shared `billify_count_YYYY-MM` and surface the free-tier paywall — a signup prompt, violating Constraint #1, and (c) write subscription state from the iframe URL. Embed mode must be a real, gated mode in `/app`, not a passive URL param the editor ignores.
+
+**URL param contract** (base64-JSON values):
+```
+/app?embed=true&profession=electrician&invoice=[base64 json of full Invoice]
+```
+The `invoice` param carries the **full** `Invoice` object (not just line items), so the profession prefill and — later — the user's scratch edits can round-trip through the URL. On mount, `/app` decodes, validates (reuse `validateInvoice`), and **merges** it into state rather than wholesale-replacing, so no field is lost.
 
 **Implementation strategy:**
 
-**Option A (chosen):** Use an iframe pointing to `/app` with URL query params. The existing `/app` page reads localStorage on load — we can use `window.postMessage` to prefill, OR use a server-side injected initial state via URL params (no signup needed).
+**Option A (chosen):** iframe pointing to `/app?embed=true&...`, with `/app` made embed-aware via a single `isEmbed` flag read from `URLSearchParams` inside a post-hydration `useEffect`.
 
-**Option B (rejected):** Reuse the form components directly inline. Higher complexity, risk of breaking editor bugs.
+**Option B (rejected):** Reuse the form components inline. Higher coupling; risks breaking the 54 existing tests.
 
-**Why A:** Zero coupling. Editor stays exactly as-is. No risk of breaking 54 tests. The iframe is a clean isolation boundary.
+**Why A:** Minimal coupling — the editor UI stays as-is — but we add explicit embed-mode gates at every storage/paywall touch point. The iframe is *not* a free isolation boundary; we engineer the isolation.
 
-**URL param contract:**
-```
-/app?embed=true&profession=electrician&lineItems=[base64 json]&taxRate=0&currency=USD
-```
+### Storage namespacing (all 5 key patterns)
 
-**Editor's existing `loadInvoice()` must be updated** to read URL params on mount (if `embed=true`):
-- Set initial line items from `lineItems` param
-- Set currency from `currency` param
-- Set tax rate from `taxRate` param
+When `embed=true`, every `localStorage` access uses a `billify_embed_*` prefix and never reads or writes the host keys:
+
+| Host key | Embed key | Touch points |
+|---|---|---|
+| `billify_current` (`STORAGE_KEY`) | `billify_embed_current` | `page.tsx:17,22,34` |
+| `billify_count_YYYY-MM` (built inline) | `billify_embed_count_YYYY-MM` | `page.tsx:58,66` |
+| `billify_plan` (`PLAN_KEY`) | `billify_embed_plan` | `useSubscription.ts:38,60,80,89` |
+| `billify_limits` (`LIMITS_KEY`) | `billify_embed_limits` | `useSubscription.ts:39,66,81,90` |
+| `billify_sub_token` (`TOKEN_KEY`) | `billify_embed_sub_token` | `useSubscription.ts:37,75,82,88` |
+
+Two traps to handle explicitly:
+- **`src/app/app/error.tsx:35` hardcodes the literal `'billify_current'`** (not via the `STORAGE_KEY` constant). The "Clear & Reload" button runs inside the embed on a render error and would wipe the host's real invoice. Rewrite it to respect the embed namespace (read the active key from a shared helper, not the bare string).
+- **`useSubscription`'s mount effect reads `window.location.search` for `checkout=success/session_id`** and would fire `verifySession` inside the embed iframe, writing `billify_embed_plan/limits/sub_token`. **Short-circuit the entire subscription flow in embed mode** (skip `verifySession`/`getToken`/`setSubscription`/`clearSubscription`; treat the embed as unlimited — no plan read or write). The `billify_csrf` cookie is origin-scoped and cannot be namespaced per-embed — don't rely on cookie isolation; it's unneeded because the embed never authenticates.
+
+### Disable the paywall (two gates, not one)
+
+`PaywallModal` is rendered unconditionally (`page.tsx:606-610`), so *any* `setShowPaywall(true)` surfaces an upgrade prompt in the iframe. There are **two** `setShowPaywall` call sites that leak in embed mode — both must be bypassed:
+
+1. **`page.tsx:150-151`** — free-tier download limit (`plan === 'free' && monthlyCount >= 3`). In embed mode, allow download unconditionally; do not raise the modal.
+2. **`page.tsx:574-575`** — Pro-template gate (`t.tier !== 'free' && plan === 'free'`). In embed mode, allow all templates (the embed demos the full product); do not raise the modal.
+
+Additionally: **never render `PaywallModal` when `embed=true`** (force `open=false`), and **hide the nav "Free/Pro" badge and its `/pricing` link** (`page.tsx:410-415`) — in an iframe that link navigates the *iframe* to `/pricing`, not the top-level page. This makes the embed genuinely unlimited, no signup, no watermark — a stronger demo than `/app` itself, which is the marketing point.
+
+(`canCreateInvoice`/`hasTemplateAccess` from `useSubscription` are destructured at `page.tsx:48` but never called — the file re-implements these checks inline. Gate the inline checks at lines 150 and 574; don't swap them for the hook helpers in this pass, or the leak moves to a different path.)
+
+### No auto-save; "Edit in full-screen" preserves the user's work
+
+When `embed=true`:
+- **Skip the debounced auto-save effect** (`page.tsx:74-79`) entirely — the embed is a throwaway scratch pad. Every visit restores the clean profession prefill from the URL. Never write `billify_embed_current` from the auto-save.
+- **The "Edit in full-screen" link must re-encode the full current invoice into the `/app` URL** before opening the tab: `window.open('/app?invoice=' + base64(JSON.stringify(currentInvoice)))`. Without this, the user's in-iframe edits (from/to, uploaded logo, notes, terms, dates, template) are lost the moment they click through to the persistent `/app` — severing the conversion path. The full-invoice contract above is what makes the handoff lossless. `/app` (non-embed) then hydrates from that URL on first mount and persists normally via `billify_current`.
+
+### Hydration safety (static export)
+
+`/app` is prerendered once to static HTML under `output:'export'`; `loadInvoice()` returns the empty invoice during prerender (`typeof window === 'undefined'`). Rules:
+- **Keep all URL-param reading in a post-hydration `useEffect` — never in the `useState` initializer (`loadInvoice`) or render body.** Reading `window.location.search` in the initializer would make the first client render diverge from the static HTML → hydration mismatch + flash.
+- Use `window.location.search` directly (not Next's `useSearchParams()`, which has `output:'export'` caveats).
+- Merge the decoded invoice into `prev` (`setInvoice(prev => validateInvoice({ ...prev, ...embedOverrides }) ?? prev)`), not a wholesale replace.
+- **Fix the pre-existing hydration mismatch in the same pass:** `loadInvoice` already reads `localStorage` in the lazy initializer, so returning users get a first render that differs from the prerendered empty HTML. Move `localStorage` restoration into a `useEffect` too, so the first client render always matches the prerender. Embed mode makes this mismatch more visible, so fix it now.
+- **Validate/sanitize every embed-provided field** before `setInvoice`: numeric `quantity`/`rate`, length caps on `description`/`notes`/`terms`, `currency` allowlist (`USD|EUR|GBP`), `template` tier. These flow into the live preview and the `jspdf` PDF path.
 
 **Acceptance criteria:**
-- `/app?embed=true&profession=electrician&lineItems=...` prefills the editor
-- Editor works fully inside the iframe (PDF download, template switching)
-- "Edit in full-screen" link opens `/app` in a new tab
-- No `setItem` writes to localStorage for monthly count when `embed=true` (avoid double-counting in analytics)
-
-**Files to modify:**
-- `src/components/EmbeddedEditor.tsx` (new)
-- `src/app/app/page.tsx` (read URL params on mount, gated by `embed=true`)
+- `/app?embed=true&invoice=...` prefills the editor with the full profession invoice (line items, tax rate, currency)
+- Editor works fully inside the iframe: PDF download and template switching both succeed with **no paywall ever shown**
+- `PaywallModal` is never rendered and the nav plan badge/pricing link is hidden when `embed=true`
+- No reads of or writes to the host keys (`billify_current`, `billify_count_*`, `billify_plan`, `billify_limits`, `billify_sub_token`) occur inside the iframe (verify with a `localStorage` snapshot test)
+- `error.tsx`'s "Clear & Reload" only clears the embed namespace, never the host's `billify_current`
+- The embed never auto-saves; refreshing the SEO page restores the profession prefill, not prior edits
+- "Edit in full-screen" opens `/app?invoice=<full current invoice>` in a new tab; the user's in-iframe edits (from/to, logo, notes, terms, dates, template) are present and persist via `billify_current`
+- No hydration-mismatch warnings in the console for either embed or non-embed `/app`
 
 **Step 1: Create `EmbeddedEditor.tsx`**
-- Renders `<iframe src="/app?embed=true&..." />`
-- Lazy-loaded via `loading="lazy"`
+- Renders `<iframe src="/app?embed=true&invoice=..." loading="lazy" />`
 - Responsive: `w-full h-[800px] md:h-[1000px]`
+- The "Edit in full-screen" handler obtains the iframe's current invoice (via a `postMessage` request to `/app`, or by having `/app` post its state up on change) and `window.open`s `/app?invoice=<base64 full invoice>`
 
-**Step 2: Update `src/app/app/page.tsx` to read URL params**
-- Add a `useEffect` that, on mount, checks `?embed=true`
-- If present, parse `lineItems`, `taxRate`, `currency` from query string
-- Call `setInvoice(...)` with the prefilled values
-- Skip monthly count increment when in embed mode
+**Step 2: Add embed-mode gating to `src/app/app/page.tsx`**
+- Read `isEmbed = new URLSearchParams(window.location.search).get('embed') === 'true'` in a mount `useEffect` (store in state, default `false` on first render for hydration safety)
+- Namespace all `localStorage` keys by `isEmbed` (table above)
+- Skip the debounced auto-save effect when `isEmbed`
+- Bypass both paywall gates (lines 150, 574) and suppress `PaywallModal` + nav badge when `isEmbed`
+- Move `localStorage` restoration out of the `loadInvoice` initializer into a `useEffect` (fixes the pre-existing hydration mismatch)
+- Parse + validate + merge the `invoice` URL param into state in the same mount `useEffect`
 
-**Step 3: Verify editor works in iframe**
-- Build and serve locally
-- Open `/invoice-template-for/electrician/`
-- Confirm editor appears, is prefilled with "Labor hours" line item
-- Click "Download PDF" — PDF should generate, no console errors
+**Step 3: Short-circuit `useSubscription` and fix `error.tsx` in embed mode**
+- `useSubscription`: when `isEmbed`, skip `verifySession`/`getToken`/`setSubscription`/`clearSubscription`; treat as unlimited (no plan read/write)
+- `error.tsx`: clear only the active (embed or host) `billify[_embed]_current` key via a shared helper, not the hardcoded `'billify_current'` literal
 
-**Step 4: Commit**
+**Step 4: Verify editor works in iframe**
+- Build and serve locally; open `/invoice-template-for/electrician/`
+- Confirm editor prefills with the electrician line items, no hydration warnings
+- Click "Download PDF" — generates with no paywall, no console errors
+- DevTools → Application → localStorage: confirm **no host keys** (`billify_current`, `billify_count_*`, `billify_plan`, …) appear; only `billify_embed_*`
+- Reload the SEO page — profession prefill is restored, scratch edits are not persisted
+- Click "Edit in full-screen" — `/app` opens with the full edited invoice present and persisted to `billify_current`
+
+**Step 5: Commit**
 
 ```bash
-git add src/components/EmbeddedEditor.tsx src/app/app/page.tsx
-git commit -m "feat(seo): add EmbeddedEditor component with URL-param prefill"
+git add src/components/EmbeddedEditor.tsx src/app/app/page.tsx src/app/app/error.tsx src/hooks/useSubscription.ts
+git commit -m "feat(seo): embed-aware editor — namespaced storage, no paywall, lossless full-screen handoff"
 ```
 
 ---
@@ -367,10 +418,12 @@ export function generateStaticParams() {
   return professions.map(p => ({ profession: p.slug }));
 }
 
+// Next.js 14.2.15 passes `params` as a synchronous object.
+// (The `params: Promise<...>` + `await params` form is Next 15 — do not use it here.)
 export async function generateMetadata(
-  { params }: { params: Promise<{ profession: string }> }
+  { params }: { params: { profession: string } }
 ): Promise<Metadata> {
-  const { profession: slug } = await params;
+  const { profession: slug } = params;
   const p = professions.find(x => x.slug === slug);
   if (!p) return {};
   return {
@@ -382,14 +435,22 @@ export async function generateMetadata(
       description: p.metaDescription,
       url: `https://billify.me/invoice-template-for/${p.slug}`,
       type: 'article',
+      images: [
+        {
+          url: `https://billify.me/og-images/invoice-template-${p.slug}.png`,
+          width: 1200,
+          height: 630,
+          alt: p.h1,
+        },
+      ],
     },
   };
 }
 
-export default async function Page(
-  { params }: { params: Promise<{ profession: string }> }
+export default function Page(
+  { params }: { params: { profession: string } }
 ) {
-  const { profession: slug } = await params;
+  const { profession: slug } = params;
   const p = professions.find(x => x.slug === slug);
   if (!p) notFound();
   return <ProfessionPage profession={p} />;
@@ -606,7 +667,7 @@ cd /root/projects/invoicepro && npx tsx scripts/generate-og-images.ts
 ```
 Expected: `✓ Generated 30 OG images in public/og-images/`
 
-**Step 4: Update ProfessionPage to reference `/og-images/invoice-template-[slug].png`**
+**Step 4: Verify OG images are referenced in `generateMetadata`** — `openGraph.images` in `src/app/invoice-template-for/[profession]/page.tsx` already points to `/og-images/invoice-template-[slug].png` (added in Task 5). After generation, confirm each `public/og-images/invoice-template-[slug].png` exists so social shares render a preview.
 
 **Commit:**
 ```bash
@@ -652,7 +713,7 @@ git commit -m "test(seo): add regression tests for 30 profession pages"
 
 ## Task 12: Deploy + Verify Live
 
-**Objective:** Push to main, wait for Coolify auto-deploy, verify all 30 pages are live and indexed.
+**Objective:** Push to `master`, wait for Coolify auto-deploy, verify all 30 pages are live and indexed.
 
 **Files:** (none)
 
@@ -662,9 +723,9 @@ cd /root/projects/invoicepro && git status
 # Should be clean
 ```
 
-**Step 2: Push to main**
+**Step 2: Push to master** (the repo's default branch is `master`, not `main`)
 ```bash
-git push origin main
+git push origin master
 ```
 
 **Step 3: Wait for Coolify deploy**
@@ -769,7 +830,7 @@ git commit -m "feat(seo): submit 30 URLs to Google Search Console"
 | **Duplicate content across 30 pages** | Each page has unique copy, unique H1, unique FAQ. Schema.org differentiates them. |
 | **Google ignores thin programmatic content** | 600–1,200 words per page, industry-specific, not boilerplate. Manual review for uniqueness. |
 | **Embedded iframe hurts SEO** | Iframe is for the *editor*; the page's main content is text. Google indexes the HTML content. |
-| **localStorage data not shared between iframe and /app** | That's the *point* — iframe is isolated. User can "Edit in full-screen" link to /app. |
+| **Iframe shares `localStorage`/cookies with `/app` (same origin)** | Embed mode (`embed=true`) namespaces all keys to `billify_embed_*`, short-circuits the subscription flow, skips auto-save, and bypasses both paywall gates — so the iframe never reads or writes the host's `billify_current` / `billify_count_*` / `billify_plan` / `billify_limits` / `billify_sub_token`. See Task 4. |
 | **Build size grows with 30 pages** | Estimated: +5 MB raw / +500 KB gzipped. Within Cloudflare's free tier. |
 | **OG image generation is slow** | Script runs once at build time, not per-request. ~30 sec total for 30 images. |
 | **Patch tool fails on large multi-line blocks** | Use `write_file` for new files; use `patch` only on small targeted edits. Verify every patch with `git diff`. |
@@ -783,7 +844,7 @@ git commit -m "feat(seo): submit 30 URLs to Google Search Console"
 | 1. Data file (5 samples) | 30 min | Low |
 | 2. Write 30 profession entries | **4–6 hours** | High (content quality) |
 | 3. ProfessionPage component | 1 hour | Low |
-| 4. EmbeddedEditor + URL params | 1.5 hours | Medium (iframe quirks) |
+| 4. EmbeddedEditor + embed-aware `/app` | 4–6 hours | High (storage namespace, paywall bypass, hydration, handoff) |
 | 5. Dynamic route | 30 min | Low |
 | 6. JSON-LD helpers | 1 hour | Low |
 | 7. Sitemap generator | 15 min | Low |
@@ -794,7 +855,7 @@ git commit -m "feat(seo): submit 30 URLs to Google Search Console"
 | 12. Deploy + verify | 30 min | Medium (wait for build) |
 | 13. Submit to GSC (optional) | 30 min | Low |
 | 14. Monitor | ongoing | n/a |
-| **Total** | **~14–18 hours** | |
+| **Total** | **~18–24 hours** | |
 
 ---
 
