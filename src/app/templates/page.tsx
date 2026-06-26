@@ -263,7 +263,7 @@ export default function TemplatesPage() {
                   <div className="flex justify-between text-[9px] text-slate-600"><span>Service A</span><span>€450.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Executive<Badge className="text-[10px]">Team</Badge></CardTitle><p className="text-sm text-muted-foreground">Formal, refined layout</p></CardHeader>
+              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Executive<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Formal, refined layout</p></CardHeader>
               <CardContent><Button asChild className="w-full"><Link href={`/app?template=executive`}>Use Template</Link></Button></CardContent>
             </Card>
 
@@ -285,7 +285,7 @@ export default function TemplatesPage() {
                   <div className="flex justify-between text-[9px] text-slate-600"><span>Service A</span><span>€450.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Agency<Badge className="text-[10px]">Team</Badge></CardTitle><p className="text-sm text-muted-foreground">Dark header, full-width design</p></CardHeader>
+              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Agency<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Dark header, full-width design</p></CardHeader>
               <CardContent><Button asChild className="w-full"><Link href={`/app?template=agency`}>Use Template</Link></Button></CardContent>
             </Card>
 
@@ -303,7 +303,7 @@ export default function TemplatesPage() {
                   <div className="flex justify-between text-slate-700"><span>Service B</span><span>€300.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Consulting<Badge className="text-[10px]">Team</Badge></CardTitle><p className="text-sm text-muted-foreground">Minimalist formal, mono accents</p></CardHeader>
+              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Consulting<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Minimalist formal, mono accents</p></CardHeader>
               <CardContent><Button asChild className="w-full"><Link href={`/app?template=consulting`}>Use Template</Link></Button></CardContent>
             </Card>
 
@@ -322,7 +322,7 @@ export default function TemplatesPage() {
                   <div>Due: 2024-02-15</div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Creative<Badge className="text-[10px]">Team</Badge></CardTitle><p className="text-sm text-muted-foreground">Bright accent stripe, big number</p></CardHeader>
+              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Creative<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Bright accent stripe, big number</p></CardHeader>
               <CardContent><Button asChild className="w-full"><Link href={`/app?template=creative`}>Use Template</Link></Button></CardContent>
             </Card>
           </div>

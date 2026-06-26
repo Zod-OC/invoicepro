@@ -44,18 +44,17 @@ export const templates = [
   // Free tier
   { id: 'modern' as TemplateType, name: 'Modern', description: 'Gradient header, bold typography', tier: 'free' as const },
   { id: 'classic' as TemplateType, name: 'Classic', description: 'Professional, timeless design', tier: 'free' as const },
-  // Pro tier
+  // Paid tier (Pro + Team — all 10 unlocked with any paid plan)
   { id: 'minimal' as TemplateType, name: 'Minimal', description: 'Clean and simple', tier: 'pro' as const },
   { id: 'clean' as TemplateType, name: 'Clean', description: 'White space, subtle borders', tier: 'pro' as const },
   { id: 'bold' as TemplateType, name: 'Bold', description: 'High contrast, large type', tier: 'pro' as const },
   { id: 'corporate' as TemplateType, name: 'Corporate', description: 'Two-column header, business-formal', tier: 'pro' as const },
   { id: 'startup' as TemplateType, name: 'Startup', description: 'Energetic, brand-color sidebar', tier: 'pro' as const },
   { id: 'freelancer' as TemplateType, name: 'Freelancer', description: 'Single column, generous whitespace', tier: 'pro' as const },
-  // Team tier
-  { id: 'executive' as TemplateType, name: 'Executive', description: 'Formal, refined layout', tier: 'team' as const },
-  { id: 'agency' as TemplateType, name: 'Agency', description: 'Dark header, full-width design', tier: 'team' as const },
-  { id: 'consulting' as TemplateType, name: 'Consulting', description: 'Minimalist formal, mono accents', tier: 'team' as const },
-  { id: 'creative' as TemplateType, name: 'Creative', description: 'Bright accent stripe, big number', tier: 'team' as const },
+  { id: 'executive' as TemplateType, name: 'Executive', description: 'Formal, refined layout', tier: 'pro' as const },
+  { id: 'agency' as TemplateType, name: 'Agency', description: 'Dark header, full-width design', tier: 'pro' as const },
+  { id: 'consulting' as TemplateType, name: 'Consulting', description: 'Minimalist formal, mono accents', tier: 'pro' as const },
+  { id: 'creative' as TemplateType, name: 'Creative', description: 'Bright accent stripe, big number', tier: 'pro' as const },
 ];
 
 export function formatCurrency(amount: number, currency: string): string {

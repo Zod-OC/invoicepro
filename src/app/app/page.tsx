@@ -571,12 +571,8 @@ export default function AppPage() {
                       const selected = e.target.value as TemplateType;
                       const t = templates.find(t => t.id === selected);
                       const required = t?.tier ?? 'free';
-                      if (required === 'pro' && plan === 'free') {
+                      if (required !== 'free' && plan === 'free') {
                         setShowPaywall({ open: true, feature: t?.name ?? 'Pro Template', plan: 'pro' });
-                        return;
-                      }
-                      if (required === 'team' && plan !== 'team') {
-                        setShowPaywall({ open: true, feature: t?.name ?? 'Team Template', plan: 'team' });
                         return;
                       }
                       update({ template: selected });
@@ -586,8 +582,7 @@ export default function AppPage() {
                     {templates.map(t => (
                       <option key={t.id} value={t.id}>
                         {t.name}
-                        {t.tier === 'pro' && plan === 'free' ? ' 🔒 Pro' : ''}
-                        {t.tier === 'team' && plan !== 'team' ? ' 🔒 Team' : ''}
+                        {t.tier !== 'free' && plan === 'free' ? ' 🔒 Pro' : ''}
                       </option>
                     ))}
                   </select>
