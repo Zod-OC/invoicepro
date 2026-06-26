@@ -36,17 +36,19 @@ test.describe('Visual Regression — all pages', () => {
     });
   }
 
-  test('template gallery shows three distinct cards', async ({ page }) => {
+  test('template gallery shows all 12 templates with distinct names', async ({ page }) => {
     await page.goto('/templates');
     await page.waitForLoadState('networkidle');
+    // The grid contains all 12 template cards
     const cards = await page.locator('div.grid > div').count();
-    expect(cards).toBe(3);
+    expect(cards).toBeGreaterThanOrEqual(12);
 
     // Verify distinct template names exist
     const names = await page.locator('h3').allTextContents();
-    expect(names).toContain('Modern');
-    expect(names).toContain('Classic');
-    expect(names).toContain('Minimal');
+    const expected = ['Modern', 'Classic', 'Minimal', 'Clean', 'Bold', 'Corporate', 'Startup', 'Freelancer', 'Executive', 'Agency', 'Consulting', 'Creative'];
+    for (const name of expected) {
+      expect(names.some(n => n.includes(name)), `Template ${name} should be in gallery`).toBe(true);
+    }
   });
 
   test('landing page has brand "Billify" everywhere', async ({ page }) => {
