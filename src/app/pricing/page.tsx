@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Shield, Lock, RefreshCcw, CreditCard } from 'lucide-react';
 import { PricingCards } from '@/components/PricingCards';
+import { BrowseProfessions } from '@/components/BrowseProfessions';
 
 export const metadata: Metadata = {
   title: 'Pricing',
@@ -84,6 +85,8 @@ export default function PricingPage() {
           </div>
         </div>
       </div>
+
+      <BrowseProfessions limit={8} />
     </div>
   );
 }

@@ -119,7 +119,7 @@ test.describe('CSS pipeline — production must have compiled Tailwind', () => {
 
     expect(
       cspHeader,
-      'CSP delivered via HTTP header should include frame-ancestors (meta-tag CSP ignores it).',
-    ).toMatch(/frame-ancestors\s+['"]?none['"]?/);
+      'CSP delivered via HTTP header should include frame-ancestors \'self\' so same-origin iframe embeds work (meta-tag CSP ignores this directive).',
+    ).toMatch(/frame-ancestors\s+['"]?self['"]?/);
   });
 });
