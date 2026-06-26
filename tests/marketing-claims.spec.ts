@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
  * directly from the templates array (preferred).
  */
 
-const EXPECTED_TEMPLATE_NAMES = ['Modern', 'Classic', 'Minimal', 'Clean', 'Bold', 'Executive'];
+const EXPECTED_TEMPLATE_NAMES = ['Modern', 'Classic', 'Minimal', 'Clean', 'Bold', 'Corporate', 'Startup', 'Freelancer', 'Executive', 'Agency', 'Consulting', 'Creative'];
 const EXPECTED_TEMPLATE_COUNT = EXPECTED_TEMPLATE_NAMES.length;
 
 test.describe('Marketing claims — no lying', () => {

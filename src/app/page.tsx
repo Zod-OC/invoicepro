@@ -60,7 +60,7 @@ export default function LandingPage() {
           <h2 className="text-2xl font-bold text-center mb-10">Everything you need</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { icon: FileText, title: `${templates.length} Stunning Templates`, desc: 'Modern, Classic, Minimal, Clean, Bold, and Executive designs for every brand.' },
+              { icon: FileText, title: `${templates.length} Stunning Templates`, desc: 'Modern, Classic, Minimal, Clean, Bold, Corporate, Startup, Freelancer, Executive, Agency, Consulting, and Creative designs.' },
               { icon: Download, title: 'PDF Export', desc: 'Generate professional PDFs instantly. No server needed.' },
               { icon: Shield, title: 'Privacy First', desc: 'Your data lives in your browser. We cannot see it.' },
               { icon: Zap, title: 'Lightning Fast', desc: 'Create, preview, and download in under 30 seconds.' },

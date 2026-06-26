@@ -236,6 +236,72 @@ export default function AppPage() {
           <div className="h-px bg-amber-700 mt-4"></div>
         </div>
       )}
+      {invoice.template === 'corporate' && (
+        <div className="mb-6">
+          <div className="h-1 bg-blue-800 mb-4 -mx-8 -mt-8 w-[calc(100%+4rem)]"></div>
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold">INVOICE</h2>
+              <p className="text-sm text-slate-500 mt-1">No: {invoice.number} • {invoice.date} • Due {invoice.dueDate}</p>
+            </div>
+            <div className="text-right text-sm text-blue-800 font-semibold">
+              {invoice.from.name || 'Your Company'}
+            </div>
+          </div>
+          <div className="h-px bg-blue-800 mt-4"></div>
+        </div>
+      )}
+      {invoice.template === 'startup' && (
+        <div className="mb-6 flex gap-0 -mx-8 -mt-8">
+          <div className="w-32 bg-purple-600 text-white p-6 flex flex-col items-center justify-center min-h-[140px]">
+            <p className="text-xs font-semibold mb-2">{invoice.from.name || 'Your Brand'}</p>
+            <p className="text-2xl font-bold">INVOICE</p>
+            <p className="text-xs">#{invoice.number}</p>
+          </div>
+          <div className="flex-1 p-6">
+            <h2 className="text-2xl font-bold">Invoice</h2>
+            <p className="text-sm text-slate-500">Date: {invoice.date} • Due: {invoice.dueDate}</p>
+          </div>
+        </div>
+      )}
+      {invoice.template === 'freelancer' && (
+        <div className="mb-6 border-l-4 border-pink-500 pl-4">
+          <h2 className="text-3xl font-light">Invoice</h2>
+          <p className="text-sm text-slate-500 mt-1">#{invoice.number} • {invoice.date} • Due {invoice.dueDate}</p>
+        </div>
+      )}
+      {invoice.template === 'agency' && (
+        <div className="mb-6 -mx-8 -mt-8 bg-slate-900 text-white p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="font-bold text-lg">{invoice.from.name || 'Your Agency'}</p>
+              <p className="text-xs text-slate-400 mt-1">{invoice.from.email}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold">INVOICE</p>
+              <p className="text-xs text-slate-400">#{invoice.number}</p>
+            </div>
+          </div>
+          <div className="h-1 bg-yellow-400 mt-4 -mx-6"></div>
+        </div>
+      )}
+      {invoice.template === 'consulting' && (
+        <div className="mb-6 font-mono">
+          <h2 className="text-base font-bold tracking-wider">INVOICE</h2>
+          <p className="text-xs text-slate-600 mt-1">No: {invoice.number} • Date: {invoice.date} • Due: {invoice.dueDate}</p>
+          <div className="h-0.5 bg-slate-900 mt-3"></div>
+        </div>
+      )}
+      {invoice.template === 'creative' && (
+        <div className="mb-6 flex items-start gap-6">
+          <div className="text-6xl font-bold text-amber-500 leading-none">#{invoice.number}</div>
+          <div className="text-right text-xs text-slate-600 flex-1">
+            <p className="text-sm font-bold text-slate-900">INVOICE</p>
+            <p>{invoice.date}</p>
+            <p>Due: {invoice.dueDate}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-8 mb-6">
         <div>
@@ -264,11 +330,17 @@ export default function AppPage() {
       <table className="w-full mb-6">
         <thead>
           <tr className={`text-left text-xs uppercase ${
-            invoice.template === 'modern' ? 'bg-blue-500 text-white' : 
-            invoice.template === 'classic' ? 'bg-gray-100' : 
+            invoice.template === 'modern' ? 'bg-blue-500 text-white' :
+            invoice.template === 'classic' ? 'bg-gray-100' :
             invoice.template === 'clean' ? 'border-b-2 border-slate-300 text-slate-600' :
             invoice.template === 'bold' ? 'bg-slate-900 text-white' :
             invoice.template === 'executive' ? 'bg-slate-700 text-white' :
+            invoice.template === 'corporate' ? 'bg-blue-800 text-white' :
+            invoice.template === 'startup' ? 'bg-purple-600 text-white' :
+            invoice.template === 'freelancer' ? 'text-pink-500 border-b border-pink-500' :
+            invoice.template === 'agency' ? 'bg-slate-900 text-white' :
+            invoice.template === 'consulting' ? 'bg-slate-900 text-white font-mono' :
+            invoice.template === 'creative' ? 'border-b-2 border-amber-500 text-amber-500' :
             'border-b-2 border-black'
           }`}>
             <th className="p-2">Description</th>

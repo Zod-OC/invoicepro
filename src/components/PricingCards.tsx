@@ -52,7 +52,7 @@ const PLANS: Plan[] = [
     yearlyPrice: '€20.75',
     period: '/mo',
     note: 'Up to 5 team members included.',
-    features: ['Everything in Pro', 'Up to 5 team members', 'Shared templates', 'Admin dashboard', 'API access (soon)', 'Priority support'],
+    features: ['Everything in Pro', '12 premium templates', 'Up to 5 team members', 'Shared templates', 'Admin dashboard', 'API access (soon)', 'Priority support'],
     planKey: 'team',
     cta: 'Subscribe to Team',
     ctaVariant: 'outline',
