@@ -9,7 +9,7 @@ import { templates } from '@/types';
 
 export const metadata: Metadata = {
   title: 'Templates',
-  description: 'Browse 10+ professional invoice templates on Billify. Modern, Classic, and Minimal designs. All free.',
+  description: 'Browse professional invoice templates on Billify. Modern, Classic, Minimal, Clean, Bold, and Executive designs for every brand.',
   alternates: { canonical: '/templates' },
   openGraph: {
     title: 'Billify Templates — Professional Invoice Designs',
