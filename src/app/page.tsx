@@ -58,7 +58,7 @@ export default function LandingPage() {
       <section className="w-full bg-muted/50 py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl font-bold text-center mb-10">Everything you need</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:auto-rows-fr">
             {[
               { icon: FileText, title: `${templates.length} Stunning Templates`, desc: 'Modern, Classic, Minimal, Clean, Bold, Corporate, Startup, Freelancer, Executive, Agency, Consulting, and Creative designs.' },
               { icon: Download, title: 'PDF Export', desc: 'Generate professional PDFs instantly. No server needed.' },
