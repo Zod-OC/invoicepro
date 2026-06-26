@@ -39,7 +39,6 @@ const PLANS: Plan[] = [
     monthlyPrice: '€9',
     yearlyPrice: '€6.58',
     period: '/mo',
-    note: 'Flat rate. One user.',
     features: ['Unlimited invoices', '10 premium templates', 'Logo upload', 'No signup, no account', 'Data stays in your browser', 'Cancel anytime'],
     planKey: 'pro',
     cta: 'Subscribe to Pro',
