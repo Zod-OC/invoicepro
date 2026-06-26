@@ -107,21 +107,11 @@ export default function LandingPage() {
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
                 <div>✓ Unlimited invoices</div>
-                <div>✓ All templates</div>
+                <div>✓ 10 premium templates</div>
                 <div>✓ Custom branding</div>
                 <div>✓ Invoice history</div>
+                <div>✓ CSV/Excel export</div>
                 <div>✓ No watermark</div>
-              </CardContent>
-            </Card>
-            <Card className="border-2 border-transparent">
-              <CardHeader>
-                <CardTitle className="text-lg">Team</CardTitle>
-                <div className="text-3xl font-bold">$29<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
-                <div>✓ Everything in Pro</div>
-                <div>✓ Multiple users</div>
-                <div>✓ Shared templates</div>
                 <div>✓ Priority support</div>
               </CardContent>
             </Card>

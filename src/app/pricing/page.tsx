@@ -6,11 +6,11 @@ import { PricingCards } from '@/components/PricingCards';
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'Simple, transparent pricing for Billify. Start free with 3 invoices per month. Upgrade to Pro for €9/mo or Team for €29/mo.',
+  description: 'Simple, transparent pricing for Billify. Start free with 3 invoices per month. Upgrade to Pro for €9/mo.',
   alternates: { canonical: '/pricing' },
   openGraph: {
     title: 'Billify Pricing — Simple & Transparent',
-    description: 'Start free. Upgrade when you need more power. Pro €9/mo, Team €29/mo.',
+    description: 'Start free. Upgrade when you need more power. Pro €9/mo.',
     url: 'https://billify.me/pricing',
   },
 };
@@ -78,7 +78,7 @@ export default function PricingPage() {
               </div>
               <div>
                 <p className="font-medium text-foreground">Is this a subscription or one-time?</p>
-                <p>Pro and Team are billed monthly or annually. Cancel anytime — no lock-in, no hidden fees.</p>
+                <p>Pro is billed monthly or annually. Cancel anytime — no lock-in, no hidden fees.</p>
               </div>
             </div>
           </div>

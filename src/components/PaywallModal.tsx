@@ -16,10 +16,9 @@ interface PaywallModalProps {
   open: boolean;
   onClose: () => void;
   feature: string;
-  plan: 'pro' | 'team';
 }
 
-export function PaywallModal({ open, onClose, feature, plan }: PaywallModalProps) {
+export function PaywallModal({ open, onClose, feature }: PaywallModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -29,7 +28,7 @@ export function PaywallModal({ open, onClose, feature, plan }: PaywallModalProps
             {feature}
           </DialogTitle>
           <DialogDescription>
-            This feature is available on the <strong>{plan === 'team' ? 'Team' : 'Pro'}</strong> plan.
+            This feature is available on the <strong>Pro</strong> plan.
             Upgrade to unlock it and more powerful features.
           </DialogDescription>
         </DialogHeader>
@@ -41,18 +40,20 @@ export function PaywallModal({ open, onClose, feature, plan }: PaywallModalProps
           </div>
           <div className="flex items-center gap-2 text-sm">
             <ArrowRight className="w-4 h-4 text-primary" />
-            All templates
+            10 premium templates
           </div>
           <div className="flex items-center gap-2 text-sm">
             <ArrowRight className="w-4 h-4 text-primary" />
             No watermark on PDFs
           </div>
-          {plan === 'team' && (
-            <div className="flex items-center gap-2 text-sm">
-              <ArrowRight className="w-4 h-4 text-primary" />
-              Up to 5 team members
-            </div>
-          )}
+          <div className="flex items-center gap-2 text-sm">
+            <ArrowRight className="w-4 h-4 text-primary" />
+            CSV/Excel export
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <ArrowRight className="w-4 h-4 text-primary" />
+            Priority support
+          </div>
         </div>
 
         <DialogFooter className="gap-2">
@@ -60,7 +61,7 @@ export function PaywallModal({ open, onClose, feature, plan }: PaywallModalProps
             Maybe later
           </Button>
           <Button asChild size="sm">
-            <Link href="/pricing">Upgrade to {plan === 'team' ? 'Team' : 'Pro'}</Link>
+            <Link href="/pricing">Upgrade to Pro</Link>
           </Button>
         </DialogFooter>
       </DialogContent>

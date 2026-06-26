@@ -67,9 +67,8 @@ if (Object.keys(PRICE_IDS).length === 0) {
 }
 
 const PLAN_LIMITS = {
-  free: { invoicesPerMonth: 3, templates: ['basic'], watermark: true, csvExport: false, teamMembers: 1 },
-  pro: { invoicesPerMonth: Infinity, templates: 'all', watermark: false, csvExport: true, teamMembers: 1 },
-  team: { invoicesPerMonth: Infinity, templates: 'all', watermark: false, csvExport: true, teamMembers: 5 },
+  free: { invoicesPerMonth: 3, templates: ['basic'], watermark: true, csvExport: false },
+  pro: { invoicesPerMonth: Infinity, templates: 'all', watermark: false, csvExport: true },
 };
 
 const app = express();
@@ -302,10 +301,12 @@ app.post('/verify-subscription', async (req, res) => {
       if (subs.data?.length > 0) {
         const sub = subs.data[0];
         const priceId = sub.items?.data?.[0]?.price?.id;
-        const detectedPlan = PRICE_IDS[priceId];
+        let detectedPlan = PRICE_IDS[priceId];
+        // Team tier is retired (no UI to subscribe). Map to 'pro' so existing
+        // Team subscribers keep working after their renewal.
+        if (detectedPlan === 'team') detectedPlan = 'pro';
         if (detectedPlan) {
-          // Prefer team over pro if multiple subs
-          if (detectedPlan === 'team' || plan === 'free') {
+          if (detectedPlan === 'pro' || plan === 'free') {
             plan = detectedPlan;
             customerId = customer.id;
             subscriptionId = sub.id;

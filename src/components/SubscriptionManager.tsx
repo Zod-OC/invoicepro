@@ -29,9 +29,7 @@ export function SubscriptionManager() {
             <p className="text-xs text-muted-foreground">
               {plan === 'free'
                 ? `3 invoices/month • Watermark on PDFs`
-                : plan === 'pro'
-                ? `Unlimited invoices • No watermark • CSV export`
-                : `Team (up to ${limits.teamMembers} members) • Admin dashboard • Priority support`}
+                : `Unlimited invoices • No watermark • CSV export • Priority support`}
             </p>
           </div>
         </div>

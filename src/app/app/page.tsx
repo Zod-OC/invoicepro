@@ -49,7 +49,7 @@ export default function AppPage() {
   const [invoice, setInvoice] = useState<Invoice>(loadInvoice);
   const [downloading, setDownloading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
-  const [showPaywall, setShowPaywall] = useState<{ open: boolean; feature: string; plan: 'pro' | 'team' } | null>(null);
+  const [showPaywall, setShowPaywall] = useState<{ open: boolean; feature: string } | null>(null);
   const [monthlyCount, setMonthlyCount] = useState(0);
 
   // Load monthly invoice count
@@ -148,7 +148,7 @@ export default function AppPage() {
   const handleDownload = useCallback(async () => {
     // Gate: free tier limited to 3 invoices/month
     if (plan === 'free' && monthlyCount >= 3) {
-      setShowPaywall({ open: true, feature: 'Unlimited Invoices', plan: 'pro' });
+      setShowPaywall({ open: true, feature: 'Unlimited Invoices' });
       return;
     }
     setDownloading(true);
@@ -409,7 +409,7 @@ export default function AppPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/pricing">
                 <span className={`text-xs font-semibold ${plan !== 'free' ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {plan === 'free' ? 'Free' : plan === 'pro' ? 'Pro' : 'Team'}
+                  {plan === 'free' ? 'Free' : 'Pro'}
                 </span>
               </Link>
             </Button>
@@ -572,7 +572,7 @@ export default function AppPage() {
                       const t = templates.find(t => t.id === selected);
                       const required = t?.tier ?? 'free';
                       if (required !== 'free' && plan === 'free') {
-                        setShowPaywall({ open: true, feature: t?.name ?? 'Pro Template', plan: 'pro' });
+                        setShowPaywall({ open: true, feature: t?.name ?? 'Pro Template' });
                         return;
                       }
                       update({ template: selected });
@@ -607,7 +607,6 @@ export default function AppPage() {
         open={showPaywall?.open ?? false}
         onClose={() => setShowPaywall(null)}
         feature={showPaywall?.feature ?? ''}
-        plan={showPaywall?.plan ?? 'pro'}
       />
     </div>
   );

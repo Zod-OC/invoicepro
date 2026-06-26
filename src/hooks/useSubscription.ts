@@ -38,14 +38,13 @@ const TOKEN_KEY = 'billify_sub_token';
 const PLAN_KEY = 'billify_plan';
 const LIMITS_KEY = 'billify_limits';
 
-export type Plan = 'free' | 'pro' | 'team';
+export type Plan = 'free' | 'pro';
 
 export interface PlanLimits {
   invoicesPerMonth: number;
   templates: string[] | 'all';
   watermark: boolean;
   csvExport: boolean;
-  teamMembers: number;
 }
 
 const DEFAULT_LIMITS: PlanLimits = {
@@ -53,13 +52,11 @@ const DEFAULT_LIMITS: PlanLimits = {
   templates: ['basic'],
   watermark: true,
   csvExport: false,
-  teamMembers: 1,
 };
 
 const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   free: DEFAULT_LIMITS,
-  pro: { invoicesPerMonth: Infinity, templates: 'all', watermark: false, csvExport: true, teamMembers: 1 },
-  team: { invoicesPerMonth: Infinity, templates: 'all', watermark: false, csvExport: true, teamMembers: 5 },
+  pro: { invoicesPerMonth: Infinity, templates: 'all', watermark: false, csvExport: true },
 };
 
 function getStoredPlan(): Plan {
@@ -201,7 +198,7 @@ export function useSubscription() {
 
   // Feature gates
   const canCreateInvoice = useCallback((currentMonthCount: number) => {
-    if (plan === 'pro' || plan === 'team') return true;
+    if (plan === 'pro') return true;
     return currentMonthCount < (limits.invoicesPerMonth || 3);
   }, [plan, limits]);
 

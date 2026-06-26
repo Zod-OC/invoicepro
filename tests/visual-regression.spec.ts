@@ -62,12 +62,16 @@ test.describe('Visual Regression — all pages', () => {
     expect(billifyMatches).toBeGreaterThanOrEqual(2);
   });
 
-  test('pricing page shows three tiers', async ({ page }) => {
+  test('pricing page shows two tiers (Free and Pro)', async ({ page }) => {
     await page.goto('/pricing');
     const cards = await page.locator('div.grid > div').count();
-    expect(cards).toBeGreaterThanOrEqual(3);
+    expect(cards).toBeGreaterThanOrEqual(2);
 
     const prices = await page.locator('text=/€\\d+/').allTextContents();
-    expect(prices.length).toBeGreaterThanOrEqual(3);
+    expect(prices.length).toBeGreaterThanOrEqual(2);
+
+    // Verify no Team tier present
+    const bodyText = await page.locator('body').textContent();
+    expect(bodyText).not.toMatch(/Subscribe to Team/);
   });
 });
