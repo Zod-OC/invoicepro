@@ -64,7 +64,7 @@ export default function RootLayout({
                 description: "Free tier with core invoice features",
               },
               operatingSystem: "Web Browser",
-              featureList: "PDF export, invoice templates, auto-save, custom branding, CSV export",
+              featureList: "PDF export, invoice templates, auto-save, logo upload, no signup required",
             }),
           }}
         />

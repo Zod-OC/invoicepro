@@ -67,8 +67,8 @@ if (Object.keys(PRICE_IDS).length === 0) {
 }
 
 const PLAN_LIMITS = {
-  free: { invoicesPerMonth: 3, templates: ['basic'], watermark: true, csvExport: false },
-  pro: { invoicesPerMonth: Infinity, templates: 'all', watermark: false, csvExport: true },
+  free: { invoicesPerMonth: 3, templates: ['basic'] },
+  pro: { invoicesPerMonth: Infinity, templates: 'all' },
 };
 
 const app = express();

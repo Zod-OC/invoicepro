@@ -41,10 +41,6 @@ export default function PricingPage() {
           {/* Trust bar */}
           <div className="flex flex-wrap items-center justify-center gap-6 mb-12 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-emerald-500" />
-              <span>30-day money-back guarantee</span>
-            </div>
-            <div className="flex items-center gap-1.5">
               <Lock className="w-4 h-4 text-emerald-500" />
               <span>Secure payments via Stripe</span>
             </div>
@@ -56,6 +52,10 @@ export default function PricingPage() {
               <CreditCard className="w-4 h-4 text-emerald-500" />
               <span>No credit card for free tier</span>
             </div>
+            <div className="flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-emerald-500" />
+              <span>Your data stays in your browser</span>
+            </div>
           </div>
 
           <PricingCards />
@@ -66,11 +66,11 @@ export default function PricingPage() {
             <div className="space-y-4 text-sm text-muted-foreground">
               <div>
                 <p className="font-medium text-foreground">Can I switch plans later?</p>
-                <p>Yes. Upgrade or downgrade anytime. Prorated charges apply on upgrade.</p>
+                <p>Yes. Upgrade or downgrade anytime. Your localStorage invoice data is preserved.</p>
               </div>
               <div>
                 <p className="font-medium text-foreground">What happens to my invoices if I cancel?</p>
-                <p>All your PDF exports are yours forever. Pro features like history and CSV export stop, but existing downloads remain.</p>
+                <p>All your PDF exports are yours forever. They're already on your device — nothing to lose.</p>
               </div>
               <div>
                 <p className="font-medium text-foreground">Do you store my invoice data?</p>

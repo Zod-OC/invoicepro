@@ -108,11 +108,10 @@ export default function LandingPage() {
               <CardContent className="text-sm text-muted-foreground space-y-2">
                 <div>✓ Unlimited invoices</div>
                 <div>✓ 10 premium templates</div>
-                <div>✓ Custom branding</div>
-                <div>✓ Invoice history</div>
-                <div>✓ CSV/Excel export</div>
-                <div>✓ No watermark</div>
-                <div>✓ Priority support</div>
+                <div>✓ Logo upload</div>
+                <div>✓ No signup, no account</div>
+                <div>✓ Data stays in your browser</div>
+                <div>✓ Cancel anytime</div>
               </CardContent>
             </Card>
           </div>

@@ -45,7 +45,7 @@ function escapeHtml(str: string): string {
 }
 
 export default function AppPage() {
-  const { plan, limits, canCreateInvoice, hasTemplateAccess, hasNoWatermark } = useSubscription();
+  const { plan, limits, canCreateInvoice, hasTemplateAccess } = useSubscription();
   const [invoice, setInvoice] = useState<Invoice>(loadInvoice);
   const [downloading, setDownloading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);

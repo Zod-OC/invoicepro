@@ -43,20 +43,16 @@ export type Plan = 'free' | 'pro';
 export interface PlanLimits {
   invoicesPerMonth: number;
   templates: string[] | 'all';
-  watermark: boolean;
-  csvExport: boolean;
 }
 
 const DEFAULT_LIMITS: PlanLimits = {
   invoicesPerMonth: 3,
   templates: ['basic'],
-  watermark: true,
-  csvExport: false,
 };
 
 const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   free: DEFAULT_LIMITS,
-  pro: { invoicesPerMonth: Infinity, templates: 'all', watermark: false, csvExport: true },
+  pro: { invoicesPerMonth: Infinity, templates: 'all' },
 };
 
 function getStoredPlan(): Plan {
@@ -210,14 +206,6 @@ export function useSubscription() {
     return templateId === 'basic';
   }, [limits]);
 
-  const hasCsvExport = useCallback(() => {
-    return limits.csvExport === true;
-  }, [limits]);
-
-  const hasNoWatermark = useCallback(() => {
-    return limits.watermark === false;
-  }, [limits]);
-
   return {
     plan,
     limits,
@@ -228,7 +216,5 @@ export function useSubscription() {
     clear,
     canCreateInvoice,
     hasTemplateAccess,
-    hasCsvExport,
-    hasNoWatermark,
   };
 }

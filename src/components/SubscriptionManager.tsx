@@ -28,8 +28,8 @@ export function SubscriptionManager() {
             <p className="text-sm font-medium">Current plan: <span className="capitalize">{plan}</span></p>
             <p className="text-xs text-muted-foreground">
               {plan === 'free'
-                ? `3 invoices/month • Watermark on PDFs`
-                : `Unlimited invoices • No watermark • CSV export • Priority support`}
+                ? `3 invoices/month • 2 basic templates • No signup, no account`
+                : `Unlimited invoices • All 12 templates • Logo upload • Data stays in your browser`}
             </p>
           </div>
         </div>
