@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install --production
 
-COPY stripe-server.js ./
+COPY stripe-server.js plan-limits.json ./
 
 EXPOSE 3000
 ENV PORT=3000
