@@ -11,6 +11,7 @@ RUN npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 # Copy source and build
 COPY next.config.mjs tsconfig.json tailwind.config.ts postcss.config.mjs ./
 COPY src ./src
+COPY api ./api
 COPY public ./public
 
 # Build static export (output: 'export' with distDir: 'dist' → /build/dist)

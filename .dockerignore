@@ -1,5 +1,7 @@
 # Exclude API service from nginx build context (Dockerfile is at repo root, used by both nginx and api services)
+# Exception: api/plan-limits.json is imported by src/lib/plan-limits.ts at build time
 api/
+!api/plan-limits.json
 api/.env
 
 # Standard Next.js / Node exclusions
