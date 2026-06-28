@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 import { SubscribeButton } from '@/components/SubscribeButton';
+import { FREE_PLAN_FEATURES, PRO_PLAN_FEATURES } from '@/lib/plan-limits';
 
 interface Plan {
   name: string;
@@ -22,13 +23,18 @@ interface Plan {
   popular: boolean;
 }
 
+// The plan-feature COUNTS are imported from src/lib/plan-limits (the single
+// source of truth), so the pricing page, the landing-page teaser, and the
+// download gate (hasTemplateAccess in src/types) all read one derivation and a
+// cap / free-template-set / template-tier change in api/plan-limits.json or
+// src/types flows to all of them automatically. See plan-limits.ts.
 const PLANS: Plan[] = [
   {
     name: 'Free',
     monthlyPrice: '€0',
     yearlyPrice: '€0',
     period: 'Forever free',
-    features: ['3 invoices per month', '2 basic templates', 'PDF export', 'Auto-save', 'No signup, no account'],
+    features: [...FREE_PLAN_FEATURES],
     cta: 'Start Free',
     ctaVariant: 'outline',
     href: '/app',
@@ -39,7 +45,7 @@ const PLANS: Plan[] = [
     monthlyPrice: '€9',
     yearlyPrice: '€6.58',
     period: '/mo',
-    features: ['Unlimited invoices', '10 premium templates', 'Logo upload', 'No signup, no account', 'Data stays in your browser', 'Cancel anytime'],
+    features: [...PRO_PLAN_FEATURES],
     planKey: 'pro',
     cta: 'Subscribe to Pro',
     ctaVariant: 'default',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { clearHostInvoiceStorage } from '@/lib/embed';
 
 export default function ErrorBoundary({
   error,
@@ -32,7 +33,10 @@ export default function ErrorBoundary({
           <button
             onClick={() => {
               if (typeof window !== 'undefined') {
-                localStorage.removeItem('billify_current');
+                // Clear the text blob AND the logo side-keys: the load path
+                // reassembles logos from the side-keys, so leaving them behind
+                // would re-attach a stale logo to the freshly-cleared invoice.
+                clearHostInvoiceStorage();
                 window.location.reload();
               }
             }}

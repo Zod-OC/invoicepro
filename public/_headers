@@ -1,0 +1,24 @@
+# Static-host CSP header (Netlify / Cloudflare Pages read this file at the
+# site root). Next.js output:'export' copies public/* to dist/, so this lands
+# at dist/_headers. The <meta http-equiv> CSP in src/app/layout.tsx covers every
+# directive except frame-ancestors (browsers ignore it in <meta>), so the
+# framing boundary for the /app iframe embeds is enforced here. For hosts that
+# do NOT read _headers, the same byte-identical header is shipped in:
+# vercel.json (Vercel — R35 #4; Vercel ignores _headers, so without it a Vercel
+# deploy ships no CSP and the frame-ancestors clickjacking boundary is
+# unenforced), and deploy/nginx.conf + docker-billify/nginx.conf (nginx /
+# Coolify). Any other static host must set the same header at its edge — see
+# next.config.mjs for the full host-coverage matrix.
+# Referrer-Policy: no-referrer stops the one-time same-origin persist/download/
+# handoff tokens (carried in /app?… params, stripped by the mount effect only
+# AFTER first paint) from leaking via document.referrer on a cross-origin
+# navigation during that pre-mount window — on browsers whose default is NOT
+# strict-origin-when-cross-origin (older browsers, or env pinned to
+# no-referrer-when-downgrade / unsafe-url). Modern browsers default to stripping
+# the query cross-origin, so this is defense-in-depth; the persist flag's
+# "unforgable cross-origin" claim holds for the stash-WRITE side, and this header
+# makes it hold for token confidentiality in transit too. The <meta
+# name="referrer"> tag in layout.tsx mirrors it for hosts that ignore _headers.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; media-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'
+  Referrer-Policy: no-referrer
