@@ -1,13 +1,15 @@
 import Link from 'next/link';
-import { Sparkles, ArrowDown, Check } from 'lucide-react';
+import { Fragment } from 'react';
+import { ArrowDown, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmbeddedEditor } from '@/components/EmbeddedEditor';
 import { CrossLinks } from '@/components/CrossLinks';
+import { SiteNav } from '@/components/SiteNav';
+import { SiteFooter } from '@/components/SiteFooter';
 import { faqJsonLd, breadcrumbJsonLd } from '@/lib/seo';
+import { SITE_URL, staticUrl, professionUrl } from '@/lib/site';
 import type { Profession } from '@/data/professions';
-
-const SITE = 'https://billify.me';
 
 /**
  * Pure presentational profession landing page. All copy comes from the
@@ -16,32 +18,17 @@ const SITE = 'https://billify.me';
  */
 export function ProfessionPage({ profession }: { profession: Profession }) {
   const { slug } = profession;
-  const pageUrl = `${SITE}/invoice-template-for/${slug}`;
+  const pageUrl = professionUrl(slug);
 
   const crumbs = [
-    { name: 'Home', url: SITE },
-    { name: 'Templates', url: `${SITE}/templates` },
+    { name: 'Home', url: SITE_URL },
+    { name: 'Templates', url: staticUrl('/templates') },
     { name: profession.name, url: pageUrl },
   ];
 
   return (
     <div className="flex flex-col min-h-full">
-      {/* Navbar — matches the rest of the site */}
-      <nav className="w-full border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-bold text-lg">Billify</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/templates" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Templates</Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
-            <Button asChild size="sm">
-              <Link href="/app">Create Invoice</Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       <main className="flex-1">
         {/* Header: breadcrumb, H1, intro, CTA */}
@@ -49,11 +36,25 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
           <div className="max-w-4xl mx-auto">
             <nav aria-label="Breadcrumb" className="text-xs text-muted-foreground mb-4">
               <ol className="flex flex-wrap items-center gap-1">
-                <li><Link href="/" className="hover:text-foreground transition-colors">Home</Link></li>
-                <li aria-hidden>›</li>
-                <li><Link href="/templates" className="hover:text-foreground transition-colors">Templates</Link></li>
-                <li aria-hidden>›</li>
-                <li className="text-foreground">{profession.name}</li>
+                {crumbs.map((crumb, i) => {
+                  const isLast = i === crumbs.length - 1;
+                  // crumbs carry absolute URLs (the form BreadcrumbList JSON-LD
+                  // needs); derive the site-relative path for <Link> so internal
+                  // nav stays client-side. One source — the crumbs array — drives
+                  // both the visible trail and the structured data, so a level/
+                  // label/order edit can't drift them apart.
+                  const href = crumb.url.startsWith(SITE_URL) ? crumb.url.slice(SITE_URL.length) || '/' : crumb.url;
+                  return (
+                    <Fragment key={crumb.url}>
+                      {i > 0 && <li aria-hidden>›</li>}
+                      {isLast ? (
+                        <li className="text-foreground">{crumb.name}</li>
+                      ) : (
+                        <li><Link href={href} className="hover:text-foreground transition-colors">{crumb.name}</Link></li>
+                      )}
+                    </Fragment>
+                  );
+                })}
               </ol>
             </nav>
 
@@ -125,16 +126,9 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
         <CrossLinks slugs={profession.relatedSlugs} />
       </main>
 
-      {/* Footer — matches the rest of the site */}
-      <footer className="w-full border-t py-8 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-5 text-primary" />
-            <span className="font-semibold">Billify</span>
-          </div>
-          <p className="text-sm text-muted-foreground">© 2026 Billify. Built for freelancers.</p>
-        </div>
-      </footer>
+      {/* Footer — shared site chrome (SiteFooter) so the 30 SEO pages stay in
+          sync with the rest of the site. */}
+      <SiteFooter />
 
       {/* Structured data — FAQ + Breadcrumb. The SoftwareApplication block is
           emitted once globally by src/app/layout.tsx (single source), so it is

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { professions, bySlug } from '@/data/professions';
 import { ProfessionPage } from '@/components/ProfessionPage';
+import { professionPath, professionUrl, ogImagePath } from '@/lib/site';
+import { ogImageMetadata } from '@/lib/seo';
 
 // Pre-render one page per profession under output:'export'.
 export function generateStaticParams() {
@@ -19,34 +21,25 @@ export function generateMetadata({
   if (!p) return { title: 'Invoice template — Billify' };
 
   const slug = p.slug;
-  const canonical = `/invoice-template-for/${slug}`;
-  const ogImage = `/og-images/invoice-template-${slug}.png`;
+  const canonical = professionPath(slug);
+  const ogImage = ogImagePath(slug);
 
   return {
     title: p.h1,
     description: p.metaDescription,
     alternates: { canonical },
-    openGraph: {
+    ...ogImageMetadata({
       title: p.h1,
       description: p.metaDescription,
-      url: canonical,
-      type: 'website',
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: p.h1,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: p.h1,
-      description: p.metaDescription,
-      images: [ogImage],
-    },
-    robots: { index: true, follow: true },
+      // ogImageMetadata's `url` feeds openGraph.url, which the OG spec requires
+      // to be absolute (and layout.tsx passes an absolute SITE_URL for the same
+      // contract) — so reuse professionUrl (absolute), NOT the relative
+      // professionPath used for alternates.canonical above (which Next resolves
+      // against metadataBase).
+      url: professionUrl(slug),
+      image: ogImage,
+      imageAlt: p.h1,
+    }),
   };
 }
 

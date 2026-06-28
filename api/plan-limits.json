@@ -1,0 +1,5 @@
+{
+  "_comment": "Single source of truth for per-plan feature limits, shared by the Stripe API server (api/stripe-server.js requires this file and emits limits[plan] verbatim over the wire) and the client (src/lib/plan-limits.ts imports it for the embed short-circuit and the optimistic stored-plan restore). Editing this file changes BOTH producers in lockstep with no duplicated copy to forget. A prior duplication of this table in the client and the server already produced two drift bugs (Infinity serialized to null over the wire; a 'basic' free-template sentinel that locked email-restored free users out of downloading) — a single JSON source eliminates that class of regression. pro.invoicesPerMonth is the literal 9007199254740991, which === Number.MAX_SAFE_INTEGER; see the consuming modules for why it is a large finite cap rather than Infinity.",
+  "free": { "invoicesPerMonth": 3, "templates": ["modern", "classic"] },
+  "pro": { "invoicesPerMonth": 9007199254740991, "templates": "all" }
+}

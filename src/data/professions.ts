@@ -2,6 +2,7 @@
 // Do not hand-edit individual entries casually: regenerate via the authoring
 // workflow contract in marketing/programmatic-seo-plan.md if structure changes.
 import type { InvoiceItem } from '@/types';
+import { currencies } from '@/types';
 
 export interface Profession {
   /** URL slug, e.g. "electrician". */
@@ -28,8 +29,11 @@ export interface Profession {
   defaultLineItems: InvoiceItem[];
   /** Prefill tax rate (%). */
   defaultTaxRate: number;
-  /** Prefill currency — restricted to the currencies Billify supports. */
-  defaultCurrency: 'USD' | 'EUR' | 'GBP';
+  /** Prefill currency — derived from the same `currencies` source the
+   *  validator and Invoice.currency use, so a new supported currency (e.g.
+   *  CAD) only has to be added in one place. A hand-rolled union here would
+   *  silently drift from src/types/index.ts. */
+  defaultCurrency: (typeof currencies)[number];
 }
 
 export const professions: Profession[] = [

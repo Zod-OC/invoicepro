@@ -1,32 +1,27 @@
-'use client';
-
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Shield, Zap, Download, Check, Sparkles } from 'lucide-react';
 import { templates } from '@/types';
+import { freeInvoiceCap, PRO_PLAN_FEATURES } from '@/lib/plan-limits';
 import { BrowseProfessions } from '@/components/BrowseProfessions';
+import { SiteNav } from '@/components/SiteNav';
+import { SiteFooter } from '@/components/SiteFooter';
 
+// Server component (no 'use client'). This page is a pure render — no
+// useState/useEffect/refs/event handlers/browser APIs — so it needs no client
+// directive. Keeping it server-side means the `professions` dataset (~160KB,
+// imported transitively by BrowseProfessions → ProfessionCard) stays in the
+// server/prerender bundle and is NOT shipped to the browser, where it was
+// previously pulled into the client chunk by the unnecessary 'use client'. The
+// children (SiteNav/SiteFooter/BrowseProfessions/ProfessionCard) are themselves
+// server components (Link + Tailwind only), matching pricing/ and templates/,
+// which already render the same subtree as server pages under output:'export'.
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-full">
-      {/* Navbar */}
-      <nav className="w-full border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-bold text-lg">Billify</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/templates" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Templates</Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
-            <Button asChild size="sm">
-              <Link href="/app">Create Invoice</Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* Hero */}
       <section className="flex-1 flex flex-col items-center text-center px-4 py-20 md:py-32">
@@ -89,10 +84,10 @@ export default function LandingPage() {
             <Card className="border-2 border-transparent flex flex-col">
               <CardHeader>
                 <CardTitle className="text-lg">Free</CardTitle>
-                <div className="text-3xl font-bold">$0</div>
+                <div className="text-3xl font-bold">€0</div>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
-                <div>✓ 3 invoices/month</div>
+                <div>✓ {freeInvoiceCap} invoices/month</div>
                 <div>✓ Basic templates</div>
                 <div>✓ PDF export</div>
                 <div>✓ Auto-save</div>
@@ -104,15 +99,12 @@ export default function LandingPage() {
               </div>
               <CardHeader>
                 <CardTitle className="text-lg">Pro</CardTitle>
-                <div className="text-3xl font-bold">$9<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                <div className="text-3xl font-bold">€9<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
-                <div>✓ Unlimited invoices</div>
-                <div>✓ 10 premium templates</div>
-                <div>✓ Logo upload</div>
-                <div>✓ No signup, no account</div>
-                <div>✓ Data stays in your browser</div>
-                <div>✓ Cancel anytime</div>
+                {PRO_PLAN_FEATURES.map((f) => (
+                  <div key={f}>✓ {f}</div>
+                ))}
               </CardContent>
             </Card>
           </div>
@@ -123,15 +115,7 @@ export default function LandingPage() {
       <BrowseProfessions />
 
       {/* Footer */}
-      <footer className="w-full border-t py-8 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="font-semibold">Billify</span>
-          </div>
-          <p className="text-sm text-muted-foreground">© 2026 Billify. Built for freelancers.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

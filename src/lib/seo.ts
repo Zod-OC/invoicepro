@@ -6,6 +6,9 @@
  * profession pages).
  */
 
+import type { Metadata } from 'next';
+import { SITE_URL, OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT } from '@/lib/site';
+
 interface FaqEntry {
   question: string;
   answer: string;
@@ -18,16 +21,19 @@ interface Crumb {
 
 /**
  * JSON.stringify for `dangerouslySetInnerHTML` injection. Raw JSON.stringify
- * does not escape `</script>`, so an authored string containing that literal
- * would close the JSON-LD <script> early and let the remainder be parsed as
- * page HTML. Escape `<`, `>`, and `--` (to defuse `<!--`/`-->`). JSON consumers
- * parse `<` back to `<`, so schema validity is preserved.
+ * does not escape `<`, so an authored string containing `</script>` (or any
+ * `<`) would close the JSON-LD <script> early and let the remainder be parsed
+ * as page HTML. Escaping every `<` (and `>`, for symmetry) to a JSON `\uXXXX`
+ * escape prevents the HTML5 script-data parser from ever leaving the plain
+ * script-data state: the `<!--` and `-->` sequences can only trigger the
+ * escaped states via a literal `<`, which no longer appears in the raw text,
+ * so no separate `--` escape is needed. JSON consumers parse `<` back to
+ * `<`, so schema validity is preserved.
  */
 function safeJsonLd(obj: unknown): string {
   return JSON.stringify(obj)
     .replace(/</g, '\\u003c')
-    .replace(/>/g, '\\u003e')
-    .replace(/--/g, '\\u002d\\u002d');
+    .replace(/>/g, '\\u003e');
 }
 
 export function faqJsonLd(faq: FaqEntry[]): string {
@@ -55,6 +61,50 @@ export function breadcrumbJsonLd(items: Crumb[]): string {
   });
 }
 
+/**
+ * Shared openGraph + twitter + robots spine for page metadata. The default
+ * metadata in src/app/layout.tsx and the profession route's generateMetadata
+ * both build the same OG image-array shape ({ url, width: OG_IMAGE_WIDTH,
+ * height: OG_IMAGE_HEIGHT, alt }), the same twitter card type
+ * ('summary_large_image'), and the same robots default ({ index, follow }).
+ * Those literals were copy-pasted between the two files, so a sitewide change
+ * to the card type or robots policy landed in two places with no signal if one
+ * was forgotten. Returns the three keys both spreads expect; the caller owns
+ * title/description/url (and layout.tsx layers its sitewide siteName/locale on
+ * top of openGraph). The OG image dimensions come from site.ts (shared with
+ * the generator) so the metadata and the canvas stay in sync.
+ */
+export function ogImageMetadata({
+  title,
+  description,
+  url,
+  image,
+  imageAlt,
+}: {
+  title: string;
+  description: string;
+  url: string;
+  image: string;
+  imageAlt: string;
+}): Pick<Metadata, 'openGraph' | 'twitter' | 'robots'> {
+  return {
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+      images: [{ url: image, width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT, alt: imageAlt }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+    robots: { index: true, follow: true },
+  };
+}
+
 export function softwareApplicationJsonLd(): string {
   return safeJsonLd({
     '@context': 'https://schema.org',
@@ -63,7 +113,7 @@ export function softwareApplicationJsonLd(): string {
     applicationCategory: 'BusinessApplication',
     description:
       'Create professional PDF invoices in seconds. Free forever. No signup required.',
-    url: 'https://billify.me',
+    url: SITE_URL,
     offers: {
       '@type': 'Offer',
       price: '0',

@@ -1,11 +1,14 @@
 import Link from 'next/link';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Sparkles, ArrowLeft } from 'lucide-react';
-import { templates, TemplateType } from '@/types';
+import { ArrowLeft } from 'lucide-react';
+import { SiteNavShell } from '@/components/SiteNav';
 import { BrowseProfessions } from '@/components/BrowseProfessions';
+import { staticUrl } from '@/lib/site';
+import { TEMPLATE_PARAM } from '@/lib/embed';
+import { getTemplate, type TemplateType } from '@/types';
 
 export const metadata: Metadata = {
   title: 'Templates',
@@ -14,26 +17,60 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Billify Templates — 12 Professional Invoice Designs',
     description: 'Modern, Classic, Minimal, Clean, Bold, Corporate, Startup, Freelancer, Executive, Agency, Consulting, and Creative. Free forever for the basics.',
-    url: 'https://billify.me/templates',
+    url: staticUrl('/templates'),
   },
 };
+
+// The gallery's per-template cards keep a BESPOKE preview body (each template's
+// visual mock is hand-built), but the four metadata fields — display name, the
+// Pro/Free badge, the description, and the /app?template=<id> link — are derived
+// here from the single source of truth in src/types (the `templates` array via
+// getTemplate). The badge in particular is derived from `t.tier`, which is the
+// SAME field the load-time clamp and download gate enforce against — so the
+// label can never drift from the enforcement tier the way a hand-maintained
+// <Badge>Pro</Badge> could (it previously did: the Minimal card showed no badge
+// while types/plan-limits enforced it as Pro, silently downgrading a free user
+// who clicked it). The card still hard-codes its template id (the lookup key +
+// the bespoke preview it owns), but everything that could drift is now routed
+// through the array. Renders byte-identical DOM to the prior hand-rolled cards.
+
+function TemplateCardHeader({ id }: { id: TemplateType }) {
+  const t = getTemplate(id);
+  // Unreachable in practice — every TemplateType id is in the templates array —
+  // but getTemplate returns Template | undefined, so guard for TS. Renders an
+  // empty header rather than crashing if a future id is removed from the array.
+  if (!t) return <CardHeader />;
+  return (
+    <CardHeader>
+      <CardTitle className={t.tier === 'pro' ? 'text-lg flex items-center justify-between' : 'text-lg'}>
+        {t.name}
+        {t.tier === 'pro' && <Badge variant="secondary" className="text-[10px]">Pro</Badge>}
+      </CardTitle>
+      <p className="text-sm text-muted-foreground">{t.description}</p>
+    </CardHeader>
+  );
+}
+
+function TemplateCardLink({ id }: { id: TemplateType }) {
+  return (
+    <CardContent>
+      <Button asChild className="w-full">
+        <Link href={`/app?${TEMPLATE_PARAM}=${id}`}>Use Template</Link>
+      </Button>
+    </CardContent>
+  );
+}
 
 export default function TemplatesPage() {
   return (
     <div className="min-h-full flex flex-col">
-      <nav className="w-full border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <SiteNavShell>
+        <Button asChild variant="ghost" size="sm">
           <Link href="/" className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-bold text-lg">Billify</span>
+            <ArrowLeft className="w-4 h-4" /> Back
           </Link>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/" className="flex items-center gap-2">
-              <ArrowLeft className="w-4 h-4" /> Back
-            </Link>
-          </Button>
-        </div>
-      </nav>
+        </Button>
+      </SiteNavShell>
 
       <div className="flex-1 py-16 px-4">
         <div className="max-w-5xl mx-auto">
@@ -62,15 +99,8 @@ export default function TemplatesPage() {
                   </div>
                 </div>
               </div>
-              <CardHeader>
-                <CardTitle className="text-lg">Modern</CardTitle>
-                <p className="text-sm text-muted-foreground">Gradient header, bold typography</p>
-              </CardHeader>
-              <CardContent>
-                <Button asChild className="w-full">
-                  <Link href={`/app?template=modern`}>Use Template</Link>
-                </Button>
-              </CardContent>
+              <TemplateCardHeader id="modern" />
+              <TemplateCardLink id="modern" />
             </Card>
 
             {/* Classic Template Preview */}
@@ -107,15 +137,8 @@ export default function TemplatesPage() {
                   </table>
                 </div>
               </div>
-              <CardHeader>
-                <CardTitle className="text-lg">Classic</CardTitle>
-                <p className="text-sm text-muted-foreground">Professional, timeless design</p>
-              </CardHeader>
-              <CardContent>
-                <Button asChild className="w-full">
-                  <Link href={`/app?template=classic`}>Use Template</Link>
-                </Button>
-              </CardContent>
+              <TemplateCardHeader id="classic" />
+              <TemplateCardLink id="classic" />
             </Card>
 
             {/* Minimal Template Preview */}
@@ -141,15 +164,8 @@ export default function TemplatesPage() {
                   <div className="mt-3 text-[7px] text-zinc-400">Thank you for your business</div>
                 </div>
               </div>
-              <CardHeader>
-                <CardTitle className="text-lg">Minimal</CardTitle>
-                <p className="text-sm text-muted-foreground">Clean and simple</p>
-              </CardHeader>
-              <CardContent>
-                <Button asChild className="w-full">
-                  <Link href={`/app?template=minimal`}>Use Template</Link>
-                </Button>
-              </CardContent>
+              <TemplateCardHeader id="minimal" />
+              <TemplateCardLink id="minimal" />
             </Card>
 
             {/* Remaining 9 templates — lightweight previews */}
@@ -166,8 +182,8 @@ export default function TemplatesPage() {
                   <div className="flex justify-between text-slate-900 font-bold pt-1 border-t border-slate-300"><span>Total</span><span>€750.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Clean<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">White space, subtle borders</p></CardHeader>
-              <CardContent><Button asChild className="w-full"><Link href={`/app?template=clean`}>Use Template</Link></Button></CardContent>
+              <TemplateCardHeader id="clean" />
+              <TemplateCardLink id="clean" />
             </Card>
 
             {/* Bold */}
@@ -184,8 +200,8 @@ export default function TemplatesPage() {
                   <div className="flex justify-between font-bold text-white pt-1 border-t border-slate-500"><span>Total</span><span>€750.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Bold<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">High contrast, large type</p></CardHeader>
-              <CardContent><Button asChild className="w-full"><Link href={`/app?template=bold`}>Use Template</Link></Button></CardContent>
+              <TemplateCardHeader id="bold" />
+              <TemplateCardLink id="bold" />
             </Card>
 
             {/* Corporate */}
@@ -205,8 +221,8 @@ export default function TemplatesPage() {
                   <div className="flex justify-between text-slate-600"><span>Service B</span><span>€300.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Corporate<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Two-column header, business-formal</p></CardHeader>
-              <CardContent><Button asChild className="w-full"><Link href={`/app?template=corporate`}>Use Template</Link></Button></CardContent>
+              <TemplateCardHeader id="corporate" />
+              <TemplateCardLink id="corporate" />
             </Card>
 
             {/* Startup */}
@@ -226,8 +242,8 @@ export default function TemplatesPage() {
                   <div className="flex justify-between text-[9px] text-slate-600"><span>Service A</span><span>€450.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Startup<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Energetic, brand-color sidebar</p></CardHeader>
-              <CardContent><Button asChild className="w-full"><Link href={`/app?template=startup`}>Use Template</Link></Button></CardContent>
+              <TemplateCardHeader id="startup" />
+              <TemplateCardLink id="startup" />
             </Card>
 
             {/* Freelancer */}
@@ -244,8 +260,8 @@ export default function TemplatesPage() {
                   <div className="border-b border-pink-500 text-pink-500 text-[9px] font-bold uppercase mt-2 pb-0.5">Description / Amount</div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Freelancer<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Single column, generous whitespace</p></CardHeader>
-              <CardContent><Button asChild className="w-full"><Link href={`/app?template=freelancer`}>Use Template</Link></Button></CardContent>
+              <TemplateCardHeader id="freelancer" />
+              <TemplateCardLink id="freelancer" />
             </Card>
 
             {/* Executive */}
@@ -264,8 +280,8 @@ export default function TemplatesPage() {
                   <div className="flex justify-between text-[9px] text-slate-600"><span>Service A</span><span>€450.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Executive<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Formal, refined layout</p></CardHeader>
-              <CardContent><Button asChild className="w-full"><Link href={`/app?template=executive`}>Use Template</Link></Button></CardContent>
+              <TemplateCardHeader id="executive" />
+              <TemplateCardLink id="executive" />
             </Card>
 
             {/* Agency */}
@@ -286,8 +302,8 @@ export default function TemplatesPage() {
                   <div className="flex justify-between text-[9px] text-slate-600"><span>Service A</span><span>€450.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Agency<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Dark header, full-width design</p></CardHeader>
-              <CardContent><Button asChild className="w-full"><Link href={`/app?template=agency`}>Use Template</Link></Button></CardContent>
+              <TemplateCardHeader id="agency" />
+              <TemplateCardLink id="agency" />
             </Card>
 
             {/* Consulting */}
@@ -304,8 +320,8 @@ export default function TemplatesPage() {
                   <div className="flex justify-between text-slate-700"><span>Service B</span><span>€300.00</span></div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Consulting<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Minimalist formal, mono accents</p></CardHeader>
-              <CardContent><Button asChild className="w-full"><Link href={`/app?template=consulting`}>Use Template</Link></Button></CardContent>
+              <TemplateCardHeader id="consulting" />
+              <TemplateCardLink id="consulting" />
             </Card>
 
             {/* Creative */}
@@ -323,8 +339,8 @@ export default function TemplatesPage() {
                   <div>Due: 2024-02-15</div>
                 </div>
               </div>
-              <CardHeader><CardTitle className="text-lg flex items-center justify-between">Creative<Badge variant="secondary" className="text-[10px]">Pro</Badge></CardTitle><p className="text-sm text-muted-foreground">Bright accent stripe, big number</p></CardHeader>
-              <CardContent><Button asChild className="w-full"><Link href={`/app?template=creative`}>Use Template</Link></Button></CardContent>
+              <TemplateCardHeader id="creative" />
+              <TemplateCardLink id="creative" />
             </Card>
           </div>
         </div>

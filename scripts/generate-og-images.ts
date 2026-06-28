@@ -10,12 +10,22 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createCanvas } from '@napi-rs/canvas';
 import { professions } from '../src/data/professions';
+import { SITE_URL, professionPath, ogImageFilename, OG_IMAGE_DIR, OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT } from '../src/lib/site';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_DIR = join(__dirname, '..', 'public', 'og-images');
+// OG_IMAGE_DIR is the site-relative URL path (`/og-images`) the route serves the
+// images under; the file written here lives at `public/OG_IMAGE_DIR`. Deriving
+// the on-disk directory from that single source keeps the generator in lockstep
+// with site.ts if the directory is ever renamed (otherwise the route would point
+// at a renamed-away image with no build-time signal).
+const OUT_DIR = join(__dirname, '..', 'public', OG_IMAGE_DIR);
 
-const WIDTH = 1200;
-const HEIGHT = 630;
+// Canvas dimensions derive from site.ts (OG_IMAGE_WIDTH/HEIGHT) — the SAME
+// source the two metadata declarations (layout.tsx + the profession route)
+// use to describe the image to social platforms, so regenerating the canvas at
+// a different size updates the metadata hints in lockstep with no drift.
+const WIDTH = OG_IMAGE_WIDTH;
+const HEIGHT = OG_IMAGE_HEIGHT;
 const BG_TOP = '#0f172a'; // slate-900
 const BG_BOTTOM = '#1e293b'; // slate-800
 const ACCENT = '#6366f1'; // indigo-500
@@ -75,14 +85,17 @@ function generate(profession: (typeof professions)[number]) {
   ctx.font = '400 34px sans-serif';
   ctx.fillText('Free. No signup. Data stays in your browser.', 80, y + 40);
 
-  // Bottom-right URL
+  // Bottom-right URL — derived from SITE_URL + professionPath (the single source
+  // of truth in site.ts) so the baked-into-image text stays in lockstep with the
+  // canonical origin and route prefix. The image renders it scheme-less (no
+  // https://) for brevity, matching the display style.
   ctx.fillStyle = MUTED;
   ctx.font = '400 26px sans-serif';
-  const url = 'billify.me/invoice-template-for/' + profession.slug;
+  const url = (SITE_URL + professionPath(profession.slug)).replace(/^https?:\/\//, '');
   const w = ctx.measureText(url).width;
   ctx.fillText(url, WIDTH - 80 - w, HEIGHT - 60);
 
-  const outPath = join(OUT_DIR, `invoice-template-${profession.slug}.png`);
+  const outPath = join(OUT_DIR, ogImageFilename(profession.slug));
   writeFileSync(outPath, canvas.toBuffer('image/png'));
   return outPath;
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Profession } from '@/data/professions';
+import { professionPath } from '@/lib/site';
 
 /**
  * Shared link card for a profession landing page. Used by BrowseProfessions
@@ -17,8 +18,7 @@ export function ProfessionCard({
 }) {
   return (
     <Link
-      key={profession.slug}
-      href={`/invoice-template-for/${profession.slug}`}
+      href={professionPath(profession.slug)}
       className="group"
     >
       <Card className="h-full transition-shadow hover:shadow-md">
