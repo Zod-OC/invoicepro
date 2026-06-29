@@ -18,7 +18,7 @@ services:
       args:
         # Set to the Umami website ID after creating it in the dashboard.
         # Empty = analytics snippet doesn't render (current behaviour).
-        NEXT_PUBLIC_UMAMI_WEBSITE_ID: ""
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: "777d3f77-4852-48c5-85fd-98e5d437c4d6"
     image: billify:latest
     container_name: billify-nginx
     restart: unless-stopped
