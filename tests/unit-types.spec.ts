@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { formatCurrency, formatCurrencyPdf, currencySymbol, validateInvoice, createEmptyInvoice, calculateTotals, type Invoice } from '../src/types';
+import { generateCSV } from '../src/lib/csv';
 
 // Pure-logic tests (no browser) for the ISO 4217 currency helpers. These assert
 // against Intl's OWN output in the same locale, so they stay green regardless of
@@ -147,5 +148,23 @@ test.describe('validateInvoice — strict-rebuild round-trip', () => {
     expect(calculateTotals(withCat.items, withCat.taxRate)).toEqual(calculateTotals(withoutCat.items, withoutCat.taxRate));
     // and the flat-rate math itself
     expect(calculateTotals(withCat.items, 20)).toEqual({ subtotal: 100, tax: 20, total: 120 });
+  });
+});
+
+test.describe('generateCSV — RFC 4180 escaping + injection mitigation', () => {
+  test('neutralizes formula prefixes and quotes comma/quote cells', () => {
+    const inv = {
+      ...createEmptyInvoice(),
+      number: 'INV-1',
+      items: [
+        { description: '=CMD|a', quantity: 1, rate: 10 },
+        { description: 'Widgets, "premium"', quantity: 2, rate: 5 },
+      ],
+    };
+    const csv = generateCSV(inv);
+    expect(csv).toContain("'=CMD|a"); // formula prefix neutralized
+    expect(csv).toContain('"Widgets, ""premium"""'); // comma+quote cell quoted, quotes doubled
+    expect(csv).toContain('\r\n'); // RFC 4180 CRLF line endings
+    expect(csv).toContain('INV-1');
   });
 });

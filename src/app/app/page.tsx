@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Invoice, createEmptyInvoice, formatCurrency, calculateTotals, templates, currencies, currencySymbol, TemplateType, TaxCategory, PaymentMeans, TAX_CATEGORIES, TAX_CATEGORY_LABELS, UNIT_CODES, PAYMENT_METHODS, DEFAULT_PAYMENT_CODE, isValidCurrencyCode, validateInvoice, getTemplate, isTemplateId, freeFallbackTemplate, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES, isValidLogoDataUrl } from '@/types';
 import { generatePDF } from '@/lib/pdf';
+import { generateCSV } from '@/lib/csv';
 import { useSubscription, getStoredPlan } from '@/hooks/useSubscription';
 import { DEFAULT_LIMITS } from '@/lib/plan-limits';
 import { SubscriptionManager } from '@/components/SubscriptionManager';
@@ -1876,10 +1877,30 @@ export default function AppPage() {
               // is the proportionate client-side defense for a passive share-link
               // threat; a stronger guarantee would need a server-side review
               // step this no-backend model doesn't have.
+              <>
               <Button size="sm" className="px-2 sm:px-3" onClick={handleDownload} disabled={downloading || isPrefill}>
                 <Download className="w-4 h-4 sm:mr-1" />
                 <span className="hidden sm:inline">{downloading ? 'Generating...' : isPrefill ? 'Review first' : (!initialized && plan !== 'pro') ? 'Checking access...' : 'Download PDF'}</span>
               </Button>
+              <Button size="sm" variant="outline" className="px-2 sm:px-3" disabled={isPrefill} title="Download as CSV (Excel / Google Sheets)" onClick={() => {
+                try {
+                  const blob = new Blob([generateCSV(invoice)], { type: 'text/csv;charset=utf-8;' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `Invoice-${invoice.number || 'export'}.csv`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error(err);
+                  alert(PDF_FAILED_MSG);
+                }
+              }}>
+                <span className="hidden sm:inline">CSV</span>
+              </Button>
+              </>
             )}
             {/* Hide the plan badge / pricing link in embed mode — the embed has
                 no signup flow, so there's nothing to upgrade to. */}
