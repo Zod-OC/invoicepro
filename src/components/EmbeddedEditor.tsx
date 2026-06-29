@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import type { Profession } from '@/data/professions';
 import { Invoice, createEmptyInvoice, validateInvoice } from '@/types';
 import { encodeInvoice, handoffUrl, warnIfHandoffTooLarge, popupBlockedMsg, onTrustedMessage, EMBED_PARAM, INVOICE_PARAM, MSG_SYNC_REQUEST, MSG_INVOICE_FRESH } from '@/lib/embed';
+import { track } from '@/lib/analytics';
 
 /**
  * The real Billify editor, embedded on a profession landing page via an
@@ -37,6 +38,12 @@ export function EmbeddedEditor({ profession }: { profession: Profession }) {
   // Guards the full-screen button against a rapid second click while a
   // postMessage round-trip + stash are in flight (which would open two tabs).
   const [busy, setBusy] = useState(false);
+  // Analytics: fire once per profession-page view to measure which pSEO pages
+  // get traffic. (The host /app editor fires editor_open separately.)
+  useEffect(() => {
+    track('pseo_view', { profession: profession.slug });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // The prefill invoice, held in a ref so postMessage round-trips never
   // re-render this parent. Only consumed by the full-screen handoff (a click
   // handler), never rendered into SSR HTML, so its non-deterministic init is

@@ -7,15 +7,15 @@ import { CheckoutCanceledBanner } from '@/components/CheckoutCanceledBanner';
 import { BrowseProfessions } from '@/components/BrowseProfessions';
 import { SiteNavShell } from '@/components/SiteNav';
 import { staticUrl } from '@/lib/site';
-import { freeInvoiceCap } from '@/lib/plan-limits';
+import { freeInvoiceCap, PRO_MONTHLY_PRICE } from '@/lib/plan-limits';
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: `Simple, transparent pricing for Billify. Start free with ${freeInvoiceCap} invoices per month. Upgrade to Pro for €9/mo.`,
+  description: `Simple, transparent pricing for Billify. Start free with ${freeInvoiceCap} invoices per month. Upgrade to Pro for ${PRO_MONTHLY_PRICE}/mo.`,
   alternates: { canonical: '/pricing' },
   openGraph: {
     title: 'Billify Pricing — Simple & Transparent',
-    description: 'Start free. Upgrade when you need more power. Pro €9/mo.',
+    description: `Start free. Upgrade when you need more power. Pro ${PRO_MONTHLY_PRICE}/mo.`,
     url: staticUrl('/pricing'),
   },
 };

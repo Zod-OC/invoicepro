@@ -2,7 +2,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Invoice, TemplateType, formatCurrency, calculateTotals } from '@/types';
+import { Invoice, TemplateType, formatCurrencyPdf, calculateTotals, paymentMethodLabel } from '@/types';
 import { SITE_HOST } from '@/lib/site';
 
 // PDF footer brand line for the three template renderers that print the host
@@ -63,10 +63,55 @@ function totalsFoot(
 ): string[][] {
   const blanks: string[] = Array.from({ length: columns - 2 }, () => '');
   return [
-    [...blanks, labels.subtotal, formatCurrency(totals.subtotal, invoice.currency)],
-    [...blanks, `${labels.tax} (${invoice.taxRate}%)`, formatCurrency(totals.tax, invoice.currency)],
-    [...blanks, labels.total, formatCurrency(totals.total, invoice.currency)],
+    [...blanks, labels.subtotal, formatCurrencyPdf(totals.subtotal, invoice.currency)],
+    [...blanks, `${labels.tax} (${invoice.taxRate}%)`, formatCurrencyPdf(totals.tax, invoice.currency)],
+    [...blanks, labels.total, formatCurrencyPdf(totals.total, invoice.currency)],
   ];
+}
+
+// paymentMethodLabel is imported from '@/types' (shared with the editor's
+// payment-method <select> in src/app/app/page.tsx, so the two can't drift).
+
+// Renders the optional compliance/payment fields (tax IDs, PO #, bank details)
+// as one compact block under the totals. Consolidated into a single helper with
+// ONE call site per renderer (hooked off the shared `finalY` line below) so the
+// 12 template layouts are NOT individually retrofitted — the structured company
+// address, per-line unitCode/taxCategory, and Leitweg-ID stay DATA-ONLY until
+// the UBL/EN 16931 export (NEXT tier) redesigns the layouts alongside the XML.
+function drawDetails(doc: jsPDF, invoice: Invoice, x: number, y: number) {
+  const lines: string[] = [];
+  if (invoice.from.taxId) lines.push(`From Tax ID / VAT: ${invoice.from.taxId}`);
+  if (invoice.to.taxId) lines.push(`To Tax ID / VAT: ${invoice.to.taxId}`);
+  if (invoice.purchaseOrder) lines.push(`Purchase Order: ${invoice.purchaseOrder}`);
+  const pm = invoice.paymentMeans;
+  if (pm) {
+    lines.push(`Payment: ${paymentMethodLabel(pm.code) ?? pm.code}`);
+    if (pm.accountName) lines.push(`Account: ${pm.accountName}`);
+    if (pm.iban) lines.push(`IBAN: ${pm.iban}`);
+    if (pm.bic) lines.push(`BIC / SWIFT: ${pm.bic}`);
+  }
+  if (!lines.length) return;
+  // No page-break here: drawDetails is a void helper invoked BEFORE each
+  // renderer's notes/terms/footer, so an addPage() would land those subsequent
+  // blocks at stale finalY-offset coordinates on the new page (a layout desync
+  // worse than the clipping it tried to fix). On extremely long invoices the
+  // details block (like notes/terms) may clip — a known single-page limitation;
+  // the proper fix renders these fields inline in the from/to area.
+  // FULL save/restore of font size, text color, AND font face/style — the
+  // caller's notes/terms/footer blocks follow this call and must NOT inherit
+  // this block's gray color or helvetica face (Consulting is otherwise courier).
+  const prevSize = doc.getFontSize();
+  const prevColor = doc.getTextColor();
+  const prevFont = doc.getFont();
+  doc.setFontSize(9);
+  doc.setTextColor(75, 85, 99);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Details', x, y);
+  doc.setFont('helvetica', 'normal');
+  lines.forEach((line, i) => doc.text(line, x, y + 6 + i * 5));
+  doc.setFontSize(prevSize);
+  doc.setTextColor(prevColor);
+  doc.setFont(prevFont.fontName, prevFont.fontStyle);
 }
 
 export function generatePDF(invoice: Invoice): Blob {
@@ -83,6 +128,12 @@ export function generatePDF(invoice: Invoice): Blob {
       email: clean(invoice.from.email),
       phone: clean(invoice.from.phone),
       address: clean(invoice.from.address),
+      taxId: clean(invoice.from.taxId ?? ''),
+      addressLine2: clean(invoice.from.addressLine2 ?? ''),
+      city: clean(invoice.from.city ?? ''),
+      region: clean(invoice.from.region ?? ''),
+      postalCode: clean(invoice.from.postalCode ?? ''),
+      country: clean(invoice.from.country ?? ''),
     },
     to: {
       ...invoice.to,
@@ -90,13 +141,29 @@ export function generatePDF(invoice: Invoice): Blob {
       email: clean(invoice.to.email),
       phone: clean(invoice.to.phone),
       address: clean(invoice.to.address),
+      taxId: clean(invoice.to.taxId ?? ''),
+      addressLine2: clean(invoice.to.addressLine2 ?? ''),
+      city: clean(invoice.to.city ?? ''),
+      region: clean(invoice.to.region ?? ''),
+      postalCode: clean(invoice.to.postalCode ?? ''),
+      country: clean(invoice.to.country ?? ''),
     },
     items: invoice.items.map(item => ({
       ...item,
       description: clean(item.description),
+      unitCode: item.unitCode ? clean(item.unitCode) : item.unitCode,
     })),
     notes: clean(invoice.notes),
     terms: clean(invoice.terms),
+    purchaseOrder: invoice.purchaseOrder ? clean(invoice.purchaseOrder) : invoice.purchaseOrder,
+    leitwegId: invoice.leitwegId ? clean(invoice.leitwegId) : invoice.leitwegId,
+    paymentMeans: invoice.paymentMeans ? {
+      ...invoice.paymentMeans,
+      code: clean(invoice.paymentMeans.code),
+      iban: clean(invoice.paymentMeans.iban ?? ''),
+      bic: clean(invoice.paymentMeans.bic ?? ''),
+      accountName: clean(invoice.paymentMeans.accountName ?? ''),
+    } : invoice.paymentMeans,
   };
 
   TEMPLATE_RENDERERS[safeInvoice.template](doc, safeInvoice);
@@ -153,8 +220,8 @@ function generateModern(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'striped',
     headStyles: { fillColor: [59, 130, 246], textColor: 255 },
@@ -164,6 +231,7 @@ function generateModern(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.text('Notes:', 15, finalY + 15);
     doc.setFontSize(10);
@@ -221,8 +289,8 @@ function generateClassic(doc: jsPDF, invoice: Invoice) {
       String(i + 1),
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'grid',
     headStyles: { fillColor: [31, 41, 55], textColor: 255 },
@@ -231,6 +299,7 @@ function generateClassic(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.text(`Notes: ${invoice.notes}`, 15, finalY + 15);
@@ -276,8 +345,8 @@ function generateMinimal(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'plain',
     headStyles: { fontStyle: 'bold', textColor: [31, 41, 55] },
@@ -287,6 +356,7 @@ function generateMinimal(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.text(`Notes: ${invoice.notes}`, 15, finalY + 14);
@@ -342,8 +412,8 @@ function generateClean(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'plain',
     headStyles: {
@@ -358,6 +428,7 @@ function generateClean(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
@@ -416,8 +487,8 @@ function generateBold(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'grid',
     headStyles: { fillColor: [15, 23, 42], textColor: 255, fontSize: 11 },
@@ -427,6 +498,7 @@ function generateBold(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
@@ -488,8 +560,8 @@ function generateExecutive(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'striped',
     headStyles: {
@@ -504,6 +576,7 @@ function generateExecutive(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
@@ -588,8 +661,8 @@ function generateCorporate(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'striped',
     headStyles: { fillColor: [30, 64, 175], textColor: 255, fontSize: 9, fontStyle: 'bold' },
@@ -600,6 +673,7 @@ function generateCorporate(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
@@ -684,8 +758,8 @@ function generateStartup(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'plain',
     headStyles: { fillColor: [124, 58, 237], textColor: 255, fontSize: 9, fontStyle: 'bold' },
@@ -695,6 +769,7 @@ function generateStartup(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
@@ -773,8 +848,8 @@ function generateFreelancer(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'plain',
     headStyles: { textColor: [15, 23, 42], fontSize: 9, fontStyle: 'bold', lineColor: [236, 72, 153], lineWidth: 0.5 },
@@ -785,6 +860,7 @@ function generateFreelancer(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
@@ -874,8 +950,8 @@ function generateAgency(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'grid',
     headStyles: { fillColor: [17, 24, 39], textColor: 255, fontSize: 9, fontStyle: 'bold' },
@@ -886,6 +962,7 @@ function generateAgency(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
@@ -952,8 +1029,8 @@ function generateConsulting(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'plain',
     headStyles: {
@@ -970,6 +1047,7 @@ function generateConsulting(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFont('courier', 'normal');
     doc.setFontSize(8);
@@ -1043,8 +1121,8 @@ function generateCreative(doc: jsPDF, invoice: Invoice) {
     body: invoice.items.map((item) => [
       item.description,
       String(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency),
+      formatCurrencyPdf(item.rate, invoice.currency),
+      formatCurrencyPdf(item.quantity * item.rate, invoice.currency),
     ]),
     theme: 'plain',
     headStyles: { fontStyle: 'bold', textColor: [15, 23, 42], lineColor: [15, 23, 42], lineWidth: 0.5 },
@@ -1054,6 +1132,7 @@ function generateCreative(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);

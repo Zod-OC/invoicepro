@@ -71,7 +71,7 @@ export const currencies = ['USD', 'EUR', 'GBP'] as const;
 
 **Also add symbols** for all above. Research shows 160+ currencies is ideal (Zoho's selling point), but 18 covers 95% of freelancer needs.
 
-**Files:** `src/types/index.ts` (currencies + currencySymbols)
+**Files:** `src/types/index.ts` (currencies + currencySymbol/currencyFormatter)
 
 #### 1.2 — Add Discount Support (1 hour)
 

@@ -64,6 +64,15 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: softwareApplicationJsonLd() }}
         />
+        {/* Self-hosted, same-origin, cookieless Umami analytics. The tracker
+            (/script.js) and its beacon (/api/send) are proxied to the umami
+            container by nginx (see docker-billify/nginx.conf), so no CSP change
+            is needed — script-src/connect-src 'self' already cover both. Renders
+            only when NEXT_PUBLIC_UMAMI_WEBSITE_ID is set at build time, so the
+            site stays analytics-free until Umami is provisioned (ops track). */}
+        {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
+          <script async src="/script.js" data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID} />
+        )}
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <noscript>
