@@ -4,16 +4,40 @@ export interface CompanyInfo {
   address: string;
   phone: string;
   logo?: string;
+  // Optional structured/compliance fields (all backward-compatible: older saved
+  // invoices simply lack them). taxId is the seller/buyer VAT/GST/TFN identifier;
+  // the structured address fields (ISO 3166-1 alpha-2 country, city, postal code,
+  // …) feed UBL/EN 16931 export (NEXT tier).
+  taxId?: string;
+  addressLine2?: string;
+  city?: string;
+  region?: string;
+  postalCode?: string;
+  country?: string;
 }
+
+// Per-line tax category for UBL/EN 16931. NEXT-tier smart-tax maps these to a
+// rate and a per-band TaxTotal; today taxCategory is COLLECTED but does NOT
+// change the computed total — calculateTotals stays flat-rate (invoice.taxRate).
+export type TaxCategory = 'standard' | 'reduced' | 'zero' | 'exempt' | 'reverse' | 'excluded';
 
 export interface InvoiceItem {
   description: string;
   quantity: number;
   rate: number;
+  taxCategory?: TaxCategory;
+  unitCode?: string; // UN/ECE Recommendation 20 unit code, e.g. 'C62' pieces, 'HUR' hour
 }
 
 export type TemplateType = 'modern' | 'classic' | 'minimal' | 'clean' | 'bold' | 'executive' | 'corporate' | 'startup' | 'freelancer' | 'agency' | 'consulting' | 'creative';
 export type InvoiceStatus = 'draft' | 'sent' | 'paid';
+
+export interface PaymentMeans {
+  code: string; // UN/ECE 4461 payment-means code, e.g. '58' SEPA Credit Transfer
+  iban?: string;
+  bic?: string;
+  accountName?: string;
+}
 
 export interface Invoice {
   id: string;
@@ -31,14 +55,49 @@ export interface Invoice {
   status: InvoiceStatus;
   createdAt: number;
   updatedAt: number;
+  // Optional workflow/compliance fields (backward-compatible). purchaseOrder is
+  // general-purpose; leitwegId (DE routing ID) + paymentMeans feed UBL/EN 16931
+  // export (NEXT tier).
+  purchaseOrder?: string;
+  leitwegId?: string;
+  paymentMeans?: PaymentMeans;
 }
 
-export const currencies = ['USD', 'EUR', 'GBP'] as const;
-export const currencySymbols: Record<string, string> = {
-  USD: '$',
-  EUR: '€',
-  GBP: '£',
-};
+// ISO 4217 currency codes (active, circulating). Kept as a readonly tuple so
+// (typeof currencies)[number] stays a literal union for typing (professions.ts
+// defaultCurrency), and so the list is available with no runtime-API dependency.
+// The currency SYMBOL and DECIMAL PRECISION are derived from Intl at format
+// time: Intl already knows each currency's native decimals (JPY/KRW = 0,
+// USD/EUR = 2, BHD/KWD/OMR = 3), so there is no hand-maintained symbol or
+// minorUnits map that could drift out of sync with CLDR.
+export const currencies = [
+  'AED','AFN','ALL','AMD','ANG','AOA','ARS','AUD','AWG','AZN',
+  'BAM','BBD','BDT','BGN','BHD','BIF','BMD','BND','BOB','BRL','BSD','BTN','BWP','BYN','BZD',
+  'CAD','CDF','CHF','CLF','CLP','CNY','COP','CRC','CUP','CVE','CZK',
+  'DJF','DKK','DOP','DZD',
+  'EGP','ERN','ETB','EUR',
+  'FJD','FKP',
+  'GBP','GEL','GHS','GIP','GMD','GNF','GTQ','GYD',
+  'HKD','HNL','HTG','HUF',
+  'IDR','ILS','INR','IQD','IRR','ISK',
+  'JMD','JOD','JPY',
+  'KES','KGS','KHR','KMF','KPW','KRW','KWD','KYD','KZT',
+  'LAK','LBP','LKR','LRD','LSL','LYD',
+  'MAD','MDL','MGA','MKD','MMK','MNT','MOP','MRU','MUR','MVR','MWK','MXN','MYR','MZN',
+  'NAD','NGN','NIO','NOK','NPR','NZD',
+  'OMR',
+  'PAB','PEN','PGK','PHP','PKR','PLN','PYG',
+  'QAR',
+  'RON','RSD','RUB','RWF',
+  'SAR','SBD','SCR','SDG','SEK','SGD','SLE','SLL','SOS','SRD','SSP','STN','SVC','SYP','SZL',
+  'THB','TJS','TMT','TND','TOP','TRY','TTD','TWD','TZS',
+  'UAH','UGX','USD','UYU','UZS',
+  'VED','VES','VND','VUV',
+  'WST',
+  'XAF','XCD','XOF','XPF',
+  'YER',
+  'ZAR','ZMW','ZWL',
+] as const;
 
 export const templates = [
   // Free tier
@@ -118,9 +177,72 @@ export function freeFallbackTemplate(allowed: string[] | 'all'): TemplateType {
   return templates.find((t) => t.tier === 'free' && list.includes(t.id))?.id ?? 'modern';
 }
 
+// One Intl.NumberFormat per currency (construction is ~10x costlier than
+// format, and formatCurrency is called ~2x per line item across the 12 PDF
+// templates + the live preview). Built lazily and cached. Intl chooses the
+// currency's native decimal precision automatically — no minorUnits map needed.
+// Cached per (currency, variant). Both variants use a FIXED en-US locale so the
+// output is deterministic across the SSR prerender (Node) and client hydration
+// (browser) — an undefined locale would render "$" on the server but "US$" on a
+// fr-FR client, a hydration mismatch on every prerendered currency string.
+// 'preview' = en-US symbol (the browser renders Unicode); 'pdf' = ISO code
+// (jsPDF's default WinAnsi font can't render non-ASCII glyphs like the rupee
+// sign). The null (RangeError) case is cached too, so an invalid code doesn't
+// re-throw on every call.
+type CurrencyVariant = 'preview' | 'pdf';
+const currencyFormatterCache = new Map<string, Intl.NumberFormat | null>();
+function currencyFormatter(currency: string, variant: CurrencyVariant): Intl.NumberFormat | null {
+  const key = `${variant}:${currency}`;
+  const cached = currencyFormatterCache.get(key);
+  if (cached !== undefined) return cached; // computed already (may be null)
+  let nf: Intl.NumberFormat | null = null;
+  try {
+    nf =
+      variant === 'pdf'
+        ? new Intl.NumberFormat('en-US', { style: 'currency', currency, currencyDisplay: 'code' })
+        : new Intl.NumberFormat('en-US', { style: 'currency', currency });
+  } catch {
+    nf = null; // RangeError on an invalid/unknown ISO 4217 code
+  }
+  currencyFormatterCache.set(key, nf);
+  return nf;
+}
+
+// O(1) ISO 4217 membership test — currencies is a ~160-entry tuple, so
+// Array.includes is O(n). Backs validateInvoice + the editor's currency-validity
+// check, both on hot paths (every load / every keystroke).
+const CURRENCY_SET: ReadonlySet<string> = new Set(currencies);
+export function isValidCurrencyCode(code: string): boolean {
+  return CURRENCY_SET.has(code);
+}
+
 export function formatCurrency(amount: number, currency: string): string {
-  const sym = currencySymbols[currency] || '$';
-  return `${sym}${amount.toFixed(2)}`;
+  const nf = currencyFormatter(currency, 'preview');
+  return nf ? nf.format(amount) : `${currency} ${amount.toFixed(2)}`;
+}
+
+// Currency symbol/glyph for a code, for inputs that have no amount to format
+// (e.g. the rate-field placeholder). Derived from the SAME Intl formatter so it
+// can never disagree with formatCurrency; falls back to the raw code for an
+// unknown currency rather than silently rendering '$'.
+export function currencySymbol(code: string): string {
+  const nf = currencyFormatter(code, 'preview');
+  if (!nf) return code;
+  const literal = nf.formatToParts(0).find((p) => p.type === 'currency');
+  return literal ? literal.value : code;
+}
+
+// ASCII-safe, locale-deterministic currency formatting for the PDF path.
+// jsPDF's default font is WinAnsi and CANNOT render non-ASCII currency glyphs
+// (₹ ₪ ₽ ₺ …) or non-ASCII grouping separators (e.g. U+202F in fr/de locales),
+// so the PDF uses the ISO 4217 CODE (always ASCII) under a fixed en-US locale.
+// The on-screen preview (formatCurrency above) ALSO uses en-US (symbols), so the
+// PDF and preview differ only in symbol-vs-code; both are deterministic across
+// SSR prerender and client hydration. Both variants share ONE cache, keyed by
+// variant — see currencyFormatter.
+export function formatCurrencyPdf(amount: number, currency: string): string {
+  const nf = currencyFormatter(currency, 'pdf');
+  return nf ? nf.format(amount) : `${currency} ${amount.toFixed(2)}`;
 }
 
 export function calculateTotals(items: InvoiceItem[], taxRate: number) {
@@ -149,6 +271,92 @@ function isValidCompanyInfo(v: unknown): v is CompanyInfo {
   if (typeof v !== 'object' || v === null) return false;
   const o = v as Record<string, unknown>;
   return isValidString(o.name) && isValidString(o.email) && isValidString(o.address) && isValidString(o.phone);
+}
+
+// Canonical option lists — shared by validateInvoice AND the editor <select>s so
+// the values a user can pick and the values the validator accepts can't drift
+// (single source of truth). Exported for src/app/app/page.tsx + src/lib/pdf.ts.
+export const TAX_CATEGORIES = ['standard', 'reduced', 'zero', 'exempt', 'reverse', 'excluded'] as const;
+export const TAX_CATEGORY_LABELS: Record<TaxCategory, string> = {
+  standard: 'Standard rate',
+  reduced: 'Reduced rate',
+  zero: 'Zero-rated',
+  exempt: 'Exempt',
+  reverse: 'Reverse charge',
+  excluded: 'Outside tax scope',
+};
+// Common UN/ECE Recommendation 20 unit codes for the per-line Unit picker.
+// unitCode stays a free string at the validation boundary (Rec 20 has hundreds
+// of codes); this list is the editor's convenience set.
+export const UNIT_CODES = [
+  { code: 'C62', label: 'Piece' },
+  { code: 'HUR', label: 'Hour' },
+  { code: 'DAY', label: 'Day' },
+  { code: 'WEE', label: 'Week' },
+  { code: 'MON', label: 'Month' },
+  { code: 'ANN', label: 'Year' },
+  { code: 'KGM', label: 'Kilogram' },
+  { code: 'MTR', label: 'Metre' },
+  { code: 'LTR', label: 'Litre' },
+] as const;
+// UN/ECE 4461 payment-means codes offered in the editor + rendered by the PDF
+// drawDetails block. DEFAULT_PAYMENT_CODE is the SEPA value updatePayment pins
+// when bank details are typed before a method is chosen.
+// UN/ECE 4461 payment-means codes offered in the editor + rendered by the PDF
+// drawDetails block. An ordered ARRAY (not a Record) so the dropdown iteration
+// order is source-controlled — integer-like keys ('1','58',…) in a Record would
+// be enumerated in ascending numeric order by the JS engine, surfacing 'Cash'
+// before 'SEPA' regardless of the literal. DEFAULT_PAYMENT_CODE is the SEPA
+// value updatePayment pins when bank details are typed before a method is chosen.
+export const PAYMENT_METHODS = [
+  { code: '58', label: 'Bank transfer (SEPA)' },
+  { code: '30', label: 'Credit transfer' },
+  { code: '49', label: 'Direct debit' },
+  { code: '48', label: 'Bank card' },
+  { code: '1', label: 'Cash' },
+] as const;
+export function paymentMethodLabel(code: string): string | undefined {
+  return PAYMENT_METHODS.find((p) => p.code === code)?.label;
+}
+export const DEFAULT_PAYMENT_CODE = '58';
+function isValidTaxCategory(v: unknown): v is TaxCategory {
+  return isValidString(v) && (TAX_CATEGORIES as readonly string[]).includes(v);
+}
+function isValidPaymentMeans(v: unknown): v is PaymentMeans {
+  if (typeof v !== 'object' || v === null) return false;
+  const code = (v as Record<string, unknown>).code;
+  // code is required and must be non-empty: isValidString('') is true, so an
+  // explicit empty check keeps a crafted {code:''} payload from being retained.
+  return isValidString(code) && code !== '';
+}
+// Optional-string coercion at the validateInvoice ingestion boundary: a
+// malformed (non-string) value normalizes to undefined instead of being carried
+// through into billify_current / share links.
+function optString(v: unknown): string | undefined {
+  return isValidString(v) ? v : undefined;
+}
+// Builds a fully-validated CompanyInfo from raw input, called only AFTER the
+// isValidCompanyInfo guard has confirmed name/email/address/phone are strings,
+// so those four are read straight through; the optional fields (incl. logo) are
+// each re-validated so a crafted payload can't smuggle a bad value past the
+// strict rebuild. Centralizing this keeps the from/to extraction DRY and means a
+// new CompanyInfo field has exactly ONE place to be added (else it's dropped on
+// reload — see the validateInvoice invariant).
+function sanitizeCompanyInfo(v: unknown): CompanyInfo {
+  const o = v as CompanyInfo;
+  return {
+    name: o.name,
+    email: o.email,
+    address: o.address,
+    phone: o.phone,
+    logo: sanitizeLogo(o.logo),
+    taxId: optString(o.taxId),
+    addressLine2: optString(o.addressLine2),
+    city: optString(o.city),
+    region: optString(o.region),
+    postalCode: optString(o.postalCode),
+    country: optString(o.country),
+  };
 }
 
 // Logo validation at the data-ingestion boundary. MAX_LOGO_SIZE and
@@ -249,28 +457,60 @@ function isValidItem(v: unknown): v is InvoiceItem {
 export function validateInvoice(raw: unknown): Invoice | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const o = raw as Record<string, unknown>;
-  const items = Array.isArray(o.items) ? o.items.filter(isValidItem) : [];
+  // isValidItem stays LENIENT (only the 3 required fields), so old invoices
+  // don't drop items. The optional taxCategory/unitCode are then attached by an
+  // explicit, validated map — never trusted from the raw object.
+  const items: InvoiceItem[] = Array.isArray(o.items)
+    ? o.items.filter(isValidItem).map((it) => ({
+        description: it.description,
+        quantity: it.quantity,
+        rate: it.rate,
+        ...(isValidTaxCategory(it.taxCategory) ? { taxCategory: it.taxCategory } : {}),
+        ...(isValidString(it.unitCode) ? { unitCode: it.unitCode } : {}),
+      }))
+    : [];
   if (!items.length) return null;
   if (!isValidCompanyInfo(o.from) || !isValidCompanyInfo(o.to)) return null;
   const template = isValidString(o.template) && isTemplateId(o.template)
     ? o.template
     : 'modern';
+  // Accept any ISO 4217 code (was USD/EUR/GBP only). Warn on a present-but-
+  // unknown code so a mistyped currency is debuggable instead of silently
+  // downgraded to USD.
+  let currency: string;
+  if (isValidString(o.currency) && isValidCurrencyCode(o.currency)) {
+    currency = o.currency;
+  } else {
+    if (isValidString(o.currency)) console.warn(`[billify] unknown currency "${o.currency}", falling back to USD`);
+    currency = 'USD';
+  }
+  const paymentMeans: PaymentMeans | undefined = isValidPaymentMeans(o.paymentMeans)
+    ? {
+        code: o.paymentMeans.code,
+        iban: optString(o.paymentMeans.iban),
+        bic: optString(o.paymentMeans.bic),
+        accountName: optString(o.paymentMeans.accountName),
+      }
+    : undefined;
   return {
     id: isValidString(o.id) ? o.id : generateId(),
     number: isValidString(o.number) ? o.number : `INV-${Math.floor(Math.random() * 9000) + 1000}`,
     date: isValidString(o.date) ? o.date : new Date().toISOString().split('T')[0],
     dueDate: isValidString(o.dueDate) ? o.dueDate : new Date().toISOString().split('T')[0],
-    from: { ...(o.from as CompanyInfo), logo: sanitizeLogo(o.from.logo) },
-    to: { ...(o.to as CompanyInfo), logo: sanitizeLogo(o.to.logo) },
+    from: sanitizeCompanyInfo(o.from),
+    to: sanitizeCompanyInfo(o.to),
     items,
     notes: isValidString(o.notes) ? o.notes : '',
     terms: isValidString(o.terms) ? o.terms : 'Net 14',
     taxRate: isValidNumber(o.taxRate) ? Math.max(0, Math.min(100, o.taxRate)) : 0,
-    currency: isValidString(o.currency) && currencies.includes(o.currency as typeof currencies[number]) ? o.currency as typeof currencies[number] : 'USD',
+    currency,
     template,
     status: isValidString(o.status) && ['draft', 'sent', 'paid'].includes(o.status) ? (o.status as InvoiceStatus) : 'draft',
     createdAt: isValidNumber(o.createdAt) ? o.createdAt : Date.now(),
     updatedAt: isValidNumber(o.updatedAt) ? o.updatedAt : Date.now(),
+    purchaseOrder: optString(o.purchaseOrder),
+    leitwegId: optString(o.leitwegId),
+    paymentMeans,
   };
 }
 

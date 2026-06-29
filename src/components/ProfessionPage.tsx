@@ -7,9 +7,10 @@ import { EmbeddedEditor } from '@/components/EmbeddedEditor';
 import { CrossLinks } from '@/components/CrossLinks';
 import { SiteNav } from '@/components/SiteNav';
 import { SiteFooter } from '@/components/SiteFooter';
-import { faqJsonLd, breadcrumbJsonLd } from '@/lib/seo';
+import { faqJsonLd, breadcrumbJsonLd, personJsonLd, articleJsonLd } from '@/lib/seo';
 import { SITE_URL, staticUrl, professionUrl } from '@/lib/site';
-import type { Profession } from '@/data/professions';
+import { type Profession, PROFESSION_DATA_UPDATED_AT } from '@/data/professions';
+import { DEFAULT_AUTHOR } from '@/data/authors';
 
 /**
  * Pure presentational profession landing page. All copy comes from the
@@ -22,7 +23,7 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
 
   const crumbs = [
     { name: 'Home', url: SITE_URL },
-    { name: 'Templates', url: staticUrl('/templates') },
+    { name: 'Invoice Templates', url: staticUrl('/invoice-templates') },
     { name: profession.name, url: pageUrl },
   ];
 
@@ -60,6 +61,12 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
 
             <h1 className="text-3xl md:text-5xl font-bold tracking-tight">{profession.h1}</h1>
             <p className="mt-5 text-lg text-muted-foreground">{profession.introParagraph}</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              By{' '}
+              <Link href={DEFAULT_AUTHOR.bioPath} className="underline hover:text-foreground">{DEFAULT_AUTHOR.name}</Link>,{' '}
+              {DEFAULT_AUTHOR.jobTitle} · Updated{' '}
+              {new Date(PROFESSION_DATA_UPDATED_AT).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+            </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Button asChild size="lg" className="gap-2">
@@ -140,6 +147,30 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: breadcrumbJsonLd(crumbs) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: personJsonLd({
+            name: DEFAULT_AUTHOR.name,
+            jobTitle: DEFAULT_AUTHOR.jobTitle,
+            url: staticUrl(DEFAULT_AUTHOR.bioPath),
+            sameAs: DEFAULT_AUTHOR.sameAs,
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: articleJsonLd({
+            headline: profession.h1,
+            url: pageUrl,
+            dateModified: PROFESSION_DATA_UPDATED_AT,
+            author: { name: DEFAULT_AUTHOR.name, url: staticUrl(DEFAULT_AUTHOR.bioPath) },
+            publisherName: 'Billify',
+            publisherUrl: SITE_URL,
+          }),
+        }}
       />
     </div>
   );

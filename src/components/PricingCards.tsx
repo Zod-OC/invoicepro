@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 import { SubscribeButton } from '@/components/SubscribeButton';
-import { FREE_PLAN_FEATURES, PRO_PLAN_FEATURES } from '@/lib/plan-limits';
+import { FREE_PLAN_FEATURES, PRO_PLAN_FEATURES, PRO_MONTHLY_PRICE, PRO_ANNUAL_PRICE } from '@/lib/plan-limits';
 
 interface Plan {
   name: string;
@@ -42,8 +42,8 @@ const PLANS: Plan[] = [
   },
   {
     name: 'Pro',
-    monthlyPrice: '€9',
-    yearlyPrice: '€6.58',
+    monthlyPrice: PRO_MONTHLY_PRICE,
+    yearlyPrice: PRO_ANNUAL_PRICE,
     period: '/mo',
     features: [...PRO_PLAN_FEATURES],
     planKey: 'pro',
@@ -54,7 +54,10 @@ const PLANS: Plan[] = [
 ];
 
 export function PricingCards() {
-  const [isAnnual, setIsAnnual] = useState(false);
+  // Annual is the default: the toggle opens on €6.58/mo (billed yearly) rather
+  // than €9/mo. The displayed price + SubscribeButton billingPeriod follow from
+  // this state automatically; the landing teaser mirrors the annual figure.
+  const [isAnnual, setIsAnnual] = useState(true);
 
   return (
     <>
