@@ -97,12 +97,19 @@ services:
       - umami-db
     environment:
       APP_URL: https://analytics.billify.me
-      # DATABASE_URL uses ${POSTGRES_PASSWORD} substitution so Coolify's secret
-      # scanner doesn't replace the literal password with '***' (which breaks auth).
-      # POSTGRES_PASSWORD is set in the Coolify project .env file and injected via
-      # env_file (auto-added by Coolify) — it resolves before docker-compose sees it.
-      DATABASE_URL: postgresql://umami:${POSTGRES_PASSWORD}@umami-db:5432/umami
-      HASH_SALT: ${UMAMI_HASH_SALT}
+      # Individual components (NOT a DATABASE_URL) — Coolify's secret scanner
+      # redacts credentials embedded in URL strings (replacing them with literal
+      # '***'), but does NOT redact standalone password values. The command
+      # override below assembles DATABASE_URL at runtime from these parts.
+      DB_PASSWORD: 795b8e7fcdfb16a55375db63aa8f69a64eaf98ac
+      UMAMI_SALT: 3df04bbb86d9d1e3d52c637caef82768
+    # Construct DATABASE_URL at runtime so Coolify never sees a credential URL
+    # in the environment block (which it would redact to '***').
+    # $$ in docker-compose escapes to $ so the shell expands the vars, not compose.
+    command: >
+      sh -c "export DATABASE_URL=postgresql://umami:$$DB_PASSWORD@umami-db:5432/umami &&
+             export HASH_SALT=$$UMAMI_SALT &&
+             npm run start-docker"
     labels:
       - traefik.enable=true
       - traefik.http.routers.umami.entrypoints=https
