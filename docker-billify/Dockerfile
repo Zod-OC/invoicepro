@@ -14,6 +14,12 @@ COPY src ./src
 COPY api ./api
 COPY public ./public
 
+# Umami website ID (public value, not a secret — it's in client-side HTML).
+# Passed from docker-compose build args. Empty until the Umami website is created;
+# layout.tsx conditionally renders the snippet only when non-empty.
+ARG NEXT_PUBLIC_UMAMI_WEBSITE_ID=""
+ENV NEXT_PUBLIC_UMAMI_WEBSITE_ID=$NEXT_PUBLIC_UMAMI_WEBSITE_ID
+
 # Build static export (output: 'export' with distDir: 'dist' → /build/dist)
 RUN npm run build
 

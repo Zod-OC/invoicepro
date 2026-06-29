@@ -15,6 +15,10 @@ services:
     build:
       context: .
       dockerfile: docker-billify/Dockerfile
+      args:
+        # Set to the Umami website ID after creating it in the dashboard.
+        # Empty = analytics snippet doesn't render (current behaviour).
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: ""
     image: billify:latest
     container_name: billify-nginx
     restart: unless-stopped
@@ -53,37 +57,60 @@ services:
       timeout: 5s
       retries: 3
 
-  # 3. Umami analytics — self-hosted, same-origin, cookieless. Served behind
+  # 3. Postgres for Umami analytics (lightweight, resource-capped).
+  # Uses a named volume so analytics data survives container rebuilds.
+  postgres:
+    image: postgres:16-alpine
+    container_name: billify-postgres
+    restart: unless-stopped
+    networks:
+      - coolify
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: 795b8e7fcdfb16a55375db63aa8f69a64eaf98ac
+    volumes:
+      - billify-pgdata:/var/lib/postgresql/data
+    # Resource limits — the box is small (~2GB), and Coolify + nginx + api
+    # already use ~500MB. Postgres-alpine with these caps stays under 150MB RSS.
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # 4. Umami analytics — self-hosted, same-origin, cookieless. Served behind
   # billify-nginx via the /script.js + /api/send proxy blocks (see
   # docker-billify/nginx.conf). NOT a database of invoice data — it stores only
   # analytics aggregates (page views + named events), so it does NOT weaken the
   # no-backend-for-invoices privacy claim.
-  #
-  # Ops prerequisites (the parallel ops track — NOT in this repo):
-  #  - A Postgres reachable from the coolify network. Preferred: a managed
-  #    Postgres added via the Coolify UI (avoids running a second Postgres on the
-  #    ~1GB box alongside Coolify's own). Point DATABASE_URL at it.
-  #  - DATABASE_URL + HASH_SALT injected via Coolify's project env (Coolify
-  #    writes them to .env and mounts env_file into this service automatically).
-  #  - After first boot (the image auto-runs schema migrations), create a Website
-  #    in Umami and set NEXT_PUBLIC_UMAMI_WEBSITE_ID in Coolify env, then rebuild
-  #    the site so the /script.js snippet in src/app/layout.tsx renders.
-  # Until then this container will fail its healthcheck and restart — but that
-  # does NOT affect the nginx/api services (independent containers).
+  # Dashboard accessible at https://analytics.billify.me (wildcard DNS resolves).
   umami:
     image: ghcr.io/umami-software/umami:postgresql-latest
     container_name: billify-umami
     restart: unless-stopped
     networks:
       - coolify
+    depends_on:
+      - postgres
     environment:
-      APP_URL: https://billify.me
-      # DATABASE_URL and HASH_SALT come from the Coolify project env file.
+      APP_URL: https://analytics.billify.me
+      DATABASE_URL: postgresql://umami:795b8e7fcdfb16a55375db63aa8f69a64eaf98ac@postgres:5432/umami
+      HASH_SALT: 3df04bbb86d9d1e3d52c637caef82768
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.umami.entrypoints=https
+      - traefik.http.routers.umami.rule=Host(`analytics.billify.me`)
+      - traefik.http.routers.umami.tls=true
+      - traefik.http.routers.umami.tls.certresolver=letsencrypt
+      - traefik.http.services.umami.loadbalancer.server.port=3000
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
       interval: 30s
       timeout: 5s
       retries: 3
+
+volumes:
+  billify-pgdata:
 
 # Use the existing coolify Docker network (created by Coolify itself)
 networks:
