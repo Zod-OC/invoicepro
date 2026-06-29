@@ -32,13 +32,12 @@ I built **Billify** (https://billify.me) — a dead-simple invoice generator tha
 - localStorage for persistence
 - Stripe for Pro tier subscriptions
 
-### The Pro Tier ($9/mo)
+### The Pro Tier (€9/mo)
 
 The free version handles everything most freelancers need. Pro adds:
 - Unlimited invoices
-- All 3 templates (Modern, Classic, Minimal)
-- Custom branding (logo, colors)
-- No watermark
+- All 12 templates
+- Logo upload
 
 I wanted the free tier to be genuinely useful, not a crippled teaser. The Pro tier is for people who invoice at volume or want their brand front and center.
 

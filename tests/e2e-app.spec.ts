@@ -29,11 +29,12 @@ test.describe('E2E — Invoice Builder', () => {
     await page.getByPlaceholder('Email').nth(1).fill('client@client.com');
     await page.getByPlaceholder('Address').nth(1).fill('456 Client Road');
 
-    // Switch currency
-    await page.locator('select').first().selectOption('EUR');
+    // Switch currency (now a searchable <input> + <datalist>, not a <select>)
+    await page.locator('input[list="billify-currencies"]').fill('EUR');
 
-    // Switch template
-    await page.locator('select').nth(1).selectOption('classic');
+    // Switch template (use the stable testid, not a positional <select> index —
+    // the editor now has per-line tax/unit <select>s before the template one)
+    await page.getByTestId('template-select').selectOption('classic');
 
     // Click download
     const [download] = await Promise.all([

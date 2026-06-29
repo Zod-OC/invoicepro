@@ -11,6 +11,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Lock, ArrowRight } from 'lucide-react';
+import { track } from '@/lib/analytics';
 
 interface PaywallModalProps {
   open: boolean;
@@ -61,7 +62,7 @@ export function PaywallModal({ open, onClose, feature }: PaywallModalProps) {
             Maybe later
           </Button>
           <Button asChild size="sm">
-            <Link href="/pricing">Upgrade to Pro</Link>
+            <Link href="/pricing" onClick={() => track('upgrade_click', { source: 'paywall', feature })}>Upgrade to Pro</Link>
           </Button>
         </DialogFooter>
       </DialogContent>

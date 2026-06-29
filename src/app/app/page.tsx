@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Invoice, createEmptyInvoice, formatCurrency, calculateTotals, templates, currencies, currencySymbols, TemplateType, validateInvoice, getTemplate, isTemplateId, freeFallbackTemplate, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES, isValidLogoDataUrl } from '@/types';
+import { Invoice, createEmptyInvoice, formatCurrency, calculateTotals, templates, currencies, currencySymbol, TemplateType, TaxCategory, PaymentMeans, TAX_CATEGORIES, TAX_CATEGORY_LABELS, UNIT_CODES, PAYMENT_METHODS, DEFAULT_PAYMENT_CODE, isValidCurrencyCode, validateInvoice, getTemplate, isTemplateId, freeFallbackTemplate, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES, isValidLogoDataUrl } from '@/types';
 import { generatePDF } from '@/lib/pdf';
 import { useSubscription, getStoredPlan } from '@/hooks/useSubscription';
 import { DEFAULT_LIMITS } from '@/lib/plan-limits';
@@ -18,6 +18,23 @@ import { PaywallModal } from '@/components/PaywallModal';
 import { isEmbedMode, isUntrustedFrame, embedKey, logoStorageKey, decodeInvoice, peekHandoff, consumeHandoff, peekPersistFlag, consumePersistFlag, takeDownloadFlag, cleanupStaleHandoffs, onTrustedMessage, handoffUrl, warnIfHandoffTooLarge, popupBlockedMsg, INVOICE_PARAM, HANDOFF_PARAM, PERSIST_PARAM, DOWNLOAD_PARAM, TEMPLATE_PARAM, MSG_SYNC_REQUEST, MSG_INVOICE_FRESH } from '@/lib/embed';
 import { SITE_HOST } from '@/lib/site';
 import { stripUrlParams } from '@/lib/url';
+import { track } from '@/lib/analytics';
+
+// Static currency-options list computed ONCE at module load (not per render).
+// currencySymbol builds/caches an Intl formatter per code, so building this in
+// the 160-option <datalist> body would re-run ~160 formatToParts calls on every
+// keystroke. currencies + currencySymbol are imported above.
+const CURRENCY_OPTIONS = currencies.map((c) => ({ code: c, label: `${c} — ${currencySymbol(c)}` }));
+// The <datalist> is static — hoist the whole element to a module-level const so
+// React reuses one reference across renders instead of reconciling ~160 <option>
+// nodes on every keystroke in this already-heavy 'use client' component.
+const CURRENCY_DATALIST = (
+  <datalist id="billify-currencies">
+    {CURRENCY_OPTIONS.map((o) => (
+      <option key={o.code} value={o.code}>{o.label}</option>
+    ))}
+  </datalist>
+);
 
 // Host-session persistence lives in the component as persistInvoice (below),
 // NOT here as a module function: it needs the component-scoped lastSavedLogosRef
@@ -284,6 +301,16 @@ export default function AppPage() {
   // here and reused across the download gate, template-select paywall, and the
   // 🔒 badge — four copies of this expression would drift independently.
   const isFreeHost = !isEmbed && initialized && plan === 'free';
+
+  // Analytics: fire once per mount so we can measure how often the editor is
+  // opened in host mode (/app) vs. embedded on a profession page (mode:'embed'
+  // — the profession-page view itself is counted separately as pseo_view).
+  useEffect(() => {
+    // Read isEmbedMode() directly — the isEmbed STATE is only flipped in a
+    // later-declared mount effect, so capturing it here with [] deps would
+    // always read the initial false and mis-attribute every embed session as 'host'.
+    track('editor_open', { mode: isEmbedMode() ? 'embed' : 'host' });
+  }, []);
   // Plan-resolve window: a host (non-embed) user whose plan is still being
   // validated (a token is present and /api/stripe/validate-token is in flight).
   // Embed and no-token users flip `initialized` synchronously, so this is a
@@ -1043,6 +1070,25 @@ export default function AppPage() {
     dirtyRef.current = true;
   }, []);
 
+  // Payment-means (bank details) editor. paymentMeans is only retained by
+  // validateInvoice when it has a `code`, so default to SEPA '58' the moment any
+  // field is entered — otherwise an IBAN typed alone would be dropped on reload.
+  const updatePayment = useCallback((patch: Partial<PaymentMeans>) => {
+    setInvoice(prev => ({
+      ...prev,
+      // Spread prev first so a future PaymentMeans field flows through without
+      // editing this merge; DEFAULT_PAYMENT_CODE only applies when no code is
+      // set yet (validateInvoice drops a paymentMeans with no code).
+      paymentMeans: {
+        code: DEFAULT_PAYMENT_CODE,
+        ...(prev.paymentMeans ?? {}),
+        ...patch,
+      },
+      updatedAt: Date.now(),
+    }));
+    dirtyRef.current = true;
+  }, []);
+
   const updateItem = useCallback((idx: number, patch: Partial<Invoice['items'][0]>) => {
     setInvoice(prev => {
       const items = [...prev.items];
@@ -1294,6 +1340,7 @@ export default function AppPage() {
     // bearing lapsed-free user can't download before validate-token resolves.
     // Embed is unlimited (capBound is false — isFreeHost requires !isEmbed).
     if (capBound && !gates.canCreate(readMonthCount())) {
+      track('cap_hit', { feature: 'Unlimited Invoices' });
       setShowPaywall({ open: true, feature: 'Unlimited Invoices' });
       return;
     }
@@ -1532,7 +1579,8 @@ export default function AppPage() {
   }
 
   const { subtotal, tax, total } = calculateTotals(invoice.items, invoice.taxRate);
-  const sym = currencySymbols[invoice.currency] || '$';
+  const sym = currencySymbol(invoice.currency);
+  const currencyValid = isValidCurrencyCode(invoice.currency);
 
   // Preview — returned by renderPreview() as a plain element (NOT a component,
   // so React reconciles it in place on every render instead of unmounting/
@@ -1929,13 +1977,16 @@ export default function AppPage() {
               </div>
               <div>
                 <Label className="text-xs">Currency</Label>
-                  <select
+                  <Input
+                    list="billify-currencies"
                     value={invoice.currency}
-                    onChange={e => update({ currency: e.target.value })}
-                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  >
-                  {currencies.map(c => <option key={c} value={c}>{c} ({currencySymbols[c]})</option>)}
-                </select>
+                    onChange={e => update({ currency: e.target.value.toUpperCase() })}
+                    onBlur={() => { if (!isValidCurrencyCode(invoice.currency)) update({ currency: 'USD' }); }}
+                    aria-invalid={!currencyValid}
+                    className={currencyValid ? '' : 'border-red-500 focus-visible:border-red-500'}
+                    autoComplete="off"
+                  />
+                  {CURRENCY_DATALIST}
               </div>
               <div>
                 <Label className="text-xs">Date</Label>
@@ -1944,6 +1995,14 @@ export default function AppPage() {
               <div>
                 <Label className="text-xs">Due Date</Label>
                 <Input type="date" value={invoice.dueDate} onChange={e => update({ dueDate: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs">Purchase Order #</Label>
+                <Input placeholder="PO number (optional)" value={invoice.purchaseOrder ?? ''} onChange={e => update({ purchaseOrder: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs">Leitweg-ID (DE e-invoice routing)</Label>
+                <Input placeholder="Leitweg-ID (optional)" value={invoice.leitwegId ?? ''} onChange={e => update({ leitwegId: e.target.value })} />
               </div>
             </CardContent>
           </Card>
@@ -1959,6 +2018,16 @@ export default function AppPage() {
                 <Input placeholder="Phone" value={invoice.from.phone} onChange={e => updateFrom({ phone: e.target.value })} />
               </div>
               <Input placeholder="Address" value={invoice.from.address} onChange={e => updateFrom({ address: e.target.value })} />
+              <Input placeholder="Address line 2 (optional)" value={invoice.from.addressLine2 ?? ''} onChange={e => updateFrom({ addressLine2: e.target.value })} />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <Input placeholder="City" value={invoice.from.city ?? ''} onChange={e => updateFrom({ city: e.target.value })} />
+                <Input placeholder="Region / State" value={invoice.from.region ?? ''} onChange={e => updateFrom({ region: e.target.value })} />
+                <Input placeholder="Postal code" value={invoice.from.postalCode ?? ''} onChange={e => updateFrom({ postalCode: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input placeholder="Country (ISO code, e.g. DE)" maxLength={2} value={invoice.from.country ?? ''} onChange={e => updateFrom({ country: e.target.value.toUpperCase() })} />
+                <Input placeholder="Tax ID / VAT number" value={invoice.from.taxId ?? ''} onChange={e => updateFrom({ taxId: e.target.value })} />
+              </div>
               <div>
                 <Label className="text-xs">Logo</Label>
                 <label className="flex items-center gap-2 px-3 py-2 rounded-md border border-input bg-background text-sm cursor-pointer hover:bg-accent transition-colors w-fit">
@@ -1993,12 +2062,23 @@ export default function AppPage() {
                 <Input placeholder="Phone" value={invoice.to.phone} onChange={e => updateTo({ phone: e.target.value })} />
               </div>
               <Input placeholder="Address" value={invoice.to.address} onChange={e => updateTo({ address: e.target.value })} />
+              <Input placeholder="Address line 2 (optional)" value={invoice.to.addressLine2 ?? ''} onChange={e => updateTo({ addressLine2: e.target.value })} />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <Input placeholder="City" value={invoice.to.city ?? ''} onChange={e => updateTo({ city: e.target.value })} />
+                <Input placeholder="Region / State" value={invoice.to.region ?? ''} onChange={e => updateTo({ region: e.target.value })} />
+                <Input placeholder="Postal code" value={invoice.to.postalCode ?? ''} onChange={e => updateTo({ postalCode: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input placeholder="Country (ISO code, e.g. FR)" maxLength={2} value={invoice.to.country ?? ''} onChange={e => updateTo({ country: e.target.value.toUpperCase() })} />
+                <Input placeholder="Tax ID / VAT number" value={invoice.to.taxId ?? ''} onChange={e => updateTo({ taxId: e.target.value })} />
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Line Items</CardTitle>
+              <p className="text-xs text-muted-foreground">Per-line tax category is saved for e-invoicing (UBL/EN 16931) and will affect totals in a future update.</p>
             </CardHeader>
             <CardContent className="space-y-3">
               {invoice.items.map((item, idx) => (
@@ -2037,6 +2117,30 @@ export default function AppPage() {
                         </Button>
                       </div>
                     </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <select
+                      aria-label={`Tax category for line ${idx + 1}`}
+                      value={item.taxCategory ?? ''}
+                      onChange={e => updateItem(idx, { taxCategory: (e.target.value as TaxCategory) || undefined })}
+                      className="w-full h-9 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
+                    >
+                      <option value="">Tax: invoice default</option>
+                      {TAX_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{TAX_CATEGORY_LABELS[c]}</option>
+                      ))}
+                    </select>
+                    <select
+                      aria-label={`Unit for line ${idx + 1}`}
+                      value={item.unitCode ?? ''}
+                      onChange={e => updateItem(idx, { unitCode: e.target.value || undefined })}
+                      className="w-full h-9 rounded-md border border-input bg-background px-2 text-xs text-muted-foreground"
+                    >
+                      <option value="">Unit: piece</option>
+                      {UNIT_CODES.map((u) => (
+                        <option key={u.code} value={u.code}>{u.label}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               ))}
@@ -2088,6 +2192,47 @@ export default function AppPage() {
               </div>
               <Input placeholder="Notes" value={invoice.notes} onChange={e => update({ notes: e.target.value })} />
               <Input placeholder="Terms" value={invoice.terms} onChange={e => update({ terms: e.target.value })} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Payment Details (optional)</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Method</Label>
+                <select
+                  value={invoice.paymentMeans?.code ?? ''}
+                  onChange={e => {
+                    const code = e.target.value;
+                    if (!code) {
+                      setInvoice(prev => ({ ...prev, paymentMeans: undefined, updatedAt: Date.now() }));
+                      dirtyRef.current = true;
+                    } else {
+                      updatePayment({ code });
+                    }
+                  }}
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">— None —</option>
+                  {PAYMENT_METHODS.map((p) => (
+                    <option key={p.code} value={p.code}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label className="text-xs">Account name</Label>
+                <Input value={invoice.paymentMeans?.accountName ?? ''} onChange={e => updatePayment({ accountName: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs">IBAN</Label>
+                <Input placeholder="e.g. DE89 3704 0044 0532 0130 00" value={invoice.paymentMeans?.iban ?? ''} onChange={e => updatePayment({ iban: e.target.value.toUpperCase().replace(/\s/g, '') })} />
+              </div>
+              <div>
+                <Label className="text-xs">BIC / SWIFT</Label>
+                <Input value={invoice.paymentMeans?.bic ?? ''} onChange={e => updatePayment({ bic: e.target.value.toUpperCase() })} />
+              </div>
             </CardContent>
           </Card>
         </div>

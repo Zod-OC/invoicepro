@@ -56,6 +56,12 @@ export const freeTemplateCount = Array.isArray(PLAN_LIMITS.free.templates)
   : 0;
 export const proTemplateCount = templates.filter((t) => t.tier === 'pro').length;
 
+// Pro subscription DISPLAY prices — single source for every pricing surface
+// (PricingCards PLANS, the landing teaser, the pricing-page metadata) so a price
+// change lands in one place. Same lockstep discipline as the counts above.
+export const PRO_MONTHLY_PRICE = '€9';
+export const PRO_ANNUAL_PRICE = '€6.58';
+
 // Canonical per-plan feature-line LISTS for the detailed pricing card
 // (PricingCards) and any surface that shows the SAME full list (the landing
 // teaser's Pro card renders this verbatim). Built from the shared counts above

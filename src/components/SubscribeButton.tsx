@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { errorMessage } from '@/lib/utils';
 import { postJson } from '@/lib/stripe-client';
+import { track } from '@/lib/analytics';
 
 interface SubscribeButtonProps {
   planKey: string;
@@ -19,6 +20,7 @@ export function SubscribeButton({ planKey, planName, billingPeriod = 'monthly', 
   const [error, setError] = useState<string | null>(null);
 
   const handleSubscribe = async () => {
+    track('checkout_click', { plan: planKey, billing: billingPeriod });
     setLoading(true);
     setError(null);
 

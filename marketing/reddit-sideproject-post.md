@@ -11,14 +11,14 @@ I got tired of every invoicing tool forcing account creation, email verification
 - Generate professional PDF invoices instantly
 - No signup, no email, no server-side data storage — everything stays in your browser
 - Multi-currency, tax calculation, auto-save to localStorage
-- 3 templates: Modern, Classic, Minimal
+- 12 templates
 
 ### Pricing
 
-- **Free** — unlimited? No, but enough for light use; watermark included
-- **Pro ($9/mo)** — unlimited invoices, all templates, custom branding, no watermark
+- **Free** — 3 invoices a month, 2 templates
+- **Pro (€9/mo)** — unlimited invoices, all 12 templates, logo upload
 
-Core experience is free and stays free. Pro is for folks who invoice at volume or want custom branding.
+Core experience is free and stays free. Pro is for folks who invoice at volume or want more templates and logo upload.
 
 Tech: Next.js, React, TypeScript, Tailwind, client-side PDF generation. Stripe for Pro billing.
 

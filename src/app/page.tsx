@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Shield, Zap, Download, Check, Sparkles } from 'lucide-react';
 import { templates } from '@/types';
-import { freeInvoiceCap, PRO_PLAN_FEATURES } from '@/lib/plan-limits';
+import { freeInvoiceCap, PRO_PLAN_FEATURES, PRO_ANNUAL_PRICE } from '@/lib/plan-limits';
 import { BrowseProfessions } from '@/components/BrowseProfessions';
 import { SiteNav } from '@/components/SiteNav';
 import { SiteFooter } from '@/components/SiteFooter';
@@ -35,7 +35,7 @@ export default function LandingPage() {
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-xl">
           Professional PDF invoices that look like $500 designer work.
-          Your data stays in your browser. No cloud. No tracking.
+          Your data stays in your browser. No cloud. No third-party tracking.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row gap-4">
           <Button asChild size="lg" className="gap-2">
@@ -99,7 +99,8 @@ export default function LandingPage() {
               </div>
               <CardHeader>
                 <CardTitle className="text-lg">Pro</CardTitle>
-                <div className="text-3xl font-bold">€9<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                <div className="text-3xl font-bold">{PRO_ANNUAL_PRICE}<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                <div className="text-xs text-muted-foreground">billed annually · <Link href="/pricing" className="underline hover:text-foreground">view plans</Link></div>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
                 {PRO_PLAN_FEATURES.map((f) => (
