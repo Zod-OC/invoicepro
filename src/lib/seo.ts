@@ -125,3 +125,44 @@ export function softwareApplicationJsonLd(): string {
       'PDF export, invoice templates, auto-save, logo upload, no signup required',
   });
 }
+
+// E-E-A-T authorship schema. Person identifies the content's human author (the
+// Sept-2025 rater guidelines require creator identification); Article ties each
+// profession page to its author + a dateModified, signalling editorial oversight.
+// Inputs are plain data (not the Author type) so seo.ts stays decoupled from the
+// data module. sameAs MUST be real profile URLs — empty is weak-but-honest; never
+// fabricated.
+export function personJsonLd(author: {
+  name: string;
+  jobTitle: string;
+  url: string;
+  sameAs: string[];
+}): string {
+  return safeJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: author.name,
+    jobTitle: author.jobTitle,
+    url: author.url,
+    sameAs: author.sameAs,
+  });
+}
+
+export function articleJsonLd(opts: {
+  headline: string;
+  url: string;
+  dateModified: string;
+  author: { name: string; url: string };
+  publisherName: string;
+  publisherUrl: string;
+}): string {
+  return safeJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: opts.headline,
+    mainEntityOfPage: opts.url,
+    dateModified: opts.dateModified,
+    author: { '@type': 'Person', name: opts.author.name, url: opts.author.url },
+    publisher: { '@type': 'Organization', name: opts.publisherName, url: opts.publisherUrl },
+  });
+}
