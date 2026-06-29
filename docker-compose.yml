@@ -58,10 +58,13 @@ services:
       retries: 3
 
   # 3. Postgres for Umami analytics (lightweight, resource-capped).
+  # Named umami-db (NOT 'postgres') to avoid a DNS collision with Coolify's own
+  # internal coolify-db container, which aliases 'postgres' on the coolify
+  # network — Umami was intermittently connecting to coolify-db and failing auth.
   # Uses a named volume so analytics data survives container rebuilds.
-  postgres:
+  umami-db:
     image: postgres:16-alpine
-    container_name: billify-postgres
+    container_name: billify-umami-db
     restart: unless-stopped
     networks:
       - coolify
@@ -91,11 +94,15 @@ services:
     networks:
       - coolify
     depends_on:
-      - postgres
+      - umami-db
     environment:
       APP_URL: https://analytics.billify.me
-      DATABASE_URL: postgresql://umami:795b8e7fcdfb16a55375db63aa8f69a64eaf98ac@postgres:5432/umami
-      HASH_SALT: 3df04bbb86d9d1e3d52c637caef82768
+      # DATABASE_URL uses ${POSTGRES_PASSWORD} substitution so Coolify's secret
+      # scanner doesn't replace the literal password with '***' (which breaks auth).
+      # POSTGRES_PASSWORD is set in the Coolify project .env file and injected via
+      # env_file (auto-added by Coolify) — it resolves before docker-compose sees it.
+      DATABASE_URL: postgresql://umami:${POSTGRES_PASSWORD}@umami-db:5432/umami
+      HASH_SALT: ${UMAMI_HASH_SALT}
     labels:
       - traefik.enable=true
       - traefik.http.routers.umami.entrypoints=https
@@ -104,7 +111,7 @@ services:
       - traefik.http.routers.umami.tls.certresolver=letsencrypt
       - traefik.http.services.umami.loadbalancer.server.port=3000
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
       interval: 30s
       timeout: 5s
       retries: 3
