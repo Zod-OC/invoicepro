@@ -514,6 +514,67 @@ export function validateInvoice(raw: unknown): Invoice | null {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Client directory (Pro feature — free tier limited to 3 clients)
+// ---------------------------------------------------------------------------
+
+export interface Client {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  taxId?: string;
+  defaultCurrency?: string;
+  createdAt: number;
+}
+
+// ---------------------------------------------------------------------------
+// Invoice history (localStorage — status tracking without a backend)
+// ---------------------------------------------------------------------------
+
+export type HistoryStatus = 'draft' | 'sent' | 'paid' | 'overdue';
+
+export interface InvoiceRecord {
+  id: string;         // matches Invoice.id for load-back-into-editor
+  number: string;
+  clientName: string;
+  amount: number;
+  currency: string;
+  date: string;
+  dueDate: string;
+  status: HistoryStatus;
+  paidDate?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// ---------------------------------------------------------------------------
+// Backup / restore schema
+// ---------------------------------------------------------------------------
+
+export interface BillifyBackup {
+  version: 1;
+  exportedAt: string; // ISO timestamp
+  clients: Client[];
+  history: InvoiceRecord[];
+  counter: number | null;
+  currentInvoice: Invoice | null;
+}
+
+export const FREE_CLIENT_LIMIT = 3;
+
+export function createEmptyClient(): Client {
+  return {
+    id: generateId(),
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    createdAt: Date.now(),
+  };
+}
+
 export function createEmptyInvoice(): Invoice {
   const now = Date.now();
   const today = new Date().toISOString().split('T')[0];

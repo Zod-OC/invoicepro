@@ -20,6 +20,11 @@ import { isEmbedMode, isUntrustedFrame, embedKey, logoStorageKey, decodeInvoice,
 import { SITE_HOST } from '@/lib/site';
 import { stripUrlParams } from '@/lib/url';
 import { track } from '@/lib/analytics';
+import { BackupRestore } from '@/components/BackupRestore';
+import { ClientDirectory } from '@/components/ClientDirectory';
+import { InvoiceHistory } from '@/components/InvoiceHistory';
+import { useInvoiceCounter } from '@/hooks/useInvoiceCounter';
+import type { Client } from '@/types';
 
 // Static currency-options list computed ONCE at module load (not per render).
 // currencySymbol builds/caches an Intl formatter per code, so building this in
@@ -205,6 +210,7 @@ export default function AppPage() {
   // state, not a context/singleton, so only one call site may exist.
   const { plan, limits, canCreateInvoice, hasTemplateAccess, initialized, clear, awaitInitialized, error } = useSubscription();
   const [invoice, setInvoice] = useState<Invoice>(PLACEHOLDER_INVOICE);
+  const { consumeNextNumber } = useInvoiceCounter();
   const [isEmbed, setIsEmbed] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -1825,9 +1831,39 @@ export default function AppPage() {
             <span className="font-bold text-lg hidden sm:inline">Billify</span>
           </Link>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="px-2 sm:px-3" onClick={() => { setInvoice(createEmptyInvoice()); setIsPrefill(false); setIsDownloadScratch(false); dirtyRef.current = true; }}>
+            <Button variant="ghost" size="sm" className="px-2 sm:px-3" onClick={() => {
+              const fresh = createEmptyInvoice();
+              fresh.number = consumeNextNumber();
+              setInvoice(fresh); setIsPrefill(false); setIsDownloadScratch(false); dirtyRef.current = true;
+            }}>
               <RotateCcw className="w-4 h-4" /> <span className="hidden sm:inline ml-1">New</span>
             </Button>
+            {/* Sticky features — hidden in embed mode (embed is try-only, no persistence) */}
+            {!isEmbed && (
+              <>
+                <InvoiceHistory onLoadInvoice={() => undefined} />
+                <ClientDirectory
+                  invoice={invoice}
+                  isPro={plan !== 'free'}
+                  onSelectClient={(client: Client) => {
+                    setInvoice((prev) => ({
+                      ...prev,
+                      to: {
+                        ...prev.to,
+                        name: client.name,
+                        email: client.email,
+                        phone: client.phone,
+                        address: client.address,
+                        taxId: client.taxId,
+                      },
+                      currency: client.defaultCurrency || prev.currency,
+                    }));
+                    dirtyRef.current = true;
+                  }}
+                />
+                <BackupRestore />
+              </>
+            )}
             {/* Download path is host-only. In embed the free-tier cap and Pro
                 paywall can't be enforced (embed short-circuits to plan='pro' with
                 all templates free), so a live Download button here would make the
