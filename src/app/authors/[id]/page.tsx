@@ -6,10 +6,10 @@ import { SiteNavShell } from '@/components/SiteNav';
 import { SiteFooter } from '@/components/SiteFooter';
 import { AUTHORS } from '@/data/authors';
 import { staticUrl } from '@/lib/site';
-import { personJsonLd } from '@/lib/seo';
+import { organizationJsonLd } from '@/lib/seo';
 
-// E-E-A-T author bio pages. One static page per author (generateStaticParams),
-// linked from the profession-page byline + Person schema, so the named author is
+// E-E-A-T publisher bio pages. One static page per publisher (generateStaticParams),
+// linked from the profession-page byline + Organization schema, so the publisher is
 // verifiable rather than a string in a JSON-LD blob.
 export function generateStaticParams() {
   return Object.keys(AUTHORS).map((id) => ({ id }));
@@ -19,11 +19,11 @@ export function generateMetadata({ params }: { params: { id: string } }): Metada
   const author = AUTHORS[params.id];
   if (!author) return {};
   return {
-    title: `${author.name} — ${author.jobTitle}`,
+    title: `${author.name} — ${author.role}`,
     description: author.bio,
     alternates: { canonical: author.bioPath },
     openGraph: {
-      title: `${author.name}, ${author.jobTitle}`,
+      title: `${author.name}, ${author.role}`,
       description: author.bio,
       url: staticUrl(author.bioPath),
       type: 'profile',
@@ -45,9 +45,9 @@ export default function AuthorPage({ params }: { params: { id: string } }) {
 
       <main className="flex-1 py-16 px-4">
         <div className="max-w-2xl mx-auto">
-          <p className="text-sm text-muted-foreground mb-2">Author</p>
+          <p className="text-sm text-muted-foreground mb-2">Published by</p>
           <h1 className="text-3xl font-bold">{author.name}</h1>
-          <p className="text-lg text-muted-foreground mt-1">{author.jobTitle}</p>
+          <p className="text-lg text-muted-foreground mt-1">{author.role}</p>
           <p className="mt-6 text-foreground leading-relaxed">{author.bio}</p>
 
           {author.sameAs.length > 0 && (
@@ -71,9 +71,9 @@ export default function AuthorPage({ params }: { params: { id: string } }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: personJsonLd({
+          __html: organizationJsonLd({
             name: author.name,
-            jobTitle: author.jobTitle,
+            description: author.role,
             url: staticUrl(author.bioPath),
             sameAs: author.sameAs,
           }),

@@ -126,25 +126,25 @@ export function softwareApplicationJsonLd(): string {
   });
 }
 
-// E-E-A-T authorship schema. Person identifies the content's human author (the
-// Sept-2025 rater guidelines require creator identification); Article ties each
-// profession page to its author + a dateModified, signalling editorial oversight.
-// Inputs are plain data (not the Author type) so seo.ts stays decoupled from the
-// data module. sameAs MUST be real profile URLs — empty is weak-but-honest; never
+// E-E-A-T publisher schema. Organization identifies the content's publisher
+// (the Sept-2025 rater guidelines require creator identification); Article ties
+// each profession page to its publisher + a dateModified, signalling editorial
+// oversight. Inputs are plain data (not the Author type) so seo.ts stays
+// decoupled from the data module. sameAs MUST be real profile URLs — never
 // fabricated.
-export function personJsonLd(author: {
+export function organizationJsonLd(org: {
   name: string;
-  jobTitle: string;
+  description: string;
   url: string;
   sameAs: string[];
 }): string {
   return safeJsonLd({
     '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: author.name,
-    jobTitle: author.jobTitle,
-    url: author.url,
-    sameAs: author.sameAs,
+    '@type': 'Organization',
+    name: org.name,
+    description: org.description,
+    url: org.url,
+    sameAs: org.sameAs,
   });
 }
 
@@ -162,7 +162,7 @@ export function articleJsonLd(opts: {
     headline: opts.headline,
     mainEntityOfPage: opts.url,
     dateModified: opts.dateModified,
-    author: { '@type': 'Person', name: opts.author.name, url: opts.author.url },
+    author: { '@type': 'Organization', name: opts.author.name, url: opts.author.url },
     publisher: { '@type': 'Organization', name: opts.publisherName, url: opts.publisherUrl },
   });
 }

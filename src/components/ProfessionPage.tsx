@@ -7,7 +7,7 @@ import { EmbeddedEditor } from '@/components/EmbeddedEditor';
 import { CrossLinks } from '@/components/CrossLinks';
 import { SiteNav } from '@/components/SiteNav';
 import { SiteFooter } from '@/components/SiteFooter';
-import { faqJsonLd, breadcrumbJsonLd, personJsonLd, articleJsonLd } from '@/lib/seo';
+import { faqJsonLd, breadcrumbJsonLd, organizationJsonLd, articleJsonLd } from '@/lib/seo';
 import { SITE_URL, staticUrl, professionUrl } from '@/lib/site';
 import { type Profession, PROFESSION_DATA_UPDATED_AT } from '@/data/professions';
 import { DEFAULT_AUTHOR } from '@/data/authors';
@@ -64,7 +64,7 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
             <p className="mt-3 text-sm text-muted-foreground">
               By{' '}
               <Link href={DEFAULT_AUTHOR.bioPath} className="underline hover:text-foreground">{DEFAULT_AUTHOR.name}</Link>,{' '}
-              {DEFAULT_AUTHOR.jobTitle} · Updated{' '}
+              {DEFAULT_AUTHOR.role} · Updated{' '}
               {new Date(PROFESSION_DATA_UPDATED_AT).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
             </p>
 
@@ -151,9 +151,9 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: personJsonLd({
+          __html: organizationJsonLd({
             name: DEFAULT_AUTHOR.name,
-            jobTitle: DEFAULT_AUTHOR.jobTitle,
+            description: DEFAULT_AUTHOR.role,
             url: staticUrl(DEFAULT_AUTHOR.bioPath),
             sameAs: DEFAULT_AUTHOR.sameAs,
           }),
