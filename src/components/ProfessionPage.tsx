@@ -29,7 +29,7 @@ export function ProfessionPage({ profession }: { profession: Profession }) {
 
   return (
     <div className="flex flex-col min-h-full">
-      <SiteNav />
+      <SiteNav active="templates" />
 
       <main className="flex-1">
         {/* Header: breadcrumb, H1, intro, CTA */}

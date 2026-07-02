@@ -3,8 +3,7 @@ import type { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft } from 'lucide-react';
-import { SiteNavShell } from '@/components/SiteNav';
+import { SiteNav } from '@/components/SiteNav';
 import { BrowseProfessions } from '@/components/BrowseProfessions';
 import { staticUrl } from '@/lib/site';
 import { TEMPLATE_PARAM } from '@/lib/embed';
@@ -64,13 +63,7 @@ function TemplateCardLink({ id }: { id: TemplateType }) {
 export default function TemplatesPage() {
   return (
     <div className="min-h-full flex flex-col">
-      <SiteNavShell>
-        <Button asChild variant="ghost" size="sm">
-          <Link href="/" className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
-        </Button>
-      </SiteNavShell>
+      <SiteNav active="templates" />
 
       <div className="flex-1 py-16 px-4">
         <div className="max-w-5xl mx-auto">

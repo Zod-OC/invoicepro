@@ -830,6 +830,23 @@ export default function AppPage() {
               };
             }
             let next = restored ?? createEmptyInvoice();
+            // Genuine first visit (no saved invoice AND the counter was never
+            // set): pre-fill the first SEQUENTIAL number (INV-1001) instead of
+            // createEmptyInvoice's random fallback, so the very first invoice a
+            // new user sees starts the INV-1XXX series. Read the counter straight
+            // from localStorage — useInvoiceCounter's state isn't populated at
+            // first-mount (effect-timing, same trap as isEmbed) — and only
+            // consume when it's genuinely null, so reloads, returning users, and
+            // a counter set by the "New" button are all left untouched.
+            if (!restored) {
+              try {
+                if (window.localStorage.getItem('billify_invoice_counter') === null) {
+                  next = { ...next, number: consumeNextNumber() };
+                }
+              } catch {
+                /* storage unavailable — keep the random number */
+              }
+            }
             // /templates "Use Template" link: /app?template=<id>. Apply the
             // chosen template to the loaded invoice (saved or fresh). Passive —
             // dirty=false so merely visiting doesn't clobber the user's saved
