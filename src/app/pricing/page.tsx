@@ -1,11 +1,9 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Button } from '@/components/ui/button';
 import { Shield, Lock, RefreshCcw, CreditCard } from 'lucide-react';
 import { PricingCards } from '@/components/PricingCards';
 import { CheckoutCanceledBanner } from '@/components/CheckoutCanceledBanner';
 import { BrowseProfessions } from '@/components/BrowseProfessions';
-import { SiteNavShell } from '@/components/SiteNav';
+import { SiteNav } from '@/components/SiteNav';
 import { staticUrl } from '@/lib/site';
 import { freeInvoiceCap, PRO_MONTHLY_PRICE } from '@/lib/plan-limits';
 
@@ -23,12 +21,7 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <div className="min-h-full flex flex-col">
-      <SiteNavShell>
-        <Link href="/app" className="text-sm text-muted-foreground hover:text-foreground">App</Link>
-        <Button asChild size="sm">
-          <Link href="/app">Get Started</Link>
-        </Button>
-      </SiteNavShell>
+      <SiteNav active="pricing" />
 
       <div className="flex-1 py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">

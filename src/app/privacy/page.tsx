@@ -1,7 +1,5 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Button } from '@/components/ui/button';
-import { SiteNavShell } from '@/components/SiteNav';
+import { SiteNav } from '@/components/SiteNav';
 import { SiteFooter } from '@/components/SiteFooter';
 import { ProseSection } from '@/components/ProseSection';
 import { staticUrl } from '@/lib/site';
@@ -21,12 +19,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <div className="min-h-full flex flex-col">
-      <SiteNavShell>
-        <Link href="/app" className="text-sm text-muted-foreground hover:text-foreground">App</Link>
-        <Button asChild size="sm">
-          <Link href="/app">Get Started</Link>
-        </Button>
-      </SiteNavShell>
+      <SiteNav />
 
       <main className="flex-1 py-16 px-4">
         <div className="max-w-2xl mx-auto">

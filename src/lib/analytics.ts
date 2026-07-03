@@ -6,7 +6,7 @@
  * Events fired before the script loads are buffered and flushed once it's ready.
  * Every call is try/catched — analytics can never break the app. We track a small
  * fixed set of NAMED events (page views are automatic): checkout_click,
- * editor_open, pseo_view, cap_hit. No autocapture, no PII.
+ * upgrade_click, editor_open, pseo_view, cap_hit. No autocapture, no PII.
  */
 declare global {
   interface Window {

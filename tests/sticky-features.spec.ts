@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 // Set localStorage before the app initializes, so history/clients are pre-populated.
 async function seedStorage(page: Page, data: { clients?: unknown[]; history?: unknown[] }) {
@@ -45,7 +45,7 @@ test.describe('Sticky features — backup/restore, client directory, auto-number
   });
 
   test('backup/restore: export downloads valid JSON backup', async ({ page, browserName }) => {
-    test.skip(browserName === 'chromium' && page.viewportSize()?.width && page.viewportSize()!.width < 500, 'Mobile download events are flaky');
+    test.skip(browserName === 'chromium' && (page.viewportSize()?.width ?? 0) < 500, 'Mobile download events are flaky');
     // Seed data before page load
     await seedStorage(page, {
       clients: [{ id: 'c1', name: 'Acme Corp', email: 'acme@test.com', phone: '555-0100', address: '123 Main St', createdAt: Date.now() }],

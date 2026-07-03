@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { SiteNavShell } from '@/components/SiteNav';
+import { SiteNav } from '@/components/SiteNav';
 import { SiteFooter } from '@/components/SiteFooter';
 import { AUTHORS } from '@/data/authors';
 import { staticUrl } from '@/lib/site';
@@ -36,12 +35,7 @@ export default function AuthorPage({ params }: { params: { id: string } }) {
   if (!author) notFound();
   return (
     <div className="min-h-full flex flex-col">
-      <SiteNavShell>
-        <Link href="/invoice-templates" className="text-sm text-muted-foreground hover:text-foreground">Templates</Link>
-        <Button asChild size="sm">
-          <Link href="/app">Get Started</Link>
-        </Button>
-      </SiteNavShell>
+      <SiteNav />
 
       <main className="flex-1 py-16 px-4">
         <div className="max-w-2xl mx-auto">
