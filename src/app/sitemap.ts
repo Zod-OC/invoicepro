@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { professions, PROFESSION_DATA_UPDATED_AT } from '@/data/professions';
 import { AUTHORS } from '@/data/authors';
 import { INVOICE_FORMATS, FORMAT_DATA_UPDATED_AT } from '@/data/formats';
+import { COMPARISONS, COMPARISON_DATA_UPDATED_AT } from '@/data/comparisons';
 import { SITE_URL, staticUrl, professionUrl } from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -30,6 +31,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(FORMAT_DATA_UPDATED_AT),
   }));
 
+  const comparisonPages: MetadataRoute.Sitemap = COMPARISONS.map((c) => ({
+    url: staticUrl(`/compare/${c.slug}`),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+    lastModified: new Date(COMPARISON_DATA_UPDATED_AT),
+  }));
+
   const professionPages: MetadataRoute.Sitemap = professions.map((p) => ({
     url: professionUrl(p.slug),
     changeFrequency: 'monthly',
@@ -37,5 +45,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(PROFESSION_DATA_UPDATED_AT),
   }));
 
-  return [...staticPages, ...authorPages, ...formatPages, ...professionPages];
+  return [...staticPages, ...authorPages, ...formatPages, ...comparisonPages, ...professionPages];
 }
