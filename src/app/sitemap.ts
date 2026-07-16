@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { professions, PROFESSION_DATA_UPDATED_AT } from '@/data/professions';
 import { AUTHORS } from '@/data/authors';
+import { INVOICE_FORMATS, FORMAT_DATA_UPDATED_AT } from '@/data/formats';
 import { SITE_URL, staticUrl, professionUrl } from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -22,6 +23,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Stable lastModified from the data layer — not `new Date()` at build time,
   // which would mark every profession page as changed on every rebuild.
+  const formatPages: MetadataRoute.Sitemap = INVOICE_FORMATS.map((f) => ({
+    url: staticUrl(`/invoice-template/${f.slug}`),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+    lastModified: new Date(FORMAT_DATA_UPDATED_AT),
+  }));
+
   const professionPages: MetadataRoute.Sitemap = professions.map((p) => ({
     url: professionUrl(p.slug),
     changeFrequency: 'monthly',
@@ -29,5 +37,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(PROFESSION_DATA_UPDATED_AT),
   }));
 
-  return [...staticPages, ...authorPages, ...professionPages];
+  return [...staticPages, ...authorPages, ...formatPages, ...professionPages];
 }

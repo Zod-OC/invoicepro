@@ -1,8 +1,10 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { SiteNav } from '@/components/SiteNav';
 import { SiteFooter } from '@/components/SiteFooter';
 import { ProfessionCard } from '@/components/ProfessionCard';
 import { professions } from '@/data/professions';
+import { INVOICE_FORMATS } from '@/data/formats';
 import { staticUrl } from '@/lib/site';
 
 // Topical-authority hub for the 30 programmatic-SEO profession pages. Distributes
@@ -37,6 +39,18 @@ export default function InvoiceTemplatesHub() {
           <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
             {professions.map((p) => (
               <ProfessionCard key={p.slug} profession={p} dense />
+            ))}
+          </div>
+
+          <h2 className="text-2xl font-bold mt-16">Invoice templates by format</h2>
+          <p className="mt-3 text-muted-foreground max-w-2xl">
+            Prefer a spreadsheet or a print-ready file? Export any invoice as a clean CSV (opens in Excel, Google Sheets, or Numbers) or a polished PDF.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            {INVOICE_FORMATS.map((f) => (
+              <Link key={f.slug} href={`/invoice-template/${f.slug}`} className="px-4 py-2 rounded-lg border bg-background text-sm hover:bg-accent transition-colors">
+                {f.name}
+              </Link>
             ))}
           </div>
         </div>
