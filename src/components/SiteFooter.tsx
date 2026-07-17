@@ -9,6 +9,7 @@ import { BrandMark } from '@/components/SiteNav';
 const FOOTER_LINKS: { href: string; label: string }[] = [
   { href: '/pricing', label: 'Pricing' },
   { href: '/invoice-templates', label: 'Invoice Templates' },
+  { href: '/guides/invoice-tax-compliance-guide', label: 'Tax Guide' },
   { href: '/templates', label: 'Templates' },
   { href: '/privacy', label: 'Privacy' },
   { href: '/security', label: 'Security' },
