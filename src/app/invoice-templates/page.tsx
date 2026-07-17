@@ -5,6 +5,7 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { ProfessionCard } from '@/components/ProfessionCard';
 import { professions } from '@/data/professions';
 import { INVOICE_FORMATS } from '@/data/formats';
+import { COMPARISONS } from '@/data/comparisons';
 import { staticUrl } from '@/lib/site';
 
 // Topical-authority hub for the 30 programmatic-SEO profession pages. Distributes
@@ -50,6 +51,18 @@ export default function InvoiceTemplatesHub() {
             {INVOICE_FORMATS.map((f) => (
               <Link key={f.slug} href={`/invoice-template/${f.slug}`} className="px-4 py-2 rounded-lg border bg-background text-sm hover:bg-accent transition-colors">
                 {f.name}
+              </Link>
+            ))}
+          </div>
+
+          <h2 className="text-2xl font-bold mt-16">Compare Billify to other invoice tools</h2>
+          <p className="mt-3 text-muted-foreground max-w-2xl">
+            Already using another invoicing app? See how Billify's no-signup, privacy-first approach stacks up.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            {COMPARISONS.map((c) => (
+              <Link key={c.slug} href={`/compare/${c.slug}`} className="px-4 py-2 rounded-lg border bg-background text-sm hover:bg-accent transition-colors">
+                vs {c.target}
               </Link>
             ))}
           </div>
