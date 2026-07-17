@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: staticUrl('/invoice-templates'), changeFrequency: 'weekly', priority: 0.9 },
     { url: staticUrl('/pricing'), changeFrequency: 'monthly', priority: 0.8 },
     { url: staticUrl('/templates'), changeFrequency: 'monthly', priority: 0.8 },
+    { url: staticUrl('/guides/invoice-tax-compliance-guide'), changeFrequency: 'monthly', priority: 0.8 },
     { url: staticUrl('/privacy'), changeFrequency: 'yearly', priority: 0.4 },
     { url: staticUrl('/security'), changeFrequency: 'yearly', priority: 0.4 },
   ];
