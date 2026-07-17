@@ -32,6 +32,29 @@ test.describe('Sticky features — backup/restore, client directory, auto-number
     await page.close();
   });
 
+  test('history: downloading a PDF records the invoice as "sent" (#8)', async ({ page, browserName }) => {
+    test.skip(browserName === 'chromium' && (page.viewportSize()?.width ?? 0) < 500, 'Mobile download events are flaky');
+    await page.goto('/app');
+    await page.waitForTimeout(3000);
+
+    // Fill a minimal real invoice (empty invoices aren't recorded meaningfully).
+    await page.getByPlaceholder('Company name').fill('History Test Co');
+    await page.getByPlaceholder('Client name').fill('History Client');
+
+    // Download — handleDownload now calls recordInvoice(inv, 'sent') on success.
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: /Download PDF/ }).click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/Invoice-.*\.pdf/);
+    await page.waitForTimeout(600);
+
+    // Open the History panel and assert a 'sent' record now exists.
+    await page.locator('nav').getByRole('button', { name: /History/ }).click();
+    await page.waitForTimeout(400);
+    await expect(page.locator('table select').first()).toHaveValue('sent');
+  });
+
   test('backup/restore: dialog opens with export and import options', async ({ page }) => {
     await page.goto('/app');
     await page.waitForTimeout(3000);

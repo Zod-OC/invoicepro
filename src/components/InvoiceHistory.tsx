@@ -32,7 +32,7 @@ const STATUS_CONFIG: Record<HistoryStatus, { label: string; variant: 'secondary'
  * loading a record back into the editor. Status updates are handled internally
  * via the useInvoiceHistory hook.
  */
-export function InvoiceHistory({ onLoadInvoice }: { onLoadInvoice: () => void }) {
+export function InvoiceHistory({ onLoadInvoice }: { onLoadInvoice: (id: string) => void }) {
   const { history, ready, updateStatus, removeRecord, clearHistory, markOverdue } = useInvoiceHistory();
   const [open, setOpen] = useState(false);
 
@@ -46,15 +46,7 @@ export function InvoiceHistory({ onLoadInvoice }: { onLoadInvoice: () => void })
   };
 
   const handleLoad = (id: string) => {
-    // The parent's onLoadInvoice reads from billify_current. We just close and
-    // signal — the parent already has the invoice in state since it was the
-    // last edited. For loading a DIFFERENT historical invoice, we'd need to
-    // find it in history and restore it, but the full invoice data lives in
-    // the history record's extended form... Actually, the history only stores
-    // summaries. To load a full invoice, we'd need the full Invoice stored.
-    // For now, this opens the panel and the user can see the summary.
-    // TODO: store full invoice snapshots in a separate key for load-back.
-    onLoadInvoice();
+    onLoadInvoice(id);
     setOpen(false);
   };
 
@@ -161,14 +153,26 @@ export function InvoiceHistory({ onLoadInvoice }: { onLoadInvoice: () => void })
                           </select>
                         </td>
                         <td className="px-2 py-2.5">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                            onClick={() => removeRecord(record.id)}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                              onClick={() => handleLoad(record.id)}
+                              title="Load into editor"
+                            >
+                              Load
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                              onClick={() => removeRecord(record.id)}
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );

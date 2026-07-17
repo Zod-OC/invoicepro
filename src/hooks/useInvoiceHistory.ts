@@ -6,6 +6,12 @@ import { calculateTotals, generateId } from '@/types';
 import type { Invoice, InvoiceRecord, HistoryStatus } from '@/types';
 
 const STORAGE_KEY = 'billify_history';
+// Full-invoice snapshots (for reload-from-history) keyed by invoice id. The
+// history list stores only summaries; these store the full Invoice so a row
+// click can restore it. Capped + logo-stripped (logos are ~1MB base64) to stay
+// well under the ~5MB localStorage quota.
+const SNAPSHOT_KEY = 'billify_invoice_snapshots';
+const MAX_SNAPSHOTS = 50;
 
 /**
  * Invoice history hook. Records a lightweight summary of each invoice the
@@ -19,6 +25,7 @@ const STORAGE_KEY = 'billify_history';
  */
 export function useInvoiceHistory() {
   const [history, setHistory, ready] = useLocalStorage<InvoiceRecord[]>(STORAGE_KEY, []);
+  const [snapshots, setSnapshots] = useLocalStorage<Record<string, Invoice>>(SNAPSHOT_KEY, {});
 
   /** Create or update a history record from the current invoice. */
   const recordInvoice = useCallback(
@@ -61,8 +68,22 @@ export function useInvoiceHistory() {
         };
         return [record, ...prev];
       });
+      // Store a logo-stripped full snapshot so the row can reload the invoice.
+      setSnapshots((prev) => {
+        const stripped: Invoice = {
+          ...invoice,
+          from: { ...invoice.from, logo: undefined },
+          to: { ...invoice.to, logo: undefined },
+        };
+        const next = { ...prev, [invoice.id]: stripped };
+        const ids = Object.keys(next);
+        if (ids.length > MAX_SNAPSHOTS) {
+          delete next[ids[0]]; // drop the oldest insertion to stay bounded
+        }
+        return next;
+      });
     },
-    [setHistory],
+    [setHistory, setSnapshots],
   );
 
   /** Update the status of a specific invoice record. */
@@ -89,14 +110,21 @@ export function useInvoiceHistory() {
   const removeRecord = useCallback(
     (id: string) => {
       setHistory((prev) => prev.filter((r) => r.id !== id));
+      setSnapshots((prev) => {
+        if (!(id in prev)) return prev;
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     },
-    [setHistory],
+    [setHistory, setSnapshots],
   );
 
   /** Clear all history. */
   const clearHistory = useCallback(() => {
     setHistory(() => []);
-  }, [setHistory]);
+    setSnapshots(() => ({}));
+  }, [setHistory, setSnapshots]);
 
   /** Check for overdue invoices (due date passed, not yet paid/sent). */
   const markOverdue = useCallback(() => {
@@ -110,6 +138,12 @@ export function useInvoiceHistory() {
     );
   }, [setHistory]);
 
+  /** Load a stored full-invoice snapshot by id (for reload-from-history). */
+  const loadInvoice = useCallback(
+    (id: string): Invoice | undefined => snapshots[id],
+    [snapshots],
+  );
+
   return {
     history,
     ready,
@@ -118,6 +152,7 @@ export function useInvoiceHistory() {
     removeRecord,
     clearHistory,
     markOverdue,
+    loadInvoice,
     /** Raw setter for backup/restore import. */
     _importHistory: setHistory,
   };

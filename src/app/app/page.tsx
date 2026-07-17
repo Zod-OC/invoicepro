@@ -24,6 +24,7 @@ import { BackupRestore } from '@/components/BackupRestore';
 import { ClientDirectory } from '@/components/ClientDirectory';
 import { InvoiceHistory } from '@/components/InvoiceHistory';
 import { useInvoiceCounter } from '@/hooks/useInvoiceCounter';
+import { useInvoiceHistory } from '@/hooks/useInvoiceHistory';
 import type { Client } from '@/types';
 
 // Static currency-options list computed ONCE at module load (not per render).
@@ -211,6 +212,7 @@ export default function AppPage() {
   const { plan, limits, canCreateInvoice, hasTemplateAccess, initialized, clear, awaitInitialized, error } = useSubscription();
   const [invoice, setInvoice] = useState<Invoice>(PLACEHOLDER_INVOICE);
   const { consumeNextNumber } = useInvoiceCounter();
+  const { recordInvoice, loadInvoice } = useInvoiceHistory();
   const [isEmbed, setIsEmbed] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -1527,12 +1529,16 @@ export default function AppPage() {
       // monthly quota. Alert — master always alerted on a download-path failure.
       console.error(deliveryError);
       alert(PDF_FAILED_MSG);
+    } else if (outcome === 'ok') {
+      // Record the delivered invoice in history (status 'sent') so the History
+      // panel auto-populates on download; the user can mark it 'paid' from there.
+      recordInvoice(inv, 'sent');
     }
     } finally {
       if (url) URL.revokeObjectURL(url);
       setDownloading(false);
     }
-  }, [isEmbed, awaitInitialized]);
+  }, [isEmbed, awaitInitialized, recordInvoice]);
 
   // Embed's only way to download: open a top-level /app tab carrying the current
   // invoice via the same-origin handoff. The opened tab runs in HOST mode (no
@@ -1858,7 +1864,15 @@ export default function AppPage() {
             {/* Sticky features — hidden in embed mode (embed is try-only, no persistence) */}
             {!isEmbed && (
               <>
-                <InvoiceHistory onLoadInvoice={() => undefined} />
+                <InvoiceHistory onLoadInvoice={(id) => {
+                  const inv = loadInvoice(id);
+                  if (inv) {
+                    setInvoice(inv);
+                    setIsPrefill(false);
+                    setIsDownloadScratch(false);
+                    dirtyRef.current = true;
+                  }
+                }} />
                 <ClientDirectory
                   invoice={invoice}
                   isPro={plan !== 'free'}
