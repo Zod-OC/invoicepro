@@ -1,10 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 
 // Set localStorage before the app initializes, so history/clients are pre-populated.
-async function seedStorage(page: Page, data: { clients?: unknown[]; history?: unknown[] }) {
+async function seedStorage(page: Page, data: { clients?: unknown[]; history?: unknown[]; snapshots?: Record<string, unknown> }) {
   await page.addInitScript((d) => {
     if (d.clients) localStorage.setItem('billify_clients', JSON.stringify(d.clients));
     if (d.history) localStorage.setItem('billify_history', JSON.stringify(d.history));
+    if (d.snapshots) localStorage.setItem('billify_invoice_snapshots', JSON.stringify(d.snapshots));
   }, data);
 }
 
@@ -53,6 +54,73 @@ test.describe('Sticky features — backup/restore, client directory, auto-number
     await page.locator('nav').getByRole('button', { name: /History/ }).click();
     await page.waitForTimeout(400);
     await expect(page.locator('table select').first()).toHaveValue('sent');
+  });
+
+  test('history: Load button reloads the invoice into the editor (#9)', async ({ browser }) => {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+
+    // A full (logo-stripped) invoice snapshot keyed by the same id as the
+    // history record — the Load button is enabled only when this exists.
+    const snapshot = {
+      id: 'load-1',
+      number: 'INV-5555',
+      date: '2026-07-01',
+      dueDate: '2026-07-15',
+      from: { name: 'Snapshot Sender LLC', email: 'bill@sender.test', address: '1 Sender St', phone: '555-0001' },
+      to: { name: 'Loadable Client Co', email: 'ap@client.test', address: '2 Client Ave', phone: '555-0002' },
+      items: [{ description: 'Snapshot Consulting', quantity: 5, rate: 120 }],
+      notes: '',
+      terms: 'Net 14',
+      taxRate: 0,
+      currency: 'USD',
+      template: 'modern',
+      status: 'draft',
+      createdAt: 1750000000000,
+      updatedAt: 1750000000000,
+    };
+    await seedStorage(page, {
+      history: [
+        { id: 'load-1', number: 'INV-5555', clientName: 'Loadable Client Co', amount: 600, currency: 'USD', date: '2026-07-01', dueDate: '2026-07-15', status: 'sent', createdAt: 1750000000000, updatedAt: 1750000000000 },
+      ],
+      snapshots: { 'load-1': snapshot },
+    });
+
+    await page.goto('/app');
+    await page.waitForTimeout(4000);
+
+    // Open the History panel — the row's Load button is enabled (snapshot present).
+    await page.locator('nav').getByRole('button', { name: /History/ }).click();
+    await page.waitForTimeout(500);
+    const loadBtn = page.locator('[role="dialog"]').getByRole('button', { name: 'Load' });
+    await expect(loadBtn).toBeEnabled();
+    await loadBtn.click();
+
+    // handleLoad closes the dialog; the editor now holds the loaded invoice.
+    await expect(page.getByPlaceholder('Company name')).toHaveValue('Snapshot Sender LLC');
+    await expect(page.getByPlaceholder('Client name')).toHaveValue('Loadable Client Co');
+    await page.close();
+  });
+
+  test('history: Load button is disabled (with an honest tooltip) when no snapshot is saved (#3)', async ({ browser }) => {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    // A history record with NO matching snapshot — e.g. evicted by the 50-cap,
+    // or a backup that predates snapshots. Load must be disabled, not a silent no-op.
+    await seedStorage(page, {
+      history: [
+        { id: 'nosnap-1', number: 'INV-6666', clientName: 'No Snapshot Co', amount: 100, currency: 'USD', date: '2026-07-01', dueDate: '2026-07-15', status: 'sent', createdAt: 1750000000000, updatedAt: 1750000000000 },
+      ],
+    });
+
+    await page.goto('/app');
+    await page.waitForTimeout(4000);
+    await page.locator('nav').getByRole('button', { name: /History/ }).click();
+    await page.waitForTimeout(500);
+
+    const loadBtn = page.locator('[role="dialog"]').getByRole('button', { name: 'Load' });
+    await expect(loadBtn).toBeDisabled();
+    // The tooltip explains WHY, so the disabled button reads as intentional, not broken.
+    await expect(loadBtn).toHaveAttribute('title', /no longer saved/i);
+    await page.close();
   });
 
   test('backup/restore: dialog opens with export and import options', async ({ page }) => {

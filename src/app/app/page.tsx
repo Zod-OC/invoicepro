@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Invoice, createEmptyInvoice, formatCurrency, calculateTotals, templates, currencies, currencySymbol, TemplateType, TaxCategory, PaymentMeans, TAX_CATEGORIES, TAX_CATEGORY_LABELS, UNIT_CODES, PAYMENT_METHODS, DEFAULT_PAYMENT_CODE, isValidCurrencyCode, validateInvoice, getTemplate, isTemplateId, freeFallbackTemplate, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES, isValidLogoDataUrl } from '@/types';
+import { Invoice, createEmptyInvoice, formatCurrency, calculateTotals, templates, currencies, currencySymbol, TemplateType, TaxCategory, PaymentMeans, TAX_CATEGORIES, TAX_CATEGORY_LABELS, UNIT_CODES, PAYMENT_METHODS, DEFAULT_PAYMENT_CODE, isValidCurrencyCode, validateInvoice, getTemplate, isTemplateId, freeFallbackTemplate, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES, isValidLogoDataUrl, stripLogos } from '@/types';
 import { generatePDF } from '@/lib/pdf';
 import { generateCSV } from '@/lib/csv';
 import { useSubscription, getStoredPlan } from '@/hooks/useSubscription';
@@ -212,7 +212,7 @@ export default function AppPage() {
   const { plan, limits, canCreateInvoice, hasTemplateAccess, initialized, clear, awaitInitialized, error } = useSubscription();
   const [invoice, setInvoice] = useState<Invoice>(PLACEHOLDER_INVOICE);
   const { consumeNextNumber } = useInvoiceCounter();
-  const { recordInvoice, loadInvoice } = useInvoiceHistory();
+  const { history, ready, snapshots, recordInvoice, updateStatus, removeRecord, clearHistory, markOverdue } = useInvoiceHistory();
   const [isEmbed, setIsEmbed] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -289,6 +289,21 @@ export default function AppPage() {
   // runs after commit, before any async postMessage event handler can fire, so
   // the listener still reads the current invoice.
   useEffect(() => { invoiceRef.current = invoice; }, [invoice]);
+  // Apply an invoice into the editor. `commit` controls whether it auto-saves
+  // to billify_current: the New button commits (the fresh invoice becomes the
+  // current draft immediately, dirty=true → debounced save fires), while
+  // Load-from-history does NOT commit — it loads the invoice for preview/editing
+  // without overwriting billify_current or reaping the current invoice's logo
+  // side-keys (dirty=false → the debounced save effect early-returns). The
+  // user's first edit flips dirtyRef true, which is when the loaded invoice
+  // persists. This makes Load non-destructive: peeking at a history row can't
+  // destroy the in-progress invoice or its uploaded logo.
+  const applyInvoiceToEditor = useCallback((inv: Invoice, commit: boolean) => {
+    setInvoice(inv);
+    setIsPrefill(false);
+    setIsDownloadScratch(false);
+    dirtyRef.current = commit;
+  }, []);
   // Tracks the logo last written to the logo side-keys so persistInvoice can
   // skip the ~1 MB logo re-serialize when only text changed. Initialized to
   // {from:undefined,to:undefined}. On the host restore path the mount effect
@@ -447,7 +462,7 @@ export default function AppPage() {
       syncLogoSide('to', inv.to.logo, lastSavedLogosRef);
     } catch { /* logo write failed (quota/unavailable) — still try the text save */ }
     try {
-      const textOnly: Invoice = { ...inv, from: { ...inv.from, logo: undefined }, to: { ...inv.to, logo: undefined } };
+      const textOnly = stripLogos(inv);
       // Cross-tab write semantics: last-write-wins, no Web Lock / compare-and-set.
       // localStorage has no atomic CAS, and unlike the month-count cap (which IS
       // serialized under navigator.locks.request because concurrent over-counts
@@ -1857,22 +1872,34 @@ export default function AppPage() {
             <Button variant="ghost" size="sm" className="px-2 sm:px-3" onClick={() => {
               const fresh = createEmptyInvoice();
               fresh.number = consumeNextNumber();
-              setInvoice(fresh); setIsPrefill(false); setIsDownloadScratch(false); dirtyRef.current = true;
+              applyInvoiceToEditor(fresh, true);
             }}>
               <RotateCcw className="w-4 h-4" /> <span className="hidden sm:inline ml-1">New</span>
             </Button>
             {/* Sticky features — hidden in embed mode (embed is try-only, no persistence) */}
             {!isEmbed && (
               <>
-                <InvoiceHistory onLoadInvoice={(id) => {
-                  const inv = loadInvoice(id);
-                  if (inv) {
-                    setInvoice(inv);
-                    setIsPrefill(false);
-                    setIsDownloadScratch(false);
-                    dirtyRef.current = true;
-                  }
-                }} />
+                <InvoiceHistory
+                  history={history}
+                  ready={ready}
+                  snapshots={snapshots}
+                  onUpdateStatus={updateStatus}
+                  onRemoveRecord={removeRecord}
+                  onClearHistory={clearHistory}
+                  onMarkOverdue={markOverdue}
+                  onLoadInvoice={(id) => {
+                    // Funnel the snapshot through the shared validateInvoice
+                    // ingestion boundary (same as the other 4 load paths) and
+                    // load it NON-destructively: commit=false leaves dirtyRef
+                    // false, so the debounced save early-returns and
+                    // billify_current + the current invoice's logo side-keys
+                    // stay untouched until the user edits the loaded invoice.
+                    const raw = snapshots[id];
+                    if (!raw) return;
+                    const v = validateInvoice(raw);
+                    if (v) applyInvoiceToEditor(v, false);
+                  }}
+                />
                 <ClientDirectory
                   invoice={invoice}
                   isPro={plan !== 'free'}

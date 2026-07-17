@@ -261,6 +261,23 @@ export function generateId(): string {
 export const MAX_LOGO_SIZE = 1024 * 1024; // 1MB
 export const ALLOWED_LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
+/**
+ * Return a copy of `inv` with the from/to logos removed (set to undefined).
+ * Logos are ~1 MB base64 strings and are stored in their OWN side-keys
+ * (logoStorageKey) rather than inside the JSON invoice blob, so any invoice
+ * written to localStorage — billify_current, a share/handoff payload, or a
+ * history snapshot — is persisted logo-stripped and reassembled from the
+ * side-keys on load. Centralizing the strip here keeps the three write sites
+ * (persistInvoice, handoffUrl, useInvoiceHistory snapshots) from drifting.
+ */
+export function stripLogos(inv: Invoice): Invoice {
+  return {
+    ...inv,
+    from: { ...inv.from, logo: undefined },
+    to: { ...inv.to, logo: undefined },
+  };
+}
+
 function isValidString(v: unknown): v is string {
   return typeof v === 'string';
 }
@@ -558,6 +575,10 @@ export interface BillifyBackup {
   exportedAt: string; // ISO timestamp
   clients: Client[];
   history: InvoiceRecord[];
+  // Full (logo-stripped) invoice snapshots keyed by invoice id, used by the
+  // History panel's "Load into editor" action. Optional so backups from before
+  // snapshots existed still parse (they load with Load disabled, gracefully).
+  snapshots?: Record<string, Invoice>;
   counter: number | null;
   currentInvoice: Invoice | null;
 }

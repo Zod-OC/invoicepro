@@ -12,9 +12,22 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { History, Trash2, CheckCircle2, Send, Clock, FileText } from 'lucide-react';
-import { useInvoiceHistory } from '@/hooks/useInvoiceHistory';
 import { formatCurrency } from '@/types';
-import type { HistoryStatus } from '@/types';
+import type { Invoice, InvoiceRecord, HistoryStatus } from '@/types';
+
+export interface InvoiceHistoryProps {
+  history: InvoiceRecord[];
+  ready: boolean;
+  /** Full (logo-stripped) invoice snapshots keyed by id. A row's Load button is
+   * disabled when its snapshot is missing (evicted by the 50-cap, not yet
+   * recorded, or absent after a restore) so Load is never a silent no-op. */
+  snapshots: Record<string, Invoice>;
+  onUpdateStatus: (id: string, status: HistoryStatus) => void;
+  onRemoveRecord: (id: string) => void;
+  onClearHistory: () => void;
+  onMarkOverdue: () => void;
+  onLoadInvoice: (id: string) => void;
+}
 
 const STATUS_CONFIG: Record<HistoryStatus, { label: string; variant: 'secondary' | 'default' | 'destructive' | 'outline'; icon: React.ElementType; className: string }> = {
   draft: { label: 'Draft', variant: 'secondary', icon: FileText, className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
@@ -26,23 +39,34 @@ const STATUS_CONFIG: Record<HistoryStatus, { label: string; variant: 'secondary'
 /**
  * Invoice history panel. Shows a table of all invoices the user has created,
  * with manual status tracking (draft → sent → paid → overdue). Clicking a
- * record loads the invoice back into the editor (via the onLoadInvoice callback).
+ * record's Load button loads the invoice back into the editor (via
+ * onLoadInvoice); rows whose snapshot is missing show a disabled Load button
+ * with a tooltip rather than failing silently.
  *
- * This component is self-contained — the parent passes onLoadInvoice to handle
- * loading a record back into the editor. Status updates are handled internally
- * via the useInvoiceHistory hook.
+ * Presentational: the owning state lives in one useInvoiceHistory instance in
+ * app/page.tsx, which passes history/snapshots + the mutating callbacks as
+ * props. Keeping a single owner means the history and snapshots state can't
+ * drift across hook instances (no same-tab sync machinery needed).
  */
-export function InvoiceHistory({ onLoadInvoice }: { onLoadInvoice: (id: string) => void }) {
-  const { history, ready, updateStatus, removeRecord, clearHistory, markOverdue } = useInvoiceHistory();
+export function InvoiceHistory({
+  history,
+  ready,
+  snapshots,
+  onUpdateStatus,
+  onRemoveRecord,
+  onClearHistory,
+  onMarkOverdue,
+  onLoadInvoice,
+}: InvoiceHistoryProps) {
   const [open, setOpen] = useState(false);
 
   // Mark overdue invoices when the panel opens.
   useEffect(() => {
-    if (open) markOverdue();
-  }, [open, markOverdue]);
+    if (open) onMarkOverdue();
+  }, [open, onMarkOverdue]);
 
   const handleStatusChange = (id: string, status: HistoryStatus) => {
-    updateStatus(id, status);
+    onUpdateStatus(id, status);
   };
 
   const handleLoad = (id: string) => {
@@ -107,7 +131,7 @@ export function InvoiceHistory({ onLoadInvoice }: { onLoadInvoice: (id: string) 
                 size="sm"
                 className="ml-auto text-xs text-muted-foreground hover:text-destructive"
                 onClick={() => {
-                  if (confirm('Clear all invoice history? This cannot be undone.')) clearHistory();
+                  if (confirm('Clear all invoice history? This cannot be undone.')) onClearHistory();
                 }}
               >
                 <Trash2 className="w-3 h-3 mr-1" />
@@ -157,9 +181,10 @@ export function InvoiceHistory({ onLoadInvoice }: { onLoadInvoice: (id: string) 
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                               onClick={() => handleLoad(record.id)}
-                              title="Load into editor"
+                              disabled={!snapshots[record.id]}
+                              title={snapshots[record.id] ? 'Load into editor' : 'Snapshot no longer saved — re-download this invoice to reload it'}
                             >
                               Load
                             </Button>
@@ -167,7 +192,7 @@ export function InvoiceHistory({ onLoadInvoice }: { onLoadInvoice: (id: string) 
                               variant="ghost"
                               size="sm"
                               className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={() => removeRecord(record.id)}
+                              onClick={() => onRemoveRecord(record.id)}
                               title="Delete"
                             >
                               <Trash2 className="w-3.5 h-3.5" />

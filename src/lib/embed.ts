@@ -1,4 +1,4 @@
-import { Invoice, validateInvoice, generateId } from '@/types';
+import { Invoice, validateInvoice, generateId, stripLogos } from '@/types';
 import { PROFESSION_PATH_PREFIX } from '@/lib/site';
 
 /**
@@ -876,11 +876,7 @@ export function handoffUrl(invoice: Invoice, persist = true): string {
   // alert, not two — the logo-stripped alert is exclusive to the successful-
   // strip path above.
   const hadLogo = Boolean(invoice.from.logo || invoice.to.logo);
-  const stripped: Invoice = {
-    ...invoice,
-    from: { ...invoice.from, logo: undefined },
-    to: { ...invoice.to, logo: undefined },
-  };
+  const stripped = stripLogos(invoice);
   const encoded = encodeInvoice(stripped);
   // The download flag is stashed ONLY on the persist=false (embed download CTA)
   // branch — the host /app loads the scratch read-only but downloadable (skip

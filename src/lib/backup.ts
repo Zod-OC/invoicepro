@@ -5,6 +5,10 @@ import type { BillifyBackup, Client, Invoice, InvoiceRecord } from '@/types';
 const BACKUP_KEYS = {
   clients: 'billify_clients',
   history: 'billify_history',
+  // Full (logo-stripped) invoice snapshots that power the History panel's
+  // "Load into editor" action. Must round-trip with history, or every Load
+  // button is dead after a restore.
+  snapshots: 'billify_invoice_snapshots',
   counter: 'billify_invoice_counter',
   current: 'billify_current',
 } as const;
@@ -29,6 +33,7 @@ export function exportBackup(): BillifyBackup {
 
   const clients = read<Client[]>(BACKUP_KEYS.clients, []);
   const history = read<InvoiceRecord[]>(BACKUP_KEYS.history, []);
+  const snapshots = read<Record<string, Invoice>>(BACKUP_KEYS.snapshots, {});
   const counterRaw = localStorage.getItem(BACKUP_KEYS.counter);
   let counter: number | null = null;
   if (counterRaw) {
@@ -45,6 +50,7 @@ export function exportBackup(): BillifyBackup {
     exportedAt: new Date().toISOString(),
     clients,
     history,
+    snapshots,
     counter,
     currentInvoice: current,
   };
@@ -73,6 +79,7 @@ export interface ImportResult {
   error?: string;
   clientsImported: number;
   historyImported: number;
+  snapshotsImported: number;
   counterSet: boolean;
   currentSet: boolean;
 }
@@ -129,6 +136,13 @@ export function applyBackup(backup: BillifyBackup): ImportResult {
 
   write(BACKUP_KEYS.clients, backup.clients);
   write(BACKUP_KEYS.history, backup.history);
+  // Write the backup's snapshots, or CLEAR the key when the backup predates
+  // snapshots (backup.snapshots undefined). Clearing prevents stale snapshots
+  // from a previous device desyncing with the freshly-imported history — Load
+  // is then honestly disabled for rows with no snapshot rather than loading
+  // the wrong invoice by id collision.
+  const snapshots = backup.snapshots ?? {};
+  write(BACKUP_KEYS.snapshots, snapshots);
   if (backup.counter !== null && typeof backup.counter === 'number') {
     write(BACKUP_KEYS.counter, backup.counter);
   }
@@ -140,6 +154,7 @@ export function applyBackup(backup: BillifyBackup): ImportResult {
     success: true,
     clientsImported: backup.clients.length,
     historyImported: backup.history.length,
+    snapshotsImported: Object.keys(snapshots).length,
     counterSet: backup.counter !== null,
     currentSet: backup.currentInvoice !== null,
   };
