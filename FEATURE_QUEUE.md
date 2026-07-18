@@ -10,4 +10,4 @@ Open GitHub issues that need implementation.
 | 4 | Load invoice from history into editor (issue #9) | DONE | 0 | - |
 | 5 | Client autocomplete in Bill To field (issue #10) | FAILED | 1 | ccr-error |
 | 6 | Fix analytics docblock — list upgrade_click event (issue #5) | DONE | 0 | - |
-| 7 | PDF drawDetails inline layout (issue #6, EN 16931 compliance) | PENDING | 0 | - |
+| 7 | PDF drawDetails inline layout (issue #6, EN 16931 compliance)) | DONE | 0 | - |

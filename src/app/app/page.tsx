@@ -14,7 +14,7 @@ import { generateCSV } from '@/lib/csv';
 import { useSubscription, getStoredPlan } from '@/hooks/useSubscription';
 import { DEFAULT_LIMITS } from '@/lib/plan-limits';
 import { SubscriptionManager } from '@/components/SubscriptionManager';
-import { Sparkles, Plus, Trash2, Download, RotateCcw, FileText, Shield, Maximize2, AlertCircle, X } from 'lucide-react';
+import { Sparkles, Plus, Trash2, Download, RotateCcw, FileText, Shield, Maximize2, AlertCircle, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { PaywallModal } from '@/components/PaywallModal';
 import { isEmbedMode, isUntrustedFrame, embedKey, logoStorageKey, decodeInvoice, peekHandoff, consumeHandoff, peekPersistFlag, consumePersistFlag, takeDownloadFlag, cleanupStaleHandoffs, onTrustedMessage, handoffUrl, warnIfHandoffTooLarge, popupBlockedMsg, INVOICE_PARAM, HANDOFF_PARAM, PERSIST_PARAM, DOWNLOAD_PARAM, TEMPLATE_PARAM, MSG_SYNC_REQUEST, MSG_INVOICE_FRESH } from '@/lib/embed';
 import { SITE_HOST } from '@/lib/site';
@@ -217,6 +217,7 @@ export default function AppPage() {
   const { history, ready, snapshots, recordInvoice, updateStatus, removeRecord, clearHistory, markOverdue } = useInvoiceHistory();
   const { clients } = useClients();
   const [isEmbed, setIsEmbed] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [showPaywall, setShowPaywall] = useState<{ open: boolean; feature: string } | null>(null);
@@ -2114,16 +2115,43 @@ export default function AppPage() {
                 <Label className="text-xs">Due Date</Label>
                 <Input type="date" value={invoice.dueDate} onChange={e => update({ dueDate: e.target.value })} />
               </div>
-              <div>
-                <Label className="text-xs">Purchase Order #</Label>
-                <Input placeholder="PO number (optional)" value={invoice.purchaseOrder ?? ''} onChange={e => update({ purchaseOrder: e.target.value })} />
-              </div>
-              <div>
-                <Label className="text-xs">Leitweg-ID (DE e-invoice routing)</Label>
-                <Input placeholder="Leitweg-ID (optional)" value={invoice.leitwegId ?? ''} onChange={e => update({ leitwegId: e.target.value })} />
-              </div>
             </CardContent>
           </Card>
+
+          {/* Advanced fields — collapsed by default for first-time users */}
+          {(invoice.purchaseOrder || invoice.leitwegId) && !showAdvanced ? (
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(true)}
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              <ChevronDown className="w-3 h-3" /> Show advanced fields (PO, Leitweg-ID)
+            </button>
+          ) : null}
+          {showAdvanced || invoice.purchaseOrder || invoice.leitwegId ? (
+            <Card>
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-medium">Advanced</CardTitle>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced(false)}
+                  className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                >
+                  <ChevronUp className="w-3 h-3" /> Hide
+                </button>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Purchase Order #</Label>
+                  <Input placeholder="PO number (optional)" value={invoice.purchaseOrder ?? ''} onChange={e => update({ purchaseOrder: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Leitweg-ID (DE e-invoice routing)</Label>
+                  <Input placeholder="Leitweg-ID (optional)" value={invoice.leitwegId ?? ''} onChange={e => update({ leitwegId: e.target.value })} />
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card>
             <CardHeader className="pb-2">
@@ -2331,15 +2359,24 @@ export default function AppPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Payment Details (optional)</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">Method</Label>
-                <select
-                  value={invoice.paymentMeans?.code ?? ''}
+          {/* Payment Details — collapsible (most users don't need this) */}
+          {invoice.paymentMeans?.code ? (
+            <Card>
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-medium">Payment Details</CardTitle>
+                <button
+                  type="button"
+                  onClick={() => update({ paymentMeans: undefined })}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </button>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Method</Label>
+                  <select
+                    value={invoice.paymentMeans?.code ?? ''}
                   onChange={e => {
                     const code = e.target.value;
                     if (!code) {
@@ -2371,6 +2408,15 @@ export default function AppPage() {
               </div>
             </CardContent>
           </Card>
+          ) : (
+            <button
+              type="button"
+              onClick={() => update({ paymentMeans: { code: 'credit-transfer' } })}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <ChevronDown className="w-3 h-3" /> Add payment details (IBAN, BIC)
+            </button>
+          )}
         </div>
 
         {/* Preview */}

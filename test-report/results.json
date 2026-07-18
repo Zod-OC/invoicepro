@@ -82,6 +82,125 @@
   },
   "suites": [
     {
+      "title": "analytics.spec.ts",
+      "file": "analytics.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Analytics docblock — issue #5 (list upgrade_click)",
+          "file": "analytics.spec.ts",
+          "line": 65,
+          "column": 6,
+          "specs": [
+            {
+              "title": "docblock lists upgrade_click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-18T19:57:42.813Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "634c82c6846b68aa8d60-916544f5407fb24b0cd6",
+              "file": "analytics.spec.ts",
+              "line": 66,
+              "column": 7
+            },
+            {
+              "title": "every event fired via track() is named in the docblock",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 9,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-18T19:57:42.864Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "634c82c6846b68aa8d60-672196207d34ea4e6c31",
+              "file": "analytics.spec.ts",
+              "line": 72,
+              "column": 7
+            },
+            {
+              "title": "the docblock names no event that is never fired (no phantoms)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 27,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-18T19:57:42.876Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "634c82c6846b68aa8d60-f8497fbbbb84a93df5e4",
+              "file": "analytics.spec.ts",
+              "line": 82,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
       "title": "css-pipeline.spec.ts",
       "file": "css-pipeline.spec.ts",
       "column": 0,
@@ -107,15 +226,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 30,
+                      "duration": 42,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:06.335Z",
+                      "startTime": "2026-07-18T19:57:42.821Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -141,15 +260,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1338,
+                      "duration": 1379,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:06.402Z",
+                      "startTime": "2026-07-18T19:57:42.842Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -175,15 +294,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 1291,
+                      "duration": 1375,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:06.394Z",
+                      "startTime": "2026-07-18T19:57:42.847Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -209,15 +328,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 30,
+                      "duration": 25,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:06.367Z",
+                      "startTime": "2026-07-18T19:57:42.863Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -226,142 +345,6 @@
                 }
               ],
               "id": "0f62f52a45f1f869fd4d-7d9944caf2c96ea9bff4",
-              "file": "css-pipeline.spec.ts",
-              "line": 100,
-              "column": 7
-            },
-            {
-              "title": "homepage CSS file is non-trivial (Tailwind utilities compiled)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 29,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:24.793Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "0f62f52a45f1f869fd4d-697c723ee0a0da2886c9",
-              "file": "css-pipeline.spec.ts",
-              "line": 26,
-              "column": 7
-            },
-            {
-              "title": "homepage renders with actual styles applied (not unstyled DOM)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1480,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:25.106Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "0f62f52a45f1f869fd4d-9cf7e5ab93ba31e909a1",
-              "file": "css-pipeline.spec.ts",
-              "line": 56,
-              "column": 7
-            },
-            {
-              "title": "footer border is visible (regression: border-t class)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 1439,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:25.149Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "0f62f52a45f1f869fd4d-a166a3cae90cfb41ca07",
-              "file": "css-pipeline.spec.ts",
-              "line": 86,
-              "column": 7
-            },
-            {
-              "title": "CSP frame-ancestors is delivered via HTTP header (not just meta)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 28,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:25.175Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "0f62f52a45f1f869fd4d-5ffa5d6150bab7032a30",
               "file": "css-pipeline.spec.ts",
               "line": 100,
               "column": 7
@@ -396,15 +379,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1110,
+                      "duration": 1107,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:06.417Z",
+                      "startTime": "2026-07-18T19:57:42.909Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -430,15 +413,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 1852,
+                      "duration": 1903,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:06.362Z",
+                      "startTime": "2026-07-18T19:57:42.910Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -464,15 +447,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 2057,
+                      "duration": 2103,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:06.407Z",
+                      "startTime": "2026-07-18T19:57:42.912Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -498,15 +481,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 946,
+                      "duration": 914,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:06.439Z",
+                      "startTime": "2026-07-18T19:57:42.948Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -532,15 +515,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 829,
+                      "duration": 841,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:07.531Z",
+                      "startTime": "2026-07-18T19:57:43.978Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -566,15 +549,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 820,
+                      "duration": 898,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:07.662Z",
+                      "startTime": "2026-07-18T19:57:44.119Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -600,15 +583,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 1743,
+                      "duration": 1813,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:07.797Z",
+                      "startTime": "2026-07-18T19:57:44.327Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -634,15 +617,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 804,
+                      "duration": 824,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:07.871Z",
+                      "startTime": "2026-07-18T19:57:44.331Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -651,278 +634,6 @@
                 }
               ],
               "id": "517b873a6cfc724b47a0-d4cc98b52265a4f99d44",
-              "file": "e2e-app.spec.ts",
-              "line": 179,
-              "column": 7
-            },
-            {
-              "title": "creates invoice, fills all fields, and downloads PDF",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 1231,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:25.218Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "517b873a6cfc724b47a0-0391c0c1f0f9b9157e4d",
-              "file": "e2e-app.spec.ts",
-              "line": 11,
-              "column": 7
-            },
-            {
-              "title": "auto-save persists to localStorage and survives page reload",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 1972,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:24.854Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "517b873a6cfc724b47a0-a402bc82de35bc40063a",
-              "file": "e2e-app.spec.ts",
-              "line": 47,
-              "column": 7
-            },
-            {
-              "title": "each template produces visually different preview",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 2344,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:25.238Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "517b873a6cfc724b47a0-342ba04aefd39f8b9417",
-              "file": "e2e-app.spec.ts",
-              "line": 67,
-              "column": 7
-            },
-            {
-              "title": "tax slider correctly adjusts totals",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 1249,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:27.030Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "517b873a6cfc724b47a0-f095d4a4286916e2de2a",
-              "file": "e2e-app.spec.ts",
-              "line": 86,
-              "column": 7
-            },
-            {
-              "title": "footer has correct branding",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 1219,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:26.566Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "517b873a6cfc724b47a0-05faf0387429d0918b13",
-              "file": "e2e-app.spec.ts",
-              "line": 110,
-              "column": 7
-            },
-            {
-              "title": "landing page has no InvoicePro references",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1064,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:26.690Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "517b873a6cfc724b47a0-ae41b3f04ec4634f5006",
-              "file": "e2e-app.spec.ts",
-              "line": 117,
-              "column": 7
-            },
-            {
-              "title": "logged-in Pro user keeps saved Pro template after plan resolves",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 1913,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:26.694Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "517b873a6cfc724b47a0-be5f60729f4f004aa2ce",
-              "file": "e2e-app.spec.ts",
-              "line": 127,
-              "column": 7
-            },
-            {
-              "title": "free user loading a crafted Pro template via ?invoice= is clamped to modern",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 1137,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:26.895Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "517b873a6cfc724b47a0-fe50278b44fec3024e79",
               "file": "e2e-app.spec.ts",
               "line": 179,
               "column": 7
@@ -950,15 +661,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 5,
-                  "parallelIndex": 5,
+                  "workerIndex": 2,
+                  "parallelIndex": 2,
                   "status": "passed",
-                  "duration": 2990,
+                  "duration": 2981,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-18T08:27:08.316Z",
+                  "startTime": "2026-07-18T19:57:44.847Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -984,15 +695,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 3,
-                  "parallelIndex": 3,
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 2952,
+                  "duration": 2998,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-18T08:27:08.379Z",
+                  "startTime": "2026-07-18T19:57:44.927Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1018,15 +729,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 4,
-                  "parallelIndex": 4,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2115,
+                  "duration": 2130,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-18T08:27:08.498Z",
+                  "startTime": "2026-07-18T19:57:45.030Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1052,15 +763,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
+                  "workerIndex": 3,
+                  "parallelIndex": 3,
                   "status": "passed",
-                  "duration": 1949,
+                  "duration": 1964,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-18T08:27:08.552Z",
+                  "startTime": "2026-07-18T19:57:45.114Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1069,142 +780,6 @@
             }
           ],
           "id": "936d864abd068c8a5b7b-8ce3d35d4fd3c6e3c6be",
-          "file": "logo-persist-verify.spec.ts",
-          "line": 105,
-          "column": 5
-        },
-        {
-          "title": "logo persists across reload via dedicated side-key, current stays text-only",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 30000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "chromium-mobile",
-              "projectName": "chromium-mobile",
-              "results": [
-                {
-                  "workerIndex": 9,
-                  "parallelIndex": 5,
-                  "status": "passed",
-                  "duration": 3100,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-07-18T08:27:27.663Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "936d864abd068c8a5b7b-15beb209e477f50a5fd2",
-          "file": "logo-persist-verify.spec.ts",
-          "line": 14,
-          "column": 5
-        },
-        {
-          "title": "pre-migration embedded logo reassembles from current and migrates on first save",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 30000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "chromium-mobile",
-              "projectName": "chromium-mobile",
-              "results": [
-                {
-                  "workerIndex": 7,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 3012,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-07-18T08:27:27.774Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "936d864abd068c8a5b7b-f7d4289b2baaa360fd05",
-          "file": "logo-persist-verify.spec.ts",
-          "line": 43,
-          "column": 5
-        },
-        {
-          "title": "handoff sweep rate-limit marker survives the scan (not self-deleted)",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 30000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "chromium-mobile",
-              "projectName": "chromium-mobile",
-              "results": [
-                {
-                  "workerIndex": 10,
-                  "parallelIndex": 2,
-                  "status": "passed",
-                  "duration": 2167,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-07-18T08:27:27.806Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "936d864abd068c8a5b7b-a44e8415735f68fb6619",
-          "file": "logo-persist-verify.spec.ts",
-          "line": 79,
-          "column": 5
-        },
-        {
-          "title": "handoff with persist flag writes billify_current synchronously on mount",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 30000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "chromium-mobile",
-              "projectName": "chromium-mobile",
-              "results": [
-                {
-                  "workerIndex": 6,
-                  "parallelIndex": 1,
-                  "status": "passed",
-                  "duration": 2011,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-07-18T08:27:28.052Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "936d864abd068c8a5b7b-ab4b412efbda641fb0d3",
           "file": "logo-persist-verify.spec.ts",
           "line": 105,
           "column": 5
@@ -1237,15 +812,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1061,
+                      "duration": 1112,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:08.696Z",
+                      "startTime": "2026-07-18T19:57:45.174Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1271,15 +846,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 630,
+                      "duration": 581,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:09.570Z",
+                      "startTime": "2026-07-18T19:57:46.168Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1305,15 +880,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1112,
+                      "duration": 1118,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:09.773Z",
+                      "startTime": "2026-07-18T19:57:46.298Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1339,15 +914,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 1133,
+                      "duration": 1165,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:10.211Z",
+                      "startTime": "2026-07-18T19:57:46.759Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1373,15 +948,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 1107,
+                      "duration": 1189,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:10.513Z",
+                      "startTime": "2026-07-18T19:57:47.093Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1407,15 +982,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1088,
+                      "duration": 1229,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:10.625Z",
+                      "startTime": "2026-07-18T19:57:47.177Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1427,9 +1002,26 @@
               "file": "marketing-claims.spec.ts",
               "line": 108,
               "column": 7
-            },
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "pdf-details-inline.spec.ts",
+      "file": "pdf-details-inline.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PDF compliance details — inline layout (EN 16931, issue #6)",
+          "file": "pdf-details-inline.spec.ts",
+          "line": 72,
+          "column": 6,
+          "specs": [
             {
-              "title": "landing page advertises correct template count and names",
+              "title": "no-op when there is no compliance data — no stray labels or shifts",
               "ok": true,
               "tags": [],
               "tests": [
@@ -1437,53 +1029,23 @@
                   "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 11,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 1160,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:28.387Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "69b4d3f422a897a006b6-4193b26c75d66a283f0a",
-              "file": "marketing-claims.spec.ts",
-              "line": 43,
-              "column": 7
-            },
-            {
-              "title": "templates page metadata does not overstate count",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
+                      "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 708,
+                      "duration": 43,
                       "errors": [],
                       "stdout": [],
-                      "stderr": [],
+                      "stderr": [
+                        {
+                          "text": "Unable to look up font label for font 'helvetica', 'light'. Refer to getFontList() for available fonts.\n"
+                        }
+                      ],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:28.622Z",
+                      "startTime": "2026-07-18T19:57:47.890Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1491,13 +1053,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "69b4d3f422a897a006b6-a67c540baef7647ecaff",
-              "file": "marketing-claims.spec.ts",
-              "line": 64,
+              "id": "a808dc77613a72f9ddef-6a40599f1034710d7ef2",
+              "file": "pdf-details-inline.spec.ts",
+              "line": 128,
               "column": 7
             },
             {
-              "title": "pricing page Pro card claims a non-zero template count",
+              "title": "public generatePDF: every template yields a PDF with compliance data, no \"Details\" header",
               "ok": true,
               "tags": [],
               "tests": [
@@ -1505,87 +1067,23 @@
                   "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 1165,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:29.340Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "69b4d3f422a897a006b6-8f76efad44283ca8254b",
-              "file": "marketing-claims.spec.ts",
-              "line": 75,
-              "column": 7
-            },
-            {
-              "title": "no false or unsupported marketing claims on the landing page",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 1194,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:29.575Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "69b4d3f422a897a006b6-8cae0e704d420743ca49",
-              "file": "marketing-claims.spec.ts",
-              "line": 88,
-              "column": 7
-            },
-            {
-              "title": "no false or unsupported marketing claims on the pricing page",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 10,
+                      "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 1210,
+                      "duration": 84,
                       "errors": [],
                       "stdout": [],
-                      "stderr": [],
+                      "stderr": [
+                        {
+                          "text": "Unable to look up font label for font 'helvetica', 'light'. Refer to getFontList() for available fonts.\n"
+                        }
+                      ],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:29.987Z",
+                      "startTime": "2026-07-18T19:57:47.918Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1593,44 +1091,855 @@
                   "status": "expected"
                 }
               ],
-              "id": "69b4d3f422a897a006b6-b3a82dc1bb3f5146d5dc",
-              "file": "marketing-claims.spec.ts",
-              "line": 98,
+              "id": "a808dc77613a72f9ddef-5211d580dba3db9338e1",
+              "file": "pdf-details-inline.spec.ts",
+              "line": 142,
               "column": 7
+            }
+          ],
+          "suites": [
+            {
+              "title": "content: every template renders the compliance fields",
+              "file": "pdf-details-inline.spec.ts",
+              "line": 74,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "modern: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 31,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.491Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-4b5aec2c97089f5230bc",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "classic: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 10,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.534Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-4a580e3223fafc28a367",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "minimal: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 8,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.557Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-4c0a90bdae8b7b17adfa",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "clean: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 8,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.577Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-1b449f9498866486ed9b",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "bold: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 6,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.605Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-dc97ea67554e4e07a72d",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "executive: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 8,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.620Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-60f7b506d9eb8c448729",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "corporate: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 9,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.638Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-fba2cd964c89695a7000",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "startup: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 6,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.659Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-b20607926b918210fcb4",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "freelancer: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 6,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [
+                            {
+                              "text": "Unable to look up font label for font 'helvetica', 'light'. Refer to getFontList() for available fonts.\n"
+                            }
+                          ],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.675Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-c248a91eb826b8c1508d",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "agency: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 5,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.701Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-c255b0c45cb4ae1d88c6",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "consulting: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 5,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.713Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-001b9dd06819fa17a784",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                },
+                {
+                  "title": "creative: seller + buyer compliance strings present, legacy \"Details\" header gone",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 4,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.727Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-16e9180ce36b5c07c19e",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 76,
+                  "column": 11
+                }
+              ]
             },
             {
-              "title": "schema.org featureList only advertises delivered features",
-              "ok": true,
-              "tags": [],
-              "tests": [
+              "title": "position: details sit ABOVE the items table (no clipping)",
+              "file": "pdf-details-inline.spec.ts",
+              "line": 97,
+              "column": 8,
+              "specs": [
                 {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
+                  "title": "modern: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
                     {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 1164,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:30.075Z",
+                      "timeout": 30000,
                       "annotations": [],
-                      "attachments": []
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 6,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.739Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
                     }
                   ],
-                  "status": "expected"
+                  "id": "a808dc77613a72f9ddef-e0e0fe12eb10b6b334be",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "classic: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 5,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.752Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-ac5121d7f46aa3145191",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "minimal: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 5,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.775Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-3d06d98b1054009ed825",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "clean: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 5,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.786Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-25494396d1144eef31c5",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "bold: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 5,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.797Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-802b996d06e79e2bcc3d",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "executive: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 5,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.810Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-fe9ae04d5b24e7a0b5e2",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "corporate: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 7,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.821Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-ef7f1490b7947886b9eb",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "startup: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 4,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.844Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-88c2b27e9b8ffa3d46db",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "freelancer: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 2,
+                          "status": "passed",
+                          "duration": 33,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [
+                            {
+                              "text": "Unable to look up font label for font 'helvetica', 'light'. Refer to getFontList() for available fonts.\n"
+                            },
+                            {
+                              "text": "Unable to look up font label for font 'helvetica', 'light'. Refer to getFontList() for available fonts.\n"
+                            }
+                          ],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.878Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-5b1c70440c3c75fabccb",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "agency: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 4,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.855Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-a975cb2dd100d5ec3150",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "consulting: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 5,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.866Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-79bf29c2e093cf4aa650",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
+                },
+                {
+                  "title": "creative: items table is pushed down when compliance data is present",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 5,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-07-18T19:57:47.878Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "a808dc77613a72f9ddef-67cd1e4348a93926d797",
+                  "file": "pdf-details-inline.spec.ts",
+                  "line": 99,
+                  "column": 11
                 }
-              ],
-              "id": "69b4d3f422a897a006b6-0a1905b497aa9cd57865",
-              "file": "marketing-claims.spec.ts",
-              "line": 108,
-              "column": 7
+              ]
             }
           ]
         }
@@ -1662,15 +1971,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 4731,
+                      "duration": 4508,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:10.907Z",
+                      "startTime": "2026-07-18T19:57:47.946Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1696,15 +2005,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 735,
+                      "duration": 782,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:11.330Z",
+                      "startTime": "2026-07-18T19:57:47.949Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1730,15 +2039,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 19,
+                      "duration": 30,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:11.349Z",
+                      "startTime": "2026-07-18T19:57:47.950Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1764,15 +2073,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 701,
+                      "duration": 678,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:11.366Z",
+                      "startTime": "2026-07-18T19:57:47.988Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1781,142 +2090,6 @@
                 }
               ],
               "id": "d05ee0ee364a743b1871-ac072532a993d8a69ba4",
-              "file": "programmatic-seo.spec.ts",
-              "line": 48,
-              "column": 7
-            },
-            {
-              "title": "every profession page is reachable and has correct SEO tags",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 5016,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:30.521Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "d05ee0ee364a743b1871-499a79c12ea73febd78b",
-              "file": "programmatic-seo.spec.ts",
-              "line": 9,
-              "column": 7
-            },
-            {
-              "title": "profession page embeds the editor with embed=true and a prefill",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 1145,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:30.784Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "d05ee0ee364a743b1871-6c4deb41df2058362a5c",
-              "file": "programmatic-seo.spec.ts",
-              "line": 26,
-              "column": 7
-            },
-            {
-              "title": "sitemap.xml contains every profession URL",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 29,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:30.790Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "d05ee0ee364a743b1871-0a6ed3ede04989b90ca7",
-              "file": "programmatic-seo.spec.ts",
-              "line": 38,
-              "column": 7
-            },
-            {
-              "title": "home page links to profession landing pages",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1031,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:30.805Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "d05ee0ee364a743b1871-c2662a5a688fbeffa3f2",
               "file": "programmatic-seo.spec.ts",
               "line": 48,
               "column": 7
@@ -1951,15 +2124,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 1551,
+                      "duration": 1584,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:11.379Z",
+                      "startTime": "2026-07-18T19:57:48.020Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1985,15 +2158,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 1423,
+                      "duration": 1507,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:11.630Z",
+                      "startTime": "2026-07-18T19:57:48.298Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2019,15 +2192,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1346,
+                      "duration": 1320,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:11.727Z",
+                      "startTime": "2026-07-18T19:57:48.426Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2053,15 +2226,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1278,
+                      "duration": 1246,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:12.083Z",
+                      "startTime": "2026-07-18T19:57:48.686Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2070,142 +2243,6 @@
                 }
               ],
               "id": "580b9c59645a7bb599c2-d888f62671cd16cae91f",
-              "file": "screenshot-capture.spec.ts",
-              "line": 19,
-              "column": 7
-            },
-            {
-              "title": "templates-full",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 2447,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:30.832Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "580b9c59645a7bb599c2-65a1619123eac505e684",
-              "file": "screenshot-capture.spec.ts",
-              "line": 4,
-              "column": 7
-            },
-            {
-              "title": "landing-full",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 1984,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:31.212Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "580b9c59645a7bb599c2-a7bb743a015476d0b330",
-              "file": "screenshot-capture.spec.ts",
-              "line": 9,
-              "column": 7
-            },
-            {
-              "title": "pricing-full",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 1658,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:31.261Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "580b9c59645a7bb599c2-e22a06052e9666559f72",
-              "file": "screenshot-capture.spec.ts",
-              "line": 14,
-              "column": 7
-            },
-            {
-              "title": "app-full",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1999,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:31.850Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "580b9c59645a7bb599c2-c7a0a9ffe86399159300",
               "file": "screenshot-capture.spec.ts",
               "line": 19,
               "column": 7
@@ -2240,15 +2277,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 1400,
+                      "duration": 1661,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:12.103Z",
+                      "startTime": "2026-07-18T19:57:48.746Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2274,15 +2311,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 690,
+                      "duration": 658,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:12.952Z",
+                      "startTime": "2026-07-18T19:57:49.619Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2311,12 +2348,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 721,
+                      "duration": 782,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:13.073Z",
+                      "startTime": "2026-07-18T19:57:49.764Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2342,15 +2379,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 717,
+                      "duration": 704,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:13.097Z",
+                      "startTime": "2026-07-18T19:57:49.823Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2376,15 +2413,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1022,
+                      "duration": 932,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:13.379Z",
+                      "startTime": "2026-07-18T19:57:49.948Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2410,15 +2447,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 965,
+                      "duration": 962,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:13.526Z",
+                      "startTime": "2026-07-18T19:57:50.293Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2444,15 +2481,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 1036,
+                      "duration": 1050,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:13.658Z",
+                      "startTime": "2026-07-18T19:57:50.422Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2461,344 +2498,6 @@
                 }
               ],
               "id": "757c3ffdf99e8b51a534-af326b0118bf5bc9602f",
-              "file": "site-nav.spec.ts",
-              "line": 137,
-              "column": 7
-            },
-            {
-              "title": "the shared nav chrome is present on every content page",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                      "location": {
-                        "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                        "line": 69,
-                        "column": 10
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 5,
-                      "status": "skipped",
-                      "duration": 213,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:31.940Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                          "location": {
-                            "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                            "line": 69,
-                            "column": 10
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "757c3ffdf99e8b51a534-1762e6deaa59b5e2b795",
-              "file": "site-nav.spec.ts",
-              "line": 68,
-              "column": 7
-            },
-            {
-              "title": "brand links home and CTA links to /app",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                      "location": {
-                        "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                        "line": 82,
-                        "column": 10
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 5,
-                      "status": "skipped",
-                      "duration": 278,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:32.165Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                          "location": {
-                            "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                            "line": 82,
-                            "column": 10
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "757c3ffdf99e8b51a534-955ffe368ddfd750b350",
-              "file": "site-nav.spec.ts",
-              "line": 81,
-              "column": 7
-            },
-            {
-              "title": "fixed menu: nav stays pinned at the top while scrolling",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 888,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:32.455Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "757c3ffdf99e8b51a534-456afbff83dfd2dc4df3",
-              "file": "site-nav.spec.ts",
-              "line": 89,
-              "column": 7
-            },
-            {
-              "title": "active state: Pricing highlighted on /pricing, Templates not",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                      "location": {
-                        "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                        "line": 104,
-                        "column": 10
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "skipped",
-                      "duration": 245,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:32.963Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                          "location": {
-                            "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                            "line": 104,
-                            "column": 10
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "757c3ffdf99e8b51a534-31650688bc22f577caff",
-              "file": "site-nav.spec.ts",
-              "line": 103,
-              "column": 7
-            },
-            {
-              "title": "active state: Templates highlighted across the templates funnel",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                      "location": {
-                        "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                        "line": 112,
-                        "column": 10
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 2,
-                      "status": "skipped",
-                      "duration": 229,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:33.211Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                          "location": {
-                            "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                            "line": 112,
-                            "column": 10
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "757c3ffdf99e8b51a534-8b1e79a1316bf7ef9513",
-              "file": "site-nav.spec.ts",
-              "line": 111,
-              "column": 7
-            },
-            {
-              "title": "active state: nothing highlighted on section-less pages",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                      "location": {
-                        "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                        "line": 128,
-                        "column": 10
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "skipped",
-                      "duration": 239,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:33.242Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "description": "desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test",
-                          "location": {
-                            "file": "/root/projects/invoicepro/tests/site-nav.spec.ts",
-                            "line": 128,
-                            "column": 10
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "757c3ffdf99e8b51a534-41ef0de91534db69a444",
-              "file": "site-nav.spec.ts",
-              "line": 127,
-              "column": 7
-            },
-            {
-              "title": "mobile: hamburger toggles the dropdown menu open/closed",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 1139,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:33.296Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "757c3ffdf99e8b51a534-73ab5e1e3012b1bd42da",
               "file": "site-nav.spec.ts",
               "line": 137,
               "column": 7
@@ -2833,15 +2532,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 6634,
+                      "duration": 6704,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:13.817Z",
+                      "startTime": "2026-07-18T19:57:50.547Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2867,15 +2566,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 753,
+                      "duration": 765,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:13.832Z",
+                      "startTime": "2026-07-18T19:57:50.566Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2901,15 +2600,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 563,
+                      "duration": 574,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:14.426Z",
+                      "startTime": "2026-07-18T19:57:50.899Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2935,15 +2634,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 4768,
+                      "duration": 4805,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:14.515Z",
+                      "startTime": "2026-07-18T19:57:51.277Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2957,6 +2656,40 @@
               "column": 7
             },
             {
+              "title": "history: re-downloading the same invoice updates the record, no duplicate (#8)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4843,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-18T19:57:51.342Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7c8b6b37c03eaed66697-b308139bb57ad834cc55",
+              "file": "sticky-features.spec.ts",
+              "line": 150,
+              "column": 7
+            },
+            {
               "title": "history: Load button reloads the invoice into the editor (#9)",
               "ok": true,
               "tags": [],
@@ -2972,12 +2705,12 @@
                       "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 5194,
+                      "duration": 4725,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:14.597Z",
+                      "startTime": "2026-07-18T19:57:51.484Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2987,79 +2720,11 @@
               ],
               "id": "7c8b6b37c03eaed66697-064bdf74c8cc2beb9dbb",
               "file": "sticky-features.spec.ts",
-              "line": 137,
-              "column": 7
-            },
-            {
-              "title": "history: Load button is disabled (with an honest tooltip) when no snapshot is saved (#3)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 5106,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:14.716Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-8d0dba3b266ac240dd90",
-              "file": "sticky-features.spec.ts",
               "line": 182,
               "column": 7
             },
             {
-              "title": "backup/restore: dialog opens with export and import options",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 4181,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:15.000Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-6109a4be39dfd11c0103",
-              "file": "sticky-features.spec.ts",
-              "line": 204,
-              "column": 7
-            },
-            {
-              "title": "backup/restore: export downloads valid JSON backup",
+              "title": "history: Load is non-destructive — does not overwrite the saved current invoice (#9)",
               "ok": true,
               "tags": [],
               "tests": [
@@ -3074,12 +2739,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 4223,
+                      "duration": 2169,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:15.650Z",
+                      "startTime": "2026-07-18T19:57:51.496Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3087,47 +2752,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "7c8b6b37c03eaed66697-3696a629d38d7ceef204",
+              "id": "7c8b6b37c03eaed66697-32a4122b5fe517a85182",
               "file": "sticky-features.spec.ts",
-              "line": 216,
+              "line": 242,
               "column": 7
             },
             {
-              "title": "client directory: dialog opens with empty state",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 4199,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:19.197Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-51cbb7b6bb1330f3ab3e",
-              "file": "sticky-features.spec.ts",
-              "line": 247,
-              "column": 7
-            },
-            {
-              "title": "client directory: shows free tier limit (3 clients)",
+              "title": "history: Load button is disabled (with an honest tooltip) when no snapshot is saved (#9)",
               "ok": true,
               "tags": [],
               "tests": [
@@ -3142,12 +2773,148 @@
                       "workerIndex": 5,
                       "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 4136,
+                      "duration": 5122,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:19.298Z",
+                      "startTime": "2026-07-18T19:57:52.466Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7c8b6b37c03eaed66697-3de3fdc226e0c4d4f98a",
+              "file": "sticky-features.spec.ts",
+              "line": 295,
+              "column": 7
+            },
+            {
+              "title": "backup/restore: dialog opens with export and import options",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4169,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-18T19:57:53.676Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7c8b6b37c03eaed66697-6109a4be39dfd11c0103",
+              "file": "sticky-features.spec.ts",
+              "line": 317,
+              "column": 7
+            },
+            {
+              "title": "backup/restore: export downloads valid JSON backup",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 4256,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-18T19:57:56.111Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7c8b6b37c03eaed66697-3696a629d38d7ceef204",
+              "file": "sticky-features.spec.ts",
+              "line": 329,
+              "column": 7
+            },
+            {
+              "title": "client directory: dialog opens with empty state",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4154,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-18T19:57:56.196Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7c8b6b37c03eaed66697-51cbb7b6bb1330f3ab3e",
+              "file": "sticky-features.spec.ts",
+              "line": 360,
+              "column": 7
+            },
+            {
+              "title": "client directory: shows free tier limit (3 clients)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 4167,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-18T19:57:56.221Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3157,7 +2924,7 @@
               ],
               "id": "7c8b6b37c03eaed66697-18475a37a7644c7cf76c",
               "file": "sticky-features.spec.ts",
-              "line": 258,
+              "line": 371,
               "column": 7
             },
             {
@@ -3173,15 +2940,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 4122,
+                      "duration": 4168,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:19.802Z",
+                      "startTime": "2026-07-18T19:57:57.266Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3191,7 +2958,7 @@
               ],
               "id": "7c8b6b37c03eaed66697-6c18fbac87108aa135bd",
               "file": "sticky-features.spec.ts",
-              "line": 268,
+              "line": 381,
               "column": 7
             },
             {
@@ -3207,15 +2974,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 6653,
+                      "duration": 6650,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:19.833Z",
+                      "startTime": "2026-07-18T19:57:57.598Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3225,7 +2992,7 @@
               ],
               "id": "7c8b6b37c03eaed66697-e567f05e5b3f00a9815f",
               "file": "sticky-features.spec.ts",
-              "line": 278,
+              "line": 391,
               "column": 7
             },
             {
@@ -3244,12 +3011,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3769,
+                      "duration": 3853,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:19.880Z",
+                      "startTime": "2026-07-18T19:57:57.858Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3259,489 +3026,7 @@
               ],
               "id": "7c8b6b37c03eaed66697-ec660139d317ebb238b1",
               "file": "sticky-features.spec.ts",
-              "line": 302,
-              "column": 7
-            },
-            {
-              "title": "auto-numbering: New button creates sequential invoice numbers",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 6898,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:33.361Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-8f1c35c6bfe1eea6cb32",
-              "file": "sticky-features.spec.ts",
-              "line": 14,
-              "column": 7
-            },
-            {
-              "title": "auto-numbering: first-ever visit pre-fills INV-1001, not a random number (#12)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 975,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:33.462Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-ac576c6987eb7caf0bfb",
-              "file": "sticky-features.spec.ts",
-              "line": 51,
-              "column": 7
-            },
-            {
-              "title": "auto-numbering: returning user with a saved invoice is unaffected (#12)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 906,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:33.504Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-fac9b76dfccbeb9403c0",
-              "file": "sticky-features.spec.ts",
-              "line": 84,
-              "column": 7
-            },
-            {
-              "title": "history: downloading a PDF records the invoice as \"sent\" (#8)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "Mobile download events are flaky",
-                      "location": {
-                        "file": "/root/projects/invoicepro/tests/sticky-features.spec.ts",
-                        "line": 115,
-                        "column": 10
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "skipped",
-                      "duration": 280,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:33.867Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "description": "Mobile download events are flaky",
-                          "location": {
-                            "file": "/root/projects/invoicepro/tests/sticky-features.spec.ts",
-                            "line": 115,
-                            "column": 10
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-6135b7d374d0d4f74592",
-              "file": "sticky-features.spec.ts",
-              "line": 114,
-              "column": 7
-            },
-            {
-              "title": "history: Load button reloads the invoice into the editor (#9)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 5443,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:34.177Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-7b1b527581c9b26ecc90",
-              "file": "sticky-features.spec.ts",
-              "line": 137,
-              "column": 7
-            },
-            {
-              "title": "history: Load button is disabled (with an honest tooltip) when no snapshot is saved (#3)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 5360,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:34.431Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-11331c76e7a836f7f2ed",
-              "file": "sticky-features.spec.ts",
-              "line": 182,
-              "column": 7
-            },
-            {
-              "title": "backup/restore: dialog opens with export and import options",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 4224,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:34.452Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-076dd3bb17647eea257c",
-              "file": "sticky-features.spec.ts",
-              "line": 204,
-              "column": 7
-            },
-            {
-              "title": "backup/restore: export downloads valid JSON backup",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "Mobile download events are flaky",
-                      "location": {
-                        "file": "/root/projects/invoicepro/tests/sticky-features.spec.ts",
-                        "line": 217,
-                        "column": 10
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 2,
-                      "status": "skipped",
-                      "duration": 209,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:34.449Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "description": "Mobile download events are flaky",
-                          "location": {
-                            "file": "/root/projects/invoicepro/tests/sticky-features.spec.ts",
-                            "line": 217,
-                            "column": 10
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-086bd7bed3e2e892e379",
-              "file": "sticky-features.spec.ts",
-              "line": 216,
-              "column": 7
-            },
-            {
-              "title": "client directory: dialog opens with empty state",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 4220,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:34.672Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-14be5961ac3aa1c7bf9a",
-              "file": "sticky-features.spec.ts",
-              "line": 247,
-              "column": 7
-            },
-            {
-              "title": "client directory: shows free tier limit (3 clients)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 4155,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:35.556Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-205fa88bb8fdecfa75bd",
-              "file": "sticky-features.spec.ts",
-              "line": 258,
-              "column": 7
-            },
-            {
-              "title": "invoice history: empty state shown on first visit",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 4171,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:38.691Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-961dd9d2fafb66158312",
-              "file": "sticky-features.spec.ts",
-              "line": 268,
-              "column": 7
-            },
-            {
-              "title": "invoice history: shows pre-populated records with status badges",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 6974,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:38.916Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-9aa896fbc39c1fb858df",
-              "file": "sticky-features.spec.ts",
-              "line": 278,
-              "column": 7
-            },
-            {
-              "title": "all three sticky buttons are hidden in embed mode",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 3787,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.638Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "7c8b6b37c03eaed66697-b4ee1975ea67271b9c65",
-              "file": "sticky-features.spec.ts",
-              "line": 302,
+              "line": 415,
               "column": 7
             }
           ]
@@ -3777,12 +3062,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 15,
+                      "duration": 22,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.469Z",
+                      "startTime": "2026-07-18T19:58:00.363Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3808,15 +3093,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 1,
+                      "duration": 2,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.491Z",
+                      "startTime": "2026-07-18T19:58:00.388Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3842,15 +3127,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
                       "duration": 2,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.500Z",
+                      "startTime": "2026-07-18T19:58:00.401Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3876,15 +3161,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 1,
+                      "duration": 2,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.508Z",
+                      "startTime": "2026-07-18T19:58:00.399Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3910,15 +3195,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
                       "duration": 2,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.516Z",
+                      "startTime": "2026-07-18T19:58:00.407Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3927,176 +3212,6 @@
                 }
               ],
               "id": "1b3744bbe3756e34ad65-a8538a5033011cc267b2",
-              "file": "unit-types.spec.ts",
-              "line": 50,
-              "column": 7
-            },
-            {
-              "title": "formatCurrency matches Intl for valid currencies (incl. 0- and 3-decimal)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 30,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.732Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-5085523167003825b7f0",
-              "file": "unit-types.spec.ts",
-              "line": 11,
-              "column": 7
-            },
-            {
-              "title": "Intl itself resolves the right fraction digits — no minorUnits map needed",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 2,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.772Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-27392bdc884203f845ac",
-              "file": "unit-types.spec.ts",
-              "line": 24,
-              "column": 7
-            },
-            {
-              "title": "formatCurrency never throws; falls back to \"CODE amount\" when Intl rejects a code",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 3,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.785Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-f80e59eef79e4939906e",
-              "file": "unit-types.spec.ts",
-              "line": 32,
-              "column": 7
-            },
-            {
-              "title": "currencySymbol matches Intl currency literal, raw code for unknown",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 3,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.798Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-6c22b3f36edb21de859c",
-              "file": "unit-types.spec.ts",
-              "line": 42,
-              "column": 7
-            },
-            {
-              "title": "formatCurrencyPdf uses the ISO code (no non-WinAnsi glyph) under en-US",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 28,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.812Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-751f321fb92f4a48ab21",
               "file": "unit-types.spec.ts",
               "line": 50,
               "column": 7
@@ -4130,7 +3245,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.525Z",
+                      "startTime": "2026-07-18T19:58:00.413Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4156,15 +3271,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
                       "duration": 3,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.545Z",
+                      "startTime": "2026-07-18T19:58:00.411Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4190,15 +3305,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
                       "duration": 1,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.555Z",
+                      "startTime": "2026-07-18T19:58:00.415Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4224,15 +3339,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
                       "duration": 1,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.564Z",
+                      "startTime": "2026-07-18T19:58:00.420Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4258,15 +3373,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
                       "duration": 1,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.575Z",
+                      "startTime": "2026-07-18T19:58:00.423Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4295,12 +3410,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2,
+                      "duration": 1,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.585Z",
+                      "startTime": "2026-07-18T19:58:00.426Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4309,210 +3424,6 @@
                 }
               ],
               "id": "1b3744bbe3756e34ad65-a971f852453748eacd0f",
-              "file": "unit-types.spec.ts",
-              "line": 145,
-              "column": 7
-            },
-            {
-              "title": "every new field survives a JSON round-trip (the silent-drop guard)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 7,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.808Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-d4c7054233cd890b13b4",
-              "file": "unit-types.spec.ts",
-              "line": 86,
-              "column": 7
-            },
-            {
-              "title": "old-shape invoice (no new fields) round-trips with optionals undefined",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 4,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.822Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-646f96a4aac56675b6a7",
-              "file": "unit-types.spec.ts",
-              "line": 111,
-              "column": 7
-            },
-            {
-              "title": "a malformed paymentMeans is dropped, not the whole invoice",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 1,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.836Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-822185a3b4541781e0ec",
-              "file": "unit-types.spec.ts",
-              "line": 124,
-              "column": 7
-            },
-            {
-              "title": "a paymentMeans with an EMPTY code is dropped (isValidString(\"\") is true)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 1,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.843Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-c15f516c9504d28cf09a",
-              "file": "unit-types.spec.ts",
-              "line": 131,
-              "column": 7
-            },
-            {
-              "title": "an invalid taxCategory on a line is dropped, the line survives",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 1,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.850Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-91720d786e8740d9d38c",
-              "file": "unit-types.spec.ts",
-              "line": 138,
-              "column": 7
-            },
-            {
-              "title": "taxCategory does NOT affect totals (flat-rate, smart-tax is NEXT)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 3,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.853Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-f82642428682fe9ac4a5",
               "file": "unit-types.spec.ts",
               "line": 145,
               "column": 7
@@ -4538,15 +3449,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 3,
+                      "duration": 2,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.603Z",
+                      "startTime": "2026-07-18T19:58:00.426Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4555,40 +3466,6 @@
                 }
               ],
               "id": "1b3744bbe3756e34ad65-0b30b63797324183444a",
-              "file": "unit-types.spec.ts",
-              "line": 155,
-              "column": 7
-            },
-            {
-              "title": "neutralizes formula prefixes and quotes comma/quote cells",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 2,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.858Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "1b3744bbe3756e34ad65-be1b6f9badd5dd502f11",
               "file": "unit-types.spec.ts",
               "line": 155,
               "column": 7
@@ -4623,15 +3500,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 1284,
+                      "duration": 1434,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:20.619Z",
+                      "startTime": "2026-07-18T19:58:00.432Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4660,12 +3537,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1375,
+                      "duration": 1417,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:21.918Z",
+                      "startTime": "2026-07-18T19:58:00.435Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4691,15 +3568,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1240,
+                      "duration": 1281,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:23.309Z",
+                      "startTime": "2026-07-18T19:58:00.438Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4725,15 +3602,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 1243,
+                      "duration": 1279,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:23.428Z",
+                      "startTime": "2026-07-18T19:58:01.454Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4759,15 +3636,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
-                      "parallelIndex": 5,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 1185,
+                      "duration": 1231,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:23.446Z",
+                      "startTime": "2026-07-18T19:58:01.726Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4793,15 +3670,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 543,
+                      "duration": 588,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:23.669Z",
+                      "startTime": "2026-07-18T19:58:01.728Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4827,15 +3704,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 644,
+                      "duration": 574,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-18T08:27:23.934Z",
+                      "startTime": "2026-07-18T19:58:01.862Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -4847,244 +3724,6 @@
               "file": "visual-regression.spec.ts",
               "line": 65,
               "column": 7
-            },
-            {
-              "title": "[desktop] landing renders correctly",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 2281,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.866Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "78e23c5201ba1ea12e76-644ed8f04f18be168972",
-              "file": "visual-regression.spec.ts",
-              "line": 25,
-              "column": 9
-            },
-            {
-              "title": "[desktop] templates renders correctly",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 2543,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:39.883Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "78e23c5201ba1ea12e76-a787645593ac22e00aa2",
-              "file": "visual-regression.spec.ts",
-              "line": 25,
-              "column": 9
-            },
-            {
-              "title": "[desktop] pricing renders correctly",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 1958,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:40.270Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "78e23c5201ba1ea12e76-ec6e5f0031caaf371ae2",
-              "file": "visual-regression.spec.ts",
-              "line": 25,
-              "column": 9
-            },
-            {
-              "title": "[desktop] app-page renders correctly",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 1669,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:42.157Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "78e23c5201ba1ea12e76-8d3eb0b3bd9203d4ae07",
-              "file": "visual-regression.spec.ts",
-              "line": 25,
-              "column": 9
-            },
-            {
-              "title": "template gallery shows all 12 templates with distinct names",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 1504,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:42.248Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "78e23c5201ba1ea12e76-6b66e829d7530ff5077a",
-              "file": "visual-regression.spec.ts",
-              "line": 39,
-              "column": 7
-            },
-            {
-              "title": "landing page has brand \"Billify\" everywhere",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 792,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:42.438Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "78e23c5201ba1ea12e76-f87a467fa2d27e3c9eee",
-              "file": "visual-regression.spec.ts",
-              "line": 54,
-              "column": 7
-            },
-            {
-              "title": "pricing page shows two tiers (Free and Pro)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium-mobile",
-                  "projectName": "chromium-mobile",
-                  "results": [
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 833,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-07-18T08:27:42.877Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "78e23c5201ba1ea12e76-84f92a452aa5637e16ff",
-              "file": "visual-regression.spec.ts",
-              "line": 65,
-              "column": 7
             }
           ]
         }
@@ -5093,10 +3732,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-07-18T08:27:05.829Z",
-    "duration": 40127.523,
-    "expected": 131,
-    "skipped": 7,
+    "startTime": "2026-07-18T19:57:42.274Z",
+    "duration": 22067.524,
+    "expected": 100,
+    "skipped": 0,
     "unexpected": 0,
     "flaky": 0
   }
