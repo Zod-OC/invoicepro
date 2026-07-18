@@ -54,8 +54,19 @@ const PAGES_WITH_NAV = [
   '/security',
 ];
 
+// The chrome/active-state tests below assert the always-visible DESKTOP nav
+// links — the `hidden sm:flex` container in SiteNav. Below the `sm`/640px
+// breakpoint (the chromium-mobile / Pixel 5 project, ~412px) those links are
+// correctly collapsed into the hamburger and absent from the accessibility
+// tree, so the desktop assertions don't apply there. The mobile nav itself is
+// covered by the dedicated "mobile: hamburger toggles..." test below. Skip the
+// desktop-only tests on small viewports rather than opening the menu, because
+// they pin the always-on desktop chrome specifically.
+const isMobileViewport = (page: Page) => (page.viewportSize()?.width ?? 1280) < 640;
+
 test.describe('Unified site navigation (issue #11)', () => {
   test('the shared nav chrome is present on every content page', async ({ page }) => {
+    test.skip(isMobileViewport(page), 'desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test');
     for (const path of PAGES_WITH_NAV) {
       await page.goto(path);
       const nav = siteNav(page);
@@ -68,6 +79,7 @@ test.describe('Unified site navigation (issue #11)', () => {
   });
 
   test('brand links home and CTA links to /app', async ({ page }) => {
+    test.skip(isMobileViewport(page), 'desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test');
     await page.goto('/');
     const nav = siteNav(page);
     await expect(nav.getByRole('link', { name: 'Billify home', exact: true })).toHaveAttribute('href', '/');
@@ -89,6 +101,7 @@ test.describe('Unified site navigation (issue #11)', () => {
   });
 
   test('active state: Pricing highlighted on /pricing, Templates not', async ({ page }) => {
+    test.skip(isMobileViewport(page), 'desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test');
     await page.goto('/pricing');
     const nav = siteNav(page);
     await expect(nav.getByRole('link', { name: 'Pricing', exact: true })).toHaveClass(/font-medium/);
@@ -96,6 +109,7 @@ test.describe('Unified site navigation (issue #11)', () => {
   });
 
   test('active state: Templates highlighted across the templates funnel', async ({ page }) => {
+    test.skip(isMobileViewport(page), 'desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test');
     for (const path of ['/invoice-templates', '/templates', '/invoice-template/pdf']) {
       await page.goto(path);
       const nav = siteNav(page);
@@ -111,6 +125,7 @@ test.describe('Unified site navigation (issue #11)', () => {
   });
 
   test('active state: nothing highlighted on section-less pages', async ({ page }) => {
+    test.skip(isMobileViewport(page), 'desktop nav links are hidden below the sm breakpoint; mobile nav is covered by the hamburger test');
     for (const path of ['/', '/privacy', '/security']) {
       await page.goto(path);
       const nav = siteNav(page);

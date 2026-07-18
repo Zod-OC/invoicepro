@@ -35,32 +35,43 @@ test.describe('Sticky features — backup/restore, client directory, auto-number
 
   // Issue #12: on a GENUINE first visit (no saved invoice, no counter yet) the
   // editor must pre-fill the first sequential number (INV-1001) instead of
-  // createEmptyInvoice()'s random INV-4XXX fallback. The "New" button above
-  // covers the manual path; this covers the first-load path. Uses addInitScript
-  // (runs before any app script) to guarantee a truly empty localStorage at
-  // mount — the page.tsx mount effect reads the counter straight from storage,
-  // so this is the exact state the "genuinely first visit" gate keys off.
+  // createEmptyInvoice()'s random INV-1XXX–INV-9XXX fallback. The "New" button
+  // test above covers the manual path; this covers the first-load path.
+  //
+  // Why browser.newPage() instead of the { page } fixture: each call spawns a
+  // NEW browser context, so localStorage starts genuinely empty — exactly the
+  // "first visit" state the page.tsx mount gate keys off. We deliberately do
+  // NOT add an init script that clears storage on every navigation: such a
+  // script also runs on the reload below, wiping the counter before the app
+  // boots and making the "no drift on reload" assertion meaningless (it would
+  // always re-land on 1001 regardless of a consume-on-every-load bug). The
+  // first assertion (INV-1001) doubles as a check that storage really was
+  // empty at first mount — if it weren't, the gate wouldn't fire and the field
+  // would show a random number instead.
   test('auto-numbering: first-ever visit pre-fills INV-1001, not a random number (#12)', async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-    // addInitScript runs on every navigation before the app boots, so the mount
-    // effect sees a genuinely empty store (no current invoice, no counter).
-    await page.addInitScript(() => { try { localStorage.clear(); } catch { /* private mode */ } });
     await page.goto('/app');
 
-    // The "Number" <Label> is unique in the editor; its sibling <input> holds the
-    // invoice number. toHaveValue auto-waits through the mount effect's setInvoice.
-    const numberInput = page.locator('label:text-is("Number") + input');
+    // Stable hook on the number input (data-testid), not a structure-dependent
+    // label+sibling selector that breaks on minor markup tweaks.
+    const numberInput = page.getByTestId('invoice-number');
+    // toHaveValue auto-waits through the mount effect's setInvoice.
     await expect(numberInput).toHaveValue('INV-1001');
 
     // The counter was consumed exactly once for this first visit.
     const counter = await page.evaluate(() => localStorage.getItem('billify_invoice_counter'));
     expect(counter).toBe('1001');
 
-    // Reload — the counter must NOT be consumed again (no INV-1002 drift on every
-    // load). The first-visit invoice was never auto-saved (dirty stays false), so
-    // billify_current is still null, but the persisted counter gates the consume.
+    // Reload. The gate consumes a number ONLY when billify_invoice_counter is
+    // null, so on reload (counter now "1001") it must NOT consume again. The
+    // unchanged counter is the real guard against an "INV-1002 drift on every
+    // load" regression — a consume-on-every-load bug would bump it to 1002 and
+    // fail here. The first-visit invoice is never auto-saved (dirty stays
+    // false, billify_current stays null), so reload shows createEmptyInvoice's
+    // random number (e.g. INV-4231), NOT INV-1001; we therefore assert the
+    // field still holds a well-formed invoice number rather than INV-1001.
     await page.reload();
-    await expect(numberInput).toHaveValue(/.+/); // editor reloaded with some number
+    await expect(numberInput).toHaveValue(/^INV-\d+$/);
     const counterAfterReload = await page.evaluate(() => localStorage.getItem('billify_invoice_counter'));
     expect(counterAfterReload).toBe('1001');
     await page.close();
@@ -71,6 +82,8 @@ test.describe('Sticky features — backup/restore, client directory, auto-number
   // an already-advanced counter AND a saved current invoice, then asserts the
   // saved number is restored untouched and the counter is not incremented.
   test('auto-numbering: returning user with a saved invoice is unaffected (#12)', async ({ browser }) => {
+    // browser.newPage() = fresh isolated context, so the addInitScript seed
+    // below is the ONLY state present at mount (no leakage from other tests).
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     await page.addInitScript(() => {
       localStorage.setItem('billify_invoice_counter', '1042');
@@ -89,7 +102,7 @@ test.describe('Sticky features — backup/restore, client directory, auto-number
     await page.goto('/app');
 
     // The saved number is restored verbatim — not overwritten with INV-1043.
-    const numberInput = page.locator('label:text-is("Number") + input');
+    const numberInput = page.getByTestId('invoice-number');
     await expect(numberInput).toHaveValue('RET-EXISTING-9');
 
     // The counter is untouched: no consume fires on the restore path.

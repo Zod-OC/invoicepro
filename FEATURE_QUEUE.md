@@ -4,7 +4,7 @@ Open GitHub issues that need implementation.
 
 | # | Feature | Status | Attempt | Result |
 |---|---------|--------|---------|--------|
-| 1 | Unify site navigation — fixed menu with active state across all pages (issue #11, highest UX priority) | PENDING | 0 | - |
+| 1 | Unify site navigation — fixed menu with active state across all pages (issue #11, highest UX priority) | DONE | 0 | - |
 | 2 | Wire auto-numbering into first-load (issue #12) | PENDING | 0 | - |
 | 3 | Wire recordInvoice into handleDownload (issue #8) | PENDING | 0 | - |
 | 4 | Load invoice from history into editor (issue #9) | PENDING | 0 | - |

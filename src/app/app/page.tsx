@@ -2091,7 +2091,7 @@ export default function AppPage() {
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Number</Label>
-                <Input value={invoice.number} onChange={e => update({ number: e.target.value })} />
+                <Input data-testid="invoice-number" value={invoice.number} onChange={e => update({ number: e.target.value })} />
               </div>
               <div>
                 <Label className="text-xs">Currency</Label>
