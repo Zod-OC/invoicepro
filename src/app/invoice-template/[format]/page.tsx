@@ -47,7 +47,12 @@ export default function FormatPage({ params }: { params: { format: string } }) {
 
   return (
     <div className="flex flex-col min-h-full">
-      <SiteNav />
+      {/* active="templates": this format page lives under the Invoice Templates
+          hub (breadcrumb: Home › Invoice Templates › format), so it highlights
+          the same "Templates" nav item as /templates, /invoice-templates, and
+          the profession pages — keeping the active state consistent across the
+          whole templates funnel (issue #11). */}
+      <SiteNav active="templates" />
 
       <main className="flex-1">
         {/* Header: breadcrumb, H1, intro, CTA */}
