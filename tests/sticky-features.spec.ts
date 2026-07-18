@@ -33,6 +33,71 @@ test.describe('Sticky features — backup/restore, client directory, auto-number
     await page.close();
   });
 
+  // Issue #12: on a GENUINE first visit (no saved invoice, no counter yet) the
+  // editor must pre-fill the first sequential number (INV-1001) instead of
+  // createEmptyInvoice()'s random INV-4XXX fallback. The "New" button above
+  // covers the manual path; this covers the first-load path. Uses addInitScript
+  // (runs before any app script) to guarantee a truly empty localStorage at
+  // mount — the page.tsx mount effect reads the counter straight from storage,
+  // so this is the exact state the "genuinely first visit" gate keys off.
+  test('auto-numbering: first-ever visit pre-fills INV-1001, not a random number (#12)', async ({ browser }) => {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    // addInitScript runs on every navigation before the app boots, so the mount
+    // effect sees a genuinely empty store (no current invoice, no counter).
+    await page.addInitScript(() => { try { localStorage.clear(); } catch { /* private mode */ } });
+    await page.goto('/app');
+
+    // The "Number" <Label> is unique in the editor; its sibling <input> holds the
+    // invoice number. toHaveValue auto-waits through the mount effect's setInvoice.
+    const numberInput = page.locator('label:text-is("Number") + input');
+    await expect(numberInput).toHaveValue('INV-1001');
+
+    // The counter was consumed exactly once for this first visit.
+    const counter = await page.evaluate(() => localStorage.getItem('billify_invoice_counter'));
+    expect(counter).toBe('1001');
+
+    // Reload — the counter must NOT be consumed again (no INV-1002 drift on every
+    // load). The first-visit invoice was never auto-saved (dirty stays false), so
+    // billify_current is still null, but the persisted counter gates the consume.
+    await page.reload();
+    await expect(numberInput).toHaveValue(/.+/); // editor reloaded with some number
+    const counterAfterReload = await page.evaluate(() => localStorage.getItem('billify_invoice_counter'));
+    expect(counterAfterReload).toBe('1001');
+    await page.close();
+  });
+
+  // Issue #12 acceptance: returning users with a saved invoice are NOT affected —
+  // a restore must never clobber their number with a freshly-consumed one. Seeds
+  // an already-advanced counter AND a saved current invoice, then asserts the
+  // saved number is restored untouched and the counter is not incremented.
+  test('auto-numbering: returning user with a saved invoice is unaffected (#12)', async ({ browser }) => {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await page.addInitScript(() => {
+      localStorage.setItem('billify_invoice_counter', '1042');
+      localStorage.setItem('billify_current', JSON.stringify({
+        id: 'ret-1',
+        number: 'RET-EXISTING-9',
+        date: '2026-07-01',
+        dueDate: '2026-07-15',
+        from: { name: 'Returning Co', email: '', address: '', phone: '' },
+        to: { name: 'Existing Client', email: '', address: '', phone: '' },
+        items: [{ description: 'Prior work', quantity: 1, rate: 100 }],
+        notes: '', terms: 'Net 14', taxRate: 0, currency: 'USD', template: 'modern',
+        status: 'draft', createdAt: 1, updatedAt: 1,
+      }));
+    });
+    await page.goto('/app');
+
+    // The saved number is restored verbatim — not overwritten with INV-1043.
+    const numberInput = page.locator('label:text-is("Number") + input');
+    await expect(numberInput).toHaveValue('RET-EXISTING-9');
+
+    // The counter is untouched: no consume fires on the restore path.
+    const counter = await page.evaluate(() => localStorage.getItem('billify_invoice_counter'));
+    expect(counter).toBe('1042');
+    await page.close();
+  });
+
   test('history: downloading a PDF records the invoice as "sent" (#8)', async ({ page, browserName }) => {
     test.skip(browserName === 'chromium' && (page.viewportSize()?.width ?? 0) < 500, 'Mobile download events are flaky');
     await page.goto('/app');
