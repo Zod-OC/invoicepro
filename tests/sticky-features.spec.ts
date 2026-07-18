@@ -211,20 +211,88 @@ test.describe('Sticky features — backup/restore, client directory, auto-number
     await page.goto('/app');
     await page.waitForTimeout(4000);
 
-    // Open the History panel — the row's Load button is enabled (snapshot present).
+    // Open the History panel — the row's Load button is enabled (snapshot
+    // present). toBeEnabled auto-retries, so it is itself the readiness gate
+    // (no separate waitForTimeout needed before it).
     await page.locator('nav').getByRole('button', { name: /History/ }).click();
-    await page.waitForTimeout(500);
     const loadBtn = page.locator('[role="dialog"]').getByRole('button', { name: 'Load' });
     await expect(loadBtn).toBeEnabled();
     await loadBtn.click();
 
     // handleLoad closes the dialog; the editor now holds the loaded invoice.
+    // Assert the FULL snapshot restored — not just the contact-name fields.
+    // The invoice number (INV-5555) and the line-item description are the
+    // distinctive fields that prove the whole invoice (metadata + items) was
+    // reloaded from the snapshot, not a partial/default restore.
+    await expect(page.getByTestId('invoice-number')).toHaveValue('INV-5555');
     await expect(page.getByPlaceholder('Company name')).toHaveValue('Snapshot Sender LLC');
     await expect(page.getByPlaceholder('Client name')).toHaveValue('Loadable Client Co');
+    await expect(page.getByPlaceholder('Description')).toHaveValue('Snapshot Consulting');
     await page.close();
   });
 
-  test('history: Load button is disabled (with an honest tooltip) when no snapshot is saved (#3)', async ({ browser }) => {
+  // Issue #9 headline invariant: loading from history is NON-destructive. The
+  // wiring calls applyInvoiceToEditor(v, /*commit*/ false), which leaves
+  // dirtyRef false so the debounced save early-returns and the user's saved
+  // billify_current (the in-progress invoice) is NOT overwritten with the
+  // peeked-at history row. Without this, merely opening History → Load would
+  // silently destroy the invoice the user was working on. Seed a saved current
+  // invoice, load a different one from history, and assert the saved one is
+  // still on disk afterward.
+  test('history: Load is non-destructive — does not overwrite the saved current invoice (#9)', async ({ browser }) => {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+
+    // The user's in-progress invoice, already persisted to billify_current.
+    const current = {
+      id: 'cur-1', number: 'CUR-KEEP-999', date: '2026-07-01', dueDate: '2026-07-15',
+      from: { name: 'Current Sender', email: '', address: '', phone: '' },
+      to: { name: 'Current Client', email: '', address: '', phone: '' },
+      items: [{ description: 'In-progress work', quantity: 1, rate: 50 }],
+      notes: '', terms: 'Net 14', taxRate: 0, currency: 'USD', template: 'modern',
+      status: 'draft', createdAt: 1750000000000, updatedAt: 1750000000000,
+    };
+    // A different invoice sitting in history with its snapshot available to Load.
+    const snapshot = {
+      id: 'hist-1', number: 'HIST-LOAD-1', date: '2026-06-01', dueDate: '2026-06-15',
+      from: { name: 'History Sender', email: '', address: '', phone: '' },
+      to: { name: 'History Client', email: '', address: '', phone: '' },
+      items: [{ description: 'Past engagement', quantity: 2, rate: 75 }],
+      notes: '', terms: 'Net 30', taxRate: 0, currency: 'USD', template: 'modern',
+      status: 'draft', createdAt: 1750000000000, updatedAt: 1750000000000,
+    };
+    await seedStorage(page, {
+      history: [
+        { id: 'hist-1', number: 'HIST-LOAD-1', clientName: 'History Client', amount: 150, currency: 'USD', date: '2026-06-01', dueDate: '2026-06-15', status: 'sent', createdAt: 1750000000000, updatedAt: 1750000000000 },
+      ],
+      snapshots: { 'hist-1': snapshot },
+    });
+    // Seed the saved current invoice directly (not via seedStorage, which only
+    // covers clients/history/snapshots).
+    await page.addInitScript((c) => {
+      localStorage.setItem('billify_current', JSON.stringify(c));
+    }, current);
+
+    await page.goto('/app');
+    // On mount the editor restores the saved current invoice.
+    await expect(page.getByTestId('invoice-number')).toHaveValue('CUR-KEEP-999');
+
+    // Load the history invoice into the editor.
+    await page.locator('nav').getByRole('button', { name: /History/ }).click();
+    await page.locator('[role="dialog"]').getByRole('button', { name: 'Load' }).click();
+
+    // The editor now shows the LOADED invoice, not the saved one.
+    await expect(page.getByTestId('invoice-number')).toHaveValue('HIST-LOAD-1');
+
+    // Wait past the debounced-save window, then assert the saved current
+    // invoice is STILL on disk — Load must not have persisted over it.
+    await page.waitForTimeout(1500);
+    const saved = await page.evaluate(() => localStorage.getItem('billify_current'));
+    expect(saved).toBeTruthy();
+    expect(JSON.parse(saved!).number).toBe('CUR-KEEP-999');
+    await page.close();
+  });
+
+  test('history: Load button is disabled (with an honest tooltip) when no snapshot is saved (#9)', async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     // A history record with NO matching snapshot — e.g. evicted by the 50-cap,
     // or a backup that predates snapshots. Load must be disabled, not a silent no-op.
