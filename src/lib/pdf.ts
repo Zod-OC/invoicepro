@@ -2,7 +2,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Invoice, TemplateType, formatCurrencyPdf, calculateTotals, paymentMethodLabel } from '@/types';
+import { Invoice, TemplateType, formatCurrencyPdf, calculateTotals } from '@/types';
 import { SITE_HOST } from '@/lib/site';
 
 // PDF footer brand line for the three template renderers that print the host
@@ -69,87 +69,101 @@ function totalsFoot(
   ];
 }
 
-// paymentMethodLabel is imported from '@/types' (shared with the editor's
-// payment-method <select> in src/app/app/page.tsx, so the two can't drift).
-
-// Renders the optional compliance/payment fields (tax IDs, PO #, bank details)
-// inline beneath the From and To address blocks — NOT below the items table.
-// This prevents clipping on long invoices and matches EN 16931 layout guidance
-// (seller/buyer tax info belongs in the party blocks, not after totals).
+// ─── Compliance detail rendering (EN 16931) ──────────────────────────────
+// The optional compliance/payment fields (seller + buyer tax IDs, PO #, SEPA
+// bank details) render INLINE in the From/To party-block region — NOT below the
+// items table. Placing them above the table matches EN 16931 layout guidance
+// (seller/buyer tax info belongs with the parties, not after totals) and, just
+// as importantly, stops the block from being clipped off the bottom of the page
+// on long invoices — the failure mode of the old below-totals placement, which
+// drew the details at a fixed `finalY + 48` that ran past the page edge once the
+// items table grew past one page.
 //
-// `baseY` is the Y position of the last line in the From/To address block.
-// The details render starting at `baseY + 6` to sit just beneath the addresses.
-function drawDetailsInline(doc: jsPDF, invoice: Invoice, fromX: number, toX: number, baseY: number) {
-  const fromLines: string[] = [];
-  const toLines: string[] = [];
+// The 12 templates fall into three placement shapes, each served by one helper:
+//  • Side-by-side From/To (Modern, Classic, Minimal, Clean, Bold, Executive,
+//    Corporate): the two address blocks share a baseline, so seller lines sit
+//    under the From column and buyer lines under the To column. → drawDetailsInline
+//  • Single-column stacked (Freelancer): From then To in one column; each
+//    party's lines fold into the running y so the trailing block/table push down
+//    past them (no overlap on a 3-4-line seller block). → drawPartyDetails x2
+//  • Seller block with no readable room beside it — colored band (Startup
+//    sidebar, Agency dark header), compact right-aligned header (Consulting), or
+//    art layout (Creative): gray 8pt text would be illegible on the band or
+//    collide with the accent stripe, so seller + buyer render TOGETHER in the
+//    body just above the table, "From"/"To"-prefixed so two same-named fields
+//    (e.g. the two "Tax ID / VAT" lines) stay unambiguous in one column.
+//    → drawDetailsCombined
 
-  // Seller (From) compliance: tax ID + payment details
-  if (invoice.from.taxId) fromLines.push(`Tax ID / VAT: ${invoice.from.taxId}`);
+// Seller (From) compliance lines: tax ID + payment account details.
+function sellerDetailLines(invoice: Invoice): string[] {
+  const lines: string[] = [];
+  if (invoice.from.taxId) lines.push(`Tax ID / VAT: ${invoice.from.taxId}`);
   const pm = invoice.paymentMeans;
   if (pm) {
-    if (pm.iban) fromLines.push(`IBAN: ${pm.iban}`);
-    if (pm.bic) fromLines.push(`BIC / SWIFT: ${pm.bic}`);
-    if (pm.accountName) fromLines.push(`Account: ${pm.accountName}`);
+    if (pm.iban) lines.push(`IBAN: ${pm.iban}`);
+    if (pm.bic) lines.push(`BIC / SWIFT: ${pm.bic}`);
+    if (pm.accountName) lines.push(`Account: ${pm.accountName}`);
   }
+  return lines;
+}
 
-  // Buyer (To) compliance: tax ID + PO number
-  if (invoice.to.taxId) toLines.push(`Tax ID / VAT: ${invoice.to.taxId}`);
-  if (invoice.purchaseOrder) toLines.push(`PO: ${invoice.purchaseOrder}`);
+// Buyer (To) compliance lines: tax ID + purchase order.
+function buyerDetailLines(invoice: Invoice): string[] {
+  const lines: string[] = [];
+  if (invoice.to.taxId) lines.push(`Tax ID / VAT: ${invoice.to.taxId}`);
+  if (invoice.purchaseOrder) lines.push(`PO: ${invoice.purchaseOrder}`);
+  return lines;
+}
 
-  if (!fromLines.length && !toLines.length) return baseY;
-
+// Draw one party's compliance `lines` beneath its address block, starting at
+// `baseY + 6` (just under the last address line) at 4mm line height, gray 8pt.
+// Returns the Y after the last line so the caller can push the items table (or
+// the next party block) below it, and restores font/size/color so the renderer's
+// own typography is unaffected. No-op (returns `baseY`) when there's nothing to
+// draw, so a template with no compliance data is laid out exactly as before.
+function drawPartyDetails(doc: jsPDF, lines: string[], x: number, baseY: number): number {
+  if (!lines.length) return baseY;
   const prevSize = doc.getFontSize();
   const prevColor = doc.getTextColor();
   const prevFont = doc.getFont();
   doc.setFontSize(8);
   doc.setTextColor(107, 114, 128);
   doc.setFont('helvetica', 'normal');
-
-  let maxLines = 0;
-  fromLines.forEach((line, i) => {
-    doc.text(line, fromX, baseY + 6 + i * 4);
-    maxLines = Math.max(maxLines, i + 1);
-  });
-  toLines.forEach((line, i) => {
-    doc.text(line, toX, baseY + 6 + i * 4);
-    maxLines = Math.max(maxLines, i + 1);
-  });
-
+  lines.forEach((line, i) => doc.text(line, x, baseY + 6 + i * 4));
   doc.setFontSize(prevSize);
   doc.setTextColor(prevColor);
   doc.setFont(prevFont.fontName, prevFont.fontStyle);
-
-  // Return the new Y offset so callers can position the table correctly
-  return baseY + 6 + maxLines * 4;
+  return baseY + 6 + lines.length * 4;
 }
 
-// Legacy drawDetails — kept for templates that haven't been migrated yet.
-// Renders compliance block below totals (may clip on long invoices).
-function drawDetails(doc: jsPDF, invoice: Invoice, x: number, y: number) {
-  const lines: string[] = [];
-  if (invoice.from.taxId) lines.push(`From Tax ID / VAT: ${invoice.from.taxId}`);
-  if (invoice.to.taxId) lines.push(`To Tax ID / VAT: ${invoice.to.taxId}`);
-  if (invoice.purchaseOrder) lines.push(`Purchase Order: ${invoice.purchaseOrder}`);
-  const pm = invoice.paymentMeans;
-  if (pm) {
-    lines.push(`Payment: ${paymentMethodLabel(pm.code) ?? pm.code}`);
-    if (pm.accountName) lines.push(`Account: ${pm.accountName}`);
-    if (pm.iban) lines.push(`IBAN: ${pm.iban}`);
-    if (pm.bic) lines.push(`BIC / SWIFT: ${pm.bic}`);
-  }
-  if (!lines.length) return;
-  const prevSize = doc.getFontSize();
-  const prevColor = doc.getTextColor();
-  const prevFont = doc.getFont();
-  doc.setFontSize(9);
-  doc.setTextColor(75, 85, 99);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Details', x, y);
-  doc.setFont('helvetica', 'normal');
-  lines.forEach((line, i) => doc.text(line, x, y + 6 + i * 5));
-  doc.setFontSize(prevSize);
-  doc.setTextColor(prevColor);
-  doc.setFont(prevFont.fontName, prevFont.fontStyle);
+// Side-by-side placement for templates whose From and To blocks share a
+// baseline: seller lines under `fromX`, buyer lines under `toX`, both beneath
+// the same `baseY` (the last address line of both blocks). Returns the Y below
+// whichever party grew taller, so the items table clears both columns at once.
+function drawDetailsInline(doc: jsPDF, invoice: Invoice, fromX: number, toX: number, baseY: number): number {
+  const fromEnd = drawPartyDetails(doc, sellerDetailLines(invoice), fromX, baseY);
+  const toEnd = drawPartyDetails(doc, buyerDetailLines(invoice), toX, baseY);
+  return Math.max(fromEnd, toEnd);
+}
+
+// Combined placement for templates whose seller block has no adjacent readable
+// area (colored band / compact header / art layout): seller + buyer lines render
+// together at one body column, "From"/"To"-prefixed so two same-named fields
+// stay disambiguated. `x`/`baseY` is the body anchor (usually just beneath the
+// To block, above the items table).
+function drawDetailsCombined(doc: jsPDF, invoice: Invoice, x: number, baseY: number): number {
+  const seller = sellerDetailLines(invoice).map((l) => `From ${l}`);
+  const buyer = buyerDetailLines(invoice).map((l) => `To ${l}`);
+  return drawPartyDetails(doc, [...seller, ...buyer], x, baseY);
+}
+
+// Render `invoice`'s selected template into an EXISTING doc, without the
+// HTML-sanitization wrapper (callers pass already-trusted input). Exported so
+// generatePDF can reuse it AND so tests can drive a template with a real jsPDF
+// instance (observing doc.text coordinates for layout assertions) without
+// parsing PDF bytes or going through the blob round-trip.
+export function renderTemplateInto(doc: jsPDF, invoice: Invoice): void {
+  TEMPLATE_RENDERERS[invoice.template](doc, invoice);
 }
 
 export function generatePDF(invoice: Invoice): Blob {
@@ -204,7 +218,7 @@ export function generatePDF(invoice: Invoice): Blob {
     } : invoice.paymentMeans,
   };
 
-  TEMPLATE_RENDERERS[safeInvoice.template](doc, safeInvoice);
+  renderTemplateInto(doc, safeInvoice);
 
   return doc.output('blob');
 }
@@ -322,8 +336,12 @@ function generateClassic(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.phone, 110, y + 20);
   doc.text(invoice.to.address, 110, y + 25);
 
+  // Compliance details (tax IDs, PO, bank info) inline beneath From/To, above
+  // the items table — EN 16931 layout, no below-totals clipping.
+  const detailsY = drawDetailsInline(doc, invoice, 15, 110, y + 25);
+
   autoTable(doc, {
-    startY: y + 35,
+    startY: Math.max(y + 35, detailsY + 5),
     head: [['Item', 'Description', 'Qty', 'Rate', 'Amount']],
     body: invoice.items.map((item, i) => [
       String(i + 1),
@@ -339,7 +357,6 @@ function generateClassic(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.text(`Notes: ${invoice.notes}`, 15, finalY + 15);
@@ -379,8 +396,12 @@ function generateMinimal(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.phone, 110, y + 22);
   doc.text(invoice.to.address, 110, y + 27);
 
+  // Compliance details (tax IDs, PO, bank info) inline beneath From/To, above
+  // the items table — EN 16931 layout, no below-totals clipping.
+  const detailsY = drawDetailsInline(doc, invoice, 15, 110, y + 27);
+
   autoTable(doc, {
-    startY: y + 38,
+    startY: Math.max(y + 38, detailsY + 5),
     head: [['Description', 'Qty', 'Rate', 'Amount']],
     body: invoice.items.map((item) => [
       item.description,
@@ -396,7 +417,6 @@ function generateMinimal(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.text(`Notes: ${invoice.notes}`, 15, finalY + 14);
@@ -446,8 +466,12 @@ function generateClean(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.phone, 110, y + 21);
   doc.text(invoice.to.address, 110, y + 26);
 
+  // Compliance details (tax IDs, PO, bank info) inline beneath From/To, above
+  // the items table — EN 16931 layout, no below-totals clipping.
+  const detailsY = drawDetailsInline(doc, invoice, 15, 110, y + 26);
+
   autoTable(doc, {
-    startY: y + 34,
+    startY: Math.max(y + 34, detailsY + 5),
     head: [['Description', 'Qty', 'Rate', 'Amount']],
     body: invoice.items.map((item) => [
       item.description,
@@ -468,7 +492,6 @@ function generateClean(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
@@ -521,8 +544,12 @@ function generateBold(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.phone, 110, y + 21);
   doc.text(invoice.to.address, 110, y + 26);
 
+  // Compliance details (tax IDs, PO, bank info) inline beneath From/To, above
+  // the table — EN 16931 layout, no below-totals clipping.
+  const detailsY = drawDetailsInline(doc, invoice, 15, 110, y + 26);
+
   autoTable(doc, {
-    startY: y + 34,
+    startY: Math.max(y + 34, detailsY + 5),
     head: [['Description', 'Qty', 'Rate', 'Amount']],
     body: invoice.items.map((item) => [
       item.description,
@@ -538,7 +565,6 @@ function generateBold(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
@@ -594,8 +620,12 @@ function generateExecutive(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.phone, 110, y + 20);
   doc.text(invoice.to.address, 110, y + 25);
 
+  // Compliance details (tax IDs, PO, bank info) inline beneath From/To, above
+  // the items table — EN 16931 layout, no below-totals clipping.
+  const detailsY = drawDetailsInline(doc, invoice, 15, 110, y + 25);
+
   autoTable(doc, {
-    startY: y + 32,
+    startY: Math.max(y + 32, detailsY + 5),
     head: [['Description', 'Qty', 'Rate', 'Amount']],
     body: invoice.items.map((item) => [
       item.description,
@@ -616,7 +646,6 @@ function generateExecutive(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
@@ -695,8 +724,12 @@ function generateCorporate(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.address, 110, y + 17);
   doc.text(invoice.to.phone, 110, y + 22);
 
+  // Compliance details (tax IDs, PO, bank info) inline beneath From/To, above
+  // the items table — EN 16931 layout, no below-totals clipping.
+  const detailsY = drawDetailsInline(doc, invoice, 15, 110, y + 22);
+
   autoTable(doc, {
-    startY: y + 30,
+    startY: Math.max(y + 30, detailsY + 5),
     head: [['Description', 'Qty', 'Rate', 'Amount']],
     body: invoice.items.map((item) => [
       item.description,
@@ -713,7 +746,6 @@ function generateCorporate(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
@@ -789,7 +821,11 @@ function generateStartup(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.phone, 70, y);
   y += 4;
   doc.text(invoice.to.address, 70, y);
-  y += 10;
+  // The seller block lives on the colored sidebar — gray compliance text would
+  // be illegible on the purple band — so seller + buyer details render together
+  // in the body just above the table ("From/To"-prefixed to stay unambiguous).
+  const detailsY = drawDetailsCombined(doc, invoice, 70, y);
+  y = Math.max(y + 10, detailsY + 5);
 
   autoTable(doc, {
     startY: y,
@@ -809,7 +845,6 @@ function generateStartup(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
@@ -859,7 +894,11 @@ function generateFreelancer(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.from.phone, 20, y);
   y += 4;
   doc.text(invoice.from.address, 20, y);
-  y += 14;
+  // Fold seller compliance lines into the running y so the To block (and the
+  // items table) push down past them — single-column layout, so the trailing
+  // block must clear a 3-4-line seller detail block with no overlap.
+  const sellerEnd = drawPartyDetails(doc, sellerDetailLines(invoice), 20, y);
+  y = Math.max(y + 14, sellerEnd + 4);
 
   // To section
   doc.setTextColor(236, 72, 153);
@@ -880,7 +919,8 @@ function generateFreelancer(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.phone, 20, y);
   y += 4;
   doc.text(invoice.to.address, 20, y);
-  y += 12;
+  const buyerEnd = drawPartyDetails(doc, buyerDetailLines(invoice), 20, y);
+  y = Math.max(y + 12, buyerEnd + 4);
 
   autoTable(doc, {
     startY: y,
@@ -900,7 +940,6 @@ function generateFreelancer(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
@@ -982,7 +1021,10 @@ function generateAgency(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.phone, 15, y);
   y += 4;
   doc.text(invoice.to.address, 15, y);
-  y += 12;
+  // Seller info sits in the dark header band where gray compliance text would be
+  // illegible, so seller + buyer details render together in the body above table.
+  const detailsY = drawDetailsCombined(doc, invoice, 15, y);
+  y = Math.max(y + 12, detailsY + 5);
 
   autoTable(doc, {
     startY: y,
@@ -1002,7 +1044,6 @@ function generateAgency(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
@@ -1061,7 +1102,10 @@ function generateConsulting(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.address, 30, y);
   y += 4;
   doc.text(invoice.to.phone, 30, y);
-  y += 12;
+  // Seller block is a compact right-aligned header with no room for detail
+  // lines, so seller + buyer compliance details render together above the table.
+  const detailsY = drawDetailsCombined(doc, invoice, 15, y);
+  y = Math.max(y + 12, detailsY + 5);
 
   autoTable(doc, {
     startY: y,
@@ -1087,7 +1131,6 @@ function generateConsulting(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFont('courier', 'normal');
     doc.setFontSize(8);
@@ -1153,7 +1196,10 @@ function generateCreative(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.email, 15, y + 13);
   doc.text(invoice.to.address, 15, y + 18);
   doc.text(invoice.to.phone, 15, y + 23);
-  y += 32;
+  // Seller block is an art element (big-number region + accent stripe) with no
+  // room for detail lines, so seller + buyer details render together above table.
+  const detailsY = drawDetailsCombined(doc, invoice, 15, y + 23);
+  y = Math.max(y + 32, detailsY + 5);
 
   autoTable(doc, {
     startY: y,
@@ -1172,7 +1218,6 @@ function generateCreative(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
