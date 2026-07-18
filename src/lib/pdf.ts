@@ -73,11 +73,58 @@ function totalsFoot(
 // payment-method <select> in src/app/app/page.tsx, so the two can't drift).
 
 // Renders the optional compliance/payment fields (tax IDs, PO #, bank details)
-// as one compact block under the totals. Consolidated into a single helper with
-// ONE call site per renderer (hooked off the shared `finalY` line below) so the
-// 12 template layouts are NOT individually retrofitted — the structured company
-// address, per-line unitCode/taxCategory, and Leitweg-ID stay DATA-ONLY until
-// the UBL/EN 16931 export (NEXT tier) redesigns the layouts alongside the XML.
+// inline beneath the From and To address blocks — NOT below the items table.
+// This prevents clipping on long invoices and matches EN 16931 layout guidance
+// (seller/buyer tax info belongs in the party blocks, not after totals).
+//
+// `baseY` is the Y position of the last line in the From/To address block.
+// The details render starting at `baseY + 6` to sit just beneath the addresses.
+function drawDetailsInline(doc: jsPDF, invoice: Invoice, fromX: number, toX: number, baseY: number) {
+  const fromLines: string[] = [];
+  const toLines: string[] = [];
+
+  // Seller (From) compliance: tax ID + payment details
+  if (invoice.from.taxId) fromLines.push(`Tax ID / VAT: ${invoice.from.taxId}`);
+  const pm = invoice.paymentMeans;
+  if (pm) {
+    if (pm.iban) fromLines.push(`IBAN: ${pm.iban}`);
+    if (pm.bic) fromLines.push(`BIC / SWIFT: ${pm.bic}`);
+    if (pm.accountName) fromLines.push(`Account: ${pm.accountName}`);
+  }
+
+  // Buyer (To) compliance: tax ID + PO number
+  if (invoice.to.taxId) toLines.push(`Tax ID / VAT: ${invoice.to.taxId}`);
+  if (invoice.purchaseOrder) toLines.push(`PO: ${invoice.purchaseOrder}`);
+
+  if (!fromLines.length && !toLines.length) return baseY;
+
+  const prevSize = doc.getFontSize();
+  const prevColor = doc.getTextColor();
+  const prevFont = doc.getFont();
+  doc.setFontSize(8);
+  doc.setTextColor(107, 114, 128);
+  doc.setFont('helvetica', 'normal');
+
+  let maxLines = 0;
+  fromLines.forEach((line, i) => {
+    doc.text(line, fromX, baseY + 6 + i * 4);
+    maxLines = Math.max(maxLines, i + 1);
+  });
+  toLines.forEach((line, i) => {
+    doc.text(line, toX, baseY + 6 + i * 4);
+    maxLines = Math.max(maxLines, i + 1);
+  });
+
+  doc.setFontSize(prevSize);
+  doc.setTextColor(prevColor);
+  doc.setFont(prevFont.fontName, prevFont.fontStyle);
+
+  // Return the new Y offset so callers can position the table correctly
+  return baseY + 6 + maxLines * 4;
+}
+
+// Legacy drawDetails — kept for templates that haven't been migrated yet.
+// Renders compliance block below totals (may clip on long invoices).
 function drawDetails(doc: jsPDF, invoice: Invoice, x: number, y: number) {
   const lines: string[] = [];
   if (invoice.from.taxId) lines.push(`From Tax ID / VAT: ${invoice.from.taxId}`);
@@ -91,15 +138,6 @@ function drawDetails(doc: jsPDF, invoice: Invoice, x: number, y: number) {
     if (pm.bic) lines.push(`BIC / SWIFT: ${pm.bic}`);
   }
   if (!lines.length) return;
-  // No page-break here: drawDetails is a void helper invoked BEFORE each
-  // renderer's notes/terms/footer, so an addPage() would land those subsequent
-  // blocks at stale finalY-offset coordinates on the new page (a layout desync
-  // worse than the clipping it tried to fix). On extremely long invoices the
-  // details block (like notes/terms) may clip — a known single-page limitation;
-  // the proper fix renders these fields inline in the from/to area.
-  // FULL save/restore of font size, text color, AND font face/style — the
-  // caller's notes/terms/footer blocks follow this call and must NOT inherit
-  // this block's gray color or helvetica face (Consulting is otherwise courier).
   const prevSize = doc.getFontSize();
   const prevColor = doc.getTextColor();
   const prevFont = doc.getFont();
@@ -213,9 +251,12 @@ function generateModern(doc: jsPDF, invoice: Invoice) {
   doc.text(invoice.to.phone, 110, y + 20);
   doc.text(invoice.to.address, 110, y + 25);
 
+  // Compliance details inline beneath From/To (tax IDs, PO, bank info)
+  const detailsY = drawDetailsInline(doc, invoice, 15, 110, y + 25);
+
   // Items table
   autoTable(doc, {
-    startY: y + 35,
+    startY: Math.max(y + 35, detailsY + 5),
     head: [['Description', 'Qty', 'Rate', 'Amount']],
     body: invoice.items.map((item) => [
       item.description,
@@ -231,7 +272,6 @@ function generateModern(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
-  drawDetails(doc, invoice, 15, finalY + 48);
   if (invoice.notes) {
     doc.text('Notes:', 15, finalY + 15);
     doc.setFontSize(10);
