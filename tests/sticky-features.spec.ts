@@ -128,10 +128,55 @@ test.describe('Sticky features — backup/restore, client directory, auto-number
     expect(download.suggestedFilename()).toMatch(/Invoice-.*\.pdf/);
     await page.waitForTimeout(600);
 
+    // The History nav badge renders history.length reactively, so it flips to
+    // "1" immediately after recordInvoice's setHistory flushes — WITHOUT opening
+    // the panel. This is acceptance criterion 2 (badge count increments right
+    // after download), not just the in-panel row asserted below.
+    const historyBtn = page.locator('nav').getByRole('button', { name: /History/ });
+    await expect(historyBtn).toContainText('1');
+
     // Open the History panel and assert a 'sent' record now exists.
-    await page.locator('nav').getByRole('button', { name: /History/ }).click();
+    await historyBtn.click();
     await page.waitForTimeout(400);
     await expect(page.locator('table select').first()).toHaveValue('sent');
+  });
+
+  // Issue #8 acceptance criterion 4: downloading the SAME invoice twice must NOT
+  // create a second history row. recordInvoice's existing-record branch updates
+  // the row in place (preserving its status) instead of pushing a duplicate, so
+  // re-downloading a bill never spams the History panel with one row per click.
+  // The wiring at page.tsx:1553 calls recordInvoice on EVERY successful download,
+  // so this is the test that proves the dedup branch actually runs.
+  test('history: re-downloading the same invoice updates the record, no duplicate (#8)', async ({ page, browserName }) => {
+    test.skip(browserName === 'chromium' && (page.viewportSize()?.width ?? 0) < 500, 'Mobile download events are flaky');
+    await page.goto('/app');
+    await page.waitForTimeout(3000);
+
+    // One invoice in the editor. Critically, do NOT click "New" between
+    // downloads — that would mint a fresh invoice id and defeat the dedup check.
+    // Keeping the same id means the second recordInvoice hits its update branch.
+    await page.getByPlaceholder('Company name').fill('No Dup LLC');
+    await page.getByPlaceholder('Client name').fill('Repeat Client');
+    const downloadBtn = () => page.getByRole('button', { name: /Download PDF/ });
+
+    // First download records the invoice ('sent').
+    await Promise.all([page.waitForEvent('download'), downloadBtn().click()]);
+    // handleDownload's finally re-enables the button and flips the label back to
+    // 'Download PDF' (from 'Generating...'). Waiting on that label ensures the
+    // second click re-resolves a ready button rather than racing the disable.
+    await expect(downloadBtn()).toBeVisible();
+
+    // Second download of the SAME invoice (same id) must update, not append.
+    await Promise.all([page.waitForEvent('download'), downloadBtn().click()]);
+    await page.waitForTimeout(600);
+
+    // Open History and assert exactly ONE row for this invoice — not two.
+    await page.locator('nav').getByRole('button', { name: /History/ }).click();
+    await page.waitForTimeout(400);
+    const rowCount = await page.locator('[role="dialog"] table tbody tr').count();
+    expect(rowCount).toBe(1);
+    // The single record is 'sent'.
+    await expect(page.locator('[role="dialog"] table select').first()).toHaveValue('sent');
   });
 
   test('history: Load button reloads the invoice into the editor (#9)', async ({ browser }) => {
