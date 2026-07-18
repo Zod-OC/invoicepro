@@ -22,6 +22,8 @@ import { stripUrlParams } from '@/lib/url';
 import { track } from '@/lib/analytics';
 import { BackupRestore } from '@/components/BackupRestore';
 import { ClientDirectory } from '@/components/ClientDirectory';
+import { ClientAutocomplete } from '@/components/ClientAutocomplete';
+import { useClients } from '@/hooks/useClients';
 import { InvoiceHistory } from '@/components/InvoiceHistory';
 import { useInvoiceCounter } from '@/hooks/useInvoiceCounter';
 import { useInvoiceHistory } from '@/hooks/useInvoiceHistory';
@@ -213,6 +215,7 @@ export default function AppPage() {
   const [invoice, setInvoice] = useState<Invoice>(PLACEHOLDER_INVOICE);
   const { consumeNextNumber } = useInvoiceCounter();
   const { history, ready, snapshots, recordInvoice, updateStatus, removeRecord, clearHistory, markOverdue } = useInvoiceHistory();
+  const { clients } = useClients();
   const [isEmbed, setIsEmbed] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -2171,7 +2174,25 @@ export default function AppPage() {
               <CardTitle className="text-sm font-medium">To (Client)</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Input placeholder="Client name" value={invoice.to.name} onChange={e => updateTo({ name: e.target.value })} />
+              <ClientAutocomplete
+                value={invoice.to.name}
+                clients={clients}
+                onChange={(val) => updateTo({ name: val })}
+                onSelect={(client) => {
+                  setInvoice((prev) => ({
+                    ...prev,
+                    to: {
+                      ...prev.to,
+                      name: client.name,
+                      email: client.email,
+                      phone: client.phone,
+                      address: client.address,
+                      taxId: client.taxId,
+                    },
+                  }));
+                }}
+                placeholder="Client name (type to search saved clients)"
+              />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Input placeholder="Email" value={invoice.to.email} onChange={e => updateTo({ email: e.target.value })} />
                 <Input placeholder="Phone" value={invoice.to.phone} onChange={e => updateTo({ phone: e.target.value })} />
