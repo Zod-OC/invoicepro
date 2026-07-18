@@ -56,6 +56,7 @@ export function BackupRestore() {
           success: true,
           clientsImported: backup.clients.length,
           historyImported: backup.history.length,
+          snapshotsImported: backup.snapshots ? Object.keys(backup.snapshots).length : 0,
           counterSet: backup.counter !== null,
           currentSet: backup.currentInvoice !== null,
         });
@@ -170,9 +171,19 @@ export function BackupRestore() {
                   <ul className="text-sm space-y-1">
                     <li>{importPreview.clientsImported} client(s)</li>
                     <li>{importPreview.historyImported} invoice record(s)</li>
+                    <li>{importPreview.snapshotsImported} saved invoice snapshot(s) — powers the History "Load" button</li>
                     {importPreview.counterSet && <li>Invoice counter</li>}
                     {importPreview.currentSet && <li>Current invoice draft</li>}
                   </ul>
+                  {importPreview.historyImported > 0 &&
+                    importPreview.snapshotsImported === 0 && (
+                      <div className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-500">
+                        <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                        <span>
+                          This backup has invoice history but no saved snapshots — its rows will list in History but their "Load" buttons will be disabled.
+                        </span>
+                      </div>
+                    )}
                   <div className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-500">
                     <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                     <span>Importing will replace all existing data on this device.</span>

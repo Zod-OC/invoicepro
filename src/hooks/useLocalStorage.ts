@@ -7,6 +7,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  * client directory, invoice history, and the invoice counter. Handles SSR
  * (Next.js prerender), JSON serialization, and cross-tab propagation.
  *
+ * Same-tab sync is intentionally NOT implemented: the native 'storage' event
+ * only fires in OTHER tabs, so it would not catch a same-tab write. We rely
+ * instead on each key having a SINGLE hook instance — state is lifted to one
+ * owner (e.g. useInvoiceHistory lives only in app/page.tsx, which passes
+ * slices to <InvoiceHistory> as props) so two instances of the same key never
+ * coexist in a tab and cannot drift. If a key ever needs two same-tab
+ * instances, re-introduce a same-tab broadcast — but prefer lifting.
+ *
  * Returns [value, setValue, ready] where `ready` is false during SSR/first
  * paint and flips true after the mount effect reads from localStorage — so
  * callers can skip rendering hydrated UI until the data is available (avoids

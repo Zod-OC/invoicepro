@@ -2,25 +2,46 @@
 
 import { useCallback } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { calculateTotals, generateId } from '@/types';
+import { calculateTotals, generateId, stripLogos } from '@/types';
 import type { Invoice, InvoiceRecord, HistoryStatus } from '@/types';
 
 const STORAGE_KEY = 'billify_history';
+// Full-invoice snapshots (for reload-from-history) keyed by invoice id. The
+// history list stores only summaries; these store the full Invoice so a row
+// click can restore it. Capped + logo-stripped (logos are ~1MB base64) to stay
+// well under the ~5MB localStorage quota.
+const SNAPSHOT_KEY = 'billify_invoice_snapshots';
+const MAX_SNAPSHOTS = 50;
 
 /**
  * Invoice history hook. Records a lightweight summary of each invoice the
  * user creates/downloads, with manual status tracking (draft → sent → paid →
  * overdue). All data stays in localStorage — no backend, no accounts.
  *
- * The history stores a SUMMARY (InvoiceRecord), not the full Invoice object.
- * To reload an invoice back into the editor, the full invoice is loaded from
- * `billify_current` (which the editor auto-saves on every change). History
- * records the metadata for the list view + status filtering.
+ * The history LIST stores a SUMMARY (InvoiceRecord) — the metadata for the
+ * list view + status filtering. To reload an invoice back into the editor, a
+ * logo-stripped full Invoice snapshot is stored alongside in
+ * `billify_invoice_snapshots` (keyed by invoice id, capped at 50 to stay
+ * under the ~5 MB localStorage quota). Callers index `snapshots[id]` and run
+ * it through validateInvoice before setting it as the editor's invoice.
+ *
+ * Single-instance by design: this hook is called only from app/page.tsx,
+ * which passes slices to <InvoiceHistory> as props — so the history and
+ * snapshots state has one owner and can't drift across hook instances.
  */
 export function useInvoiceHistory() {
   const [history, setHistory, ready] = useLocalStorage<InvoiceRecord[]>(STORAGE_KEY, []);
+  const [snapshots, setSnapshots] = useLocalStorage<Record<string, Invoice>>(SNAPSHOT_KEY, {});
 
-  /** Create or update a history record from the current invoice. */
+  /**
+   * Create or update a history record from the current invoice, and store a
+   * logo-stripped full snapshot so the row can reload the invoice later.
+   *
+   * `status` applies ONLY to NEW records (a download marks a freshly-recorded
+   * invoice 'sent'). For an EXISTING record the status is PRESERVED — a
+   * re-download must not clobber a manual 'paid'/'overdue' marking back to
+   * 'sent'. Status changes go through `updateStatus`, not this method.
+   */
   const recordInvoice = useCallback(
     (invoice: Invoice, status?: HistoryStatus) => {
       const { total } = calculateTotals(invoice.items, invoice.taxRate);
@@ -28,8 +49,9 @@ export function useInvoiceHistory() {
       setHistory((prev) => {
         const existing = prev.find((r) => r.id === invoice.id);
         if (existing) {
-          // Update existing record (don't override paid/overdue status unless explicitly given).
-          const nextStatus = status ?? existing.status;
+          // Re-download / re-save: refresh the summary fields but PRESERVE the
+          // user's manual status. paidDate is carried by `...r` (kept for
+          // 'paid', correctly absent for 'sent'/'overdue'/'draft').
           return prev.map((r) =>
             r.id === invoice.id
               ? {
@@ -40,7 +62,7 @@ export function useInvoiceHistory() {
                   currency: invoice.currency,
                   date: invoice.date,
                   dueDate: invoice.dueDate,
-                  status: nextStatus,
+                  status: existing.status,
                   updatedAt: now,
                 }
               : r,
@@ -61,8 +83,18 @@ export function useInvoiceHistory() {
         };
         return [record, ...prev];
       });
+      // Store a logo-stripped full snapshot so the row can reload the invoice.
+      setSnapshots((prev) => {
+        const stripped = stripLogos(invoice);
+        const next = { ...prev, [invoice.id]: stripped };
+        const ids = Object.keys(next);
+        if (ids.length > MAX_SNAPSHOTS) {
+          delete next[ids[0]]; // drop the oldest insertion to stay bounded
+        }
+        return next;
+      });
     },
-    [setHistory],
+    [setHistory, setSnapshots],
   );
 
   /** Update the status of a specific invoice record. */
@@ -89,14 +121,21 @@ export function useInvoiceHistory() {
   const removeRecord = useCallback(
     (id: string) => {
       setHistory((prev) => prev.filter((r) => r.id !== id));
+      setSnapshots((prev) => {
+        if (!(id in prev)) return prev;
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     },
-    [setHistory],
+    [setHistory, setSnapshots],
   );
 
   /** Clear all history. */
   const clearHistory = useCallback(() => {
     setHistory(() => []);
-  }, [setHistory]);
+    setSnapshots(() => ({}));
+  }, [setHistory, setSnapshots]);
 
   /** Check for overdue invoices (due date passed, not yet paid/sent). */
   const markOverdue = useCallback(() => {
@@ -113,6 +152,8 @@ export function useInvoiceHistory() {
   return {
     history,
     ready,
+    /** Full (logo-stripped) invoice snapshots keyed by id — index directly to reload. */
+    snapshots,
     recordInvoice,
     updateStatus,
     removeRecord,
