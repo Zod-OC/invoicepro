@@ -1094,6 +1094,7 @@ export default function AppPage() {
       // shared freeFallbackTemplate helper (src/types) so this and the pre-clamp
       // save effect above pick the SAME fallback and can't drift.
       const fallback = freeFallbackTemplate(limits.templates);
+      const proTemplateName = getTemplate(invoice.template)?.name ?? 'Pro Template';
       // This writes the clamped template into state (so the <select> and preview
       // show a free template). It does NOT set dirtyRef, so it does NOT trigger
       // auto-save by itself — the saved Pro template stays in billify_current on
@@ -1102,6 +1103,11 @@ export default function AppPage() {
       // see the docblock above for the accepted tradeoff). It only fires on a
       // plan/template transition (guarded above), not every render.
       setInvoice(prev => ({ ...prev, template: fallback }));
+      // Show the paywall so the user understands WHY they're seeing a different
+      // template than they clicked. Without this, a free user clicking a Pro
+      // template's "Use Template" on /templates lands on Modern with no
+      // explanation — looks like all templates are the same (bug report from user).
+      setShowPaywall({ open: true, feature: proTemplateName });
     }
   }, [plan, isEmbed, initialized, limits, isProTemplate]);
 
