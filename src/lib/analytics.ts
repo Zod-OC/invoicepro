@@ -6,7 +6,9 @@
  * Events fired before the script loads are buffered and flushed once it's ready.
  * Every call is try/catched — analytics can never break the app. We track a small
  * fixed set of NAMED events (page views are automatic): checkout_click,
- * upgrade_click, editor_open, pseo_view, cap_hit. No autocapture, no PII.
+ * upgrade_click, editor_open, pseo_view, cap_hit, cloud_sync_connect,
+ * cloud_sync_push, cloud_sync_pull, cloud_sync_disconnect, cloud_sync_pair.
+ * No autocapture, no PII.
  */
 declare global {
   interface Window {

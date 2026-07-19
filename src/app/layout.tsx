@@ -48,7 +48,7 @@ export default function RootLayout({
             enforced by any static host that honors _headers (Netlify, Cloudflare
             Pages). For nginx/Coolify, the operator must add the same header; see
             next.config.mjs. frame-ancestors is intentionally omitted here. */}
-        <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" />
+        <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://www.googleapis.com https://oauth2.googleapis.com; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" />
         {/* Referrer-Policy via <meta> mirrors the HTTP header in public/_headers
             (and the nginx confs) for hosts that don't honor _headers. no-referrer
             stops the one-time same-origin handoff/persist/download tokens —

@@ -21,6 +21,8 @@ import { SITE_HOST } from '@/lib/site';
 import { stripUrlParams } from '@/lib/url';
 import { track } from '@/lib/analytics';
 import { BackupRestore } from '@/components/BackupRestore';
+import { CloudSyncButton } from '@/components/CloudSyncButton';
+import { consumeSyncKeyFromUrl } from '@/hooks/useCloudSync';
 import { ClientDirectory } from '@/components/ClientDirectory';
 import { ClientAutocomplete } from '@/components/ClientAutocomplete';
 import { useClients } from '@/hooks/useClients';
@@ -338,6 +340,12 @@ export default function AppPage() {
     // later-declared mount effect, so capturing it here with [] deps would
     // always read the initial false and mis-attribute every embed session as 'host'.
     track('editor_open', { mode: isEmbedMode() ? 'embed' : 'host' });
+    // FREEMIUM/SYNC: consume the #sync=KEY fragment if present (device pairing).
+    // Stores the encryption key in localStorage so cloud-sync can decrypt the
+    // user's existing Drive file. The fragment is cleared after consumption.
+    if (consumeSyncKeyFromUrl()) {
+      track('cloud_sync_pair', { source: 'url_fragment' });
+    }
   }, []);
   // Plan-resolve window: a host (non-embed) user whose plan is still being
   // validated (a token is present and /api/stripe/validate-token is in flight).
@@ -1902,6 +1910,7 @@ export default function AppPage() {
                   }}
                 />
                 <BackupRestore />
+                <CloudSyncButton clientId={process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID} />
               </>
             )}
             {/* Download path is host-only. In embed the free-tier cap and Pro

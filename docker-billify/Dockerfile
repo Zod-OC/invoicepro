@@ -19,6 +19,10 @@ COPY public ./public
 # layout.tsx conditionally renders the snippet only when non-empty.
 ARG NEXT_PUBLIC_UMAMI_WEBSITE_ID=""
 ENV NEXT_PUBLIC_UMAMI_WEBSITE_ID=$NEXT_PUBLIC_UMAMI_WEBSITE_ID
+# Google Drive Client ID for browser-only cloud sync (optional feature).
+# If unset, the Sync button is hidden — no feature, no GCP dependency.
+ARG NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID=""
+ENV NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID
 
 # Build static export (output: 'export' with distDir: 'dist' → /build/dist)
 RUN npm run build

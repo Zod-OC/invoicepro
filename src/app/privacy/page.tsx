@@ -54,11 +54,39 @@ export default function PrivacyPage() {
             </p>
           </ProseSection>
 
+          <ProseSection title="Cloud sync (optional)">
+            <p>
+              Cloud sync is an optional feature that lets you back up your invoices to your own Google Drive
+              so you can use them across devices. It is entirely opt-in — the feature is invisible until you
+              explicitly enable it.
+            </p>
+            <p>
+              <strong>Zero-knowledge by design.</strong> When you enable cloud sync, your browser connects
+              directly to Google Drive using a limited-scope token (the <code>drive.file</code> scope —
+              Billify can only see files it creates, not the rest of your Drive). Your invoice data is{' '}
+              <strong>encrypted in your browser</strong> before it is uploaded. We never see your encryption
+              key, your data&apos;s contents, or even that you are using cloud sync. Google stores only
+              encrypted files it cannot read.
+            </p>
+            <p>
+              The OAuth token and encryption key live in your browser&apos;s local storage. Clearing your
+              browser storage removes both. You can disconnect cloud sync at any time from the sync settings;
+              this revokes the token and stops syncing, though your encrypted backup remains in your Google
+              Drive until you delete it yourself from Google.
+            </p>
+            <p>
+              For GDPR purposes, Billify is <strong>not a data controller</strong> for cloud-synced data:
+              we never receive or process personal data through this feature. Google is the controller for
+              the OAuth flow and Drive storage under their own privacy policy.
+            </p>
+          </ProseSection>
+
           <ProseSection title="Deleting your data">
             <p>
               There is no account for the free tier — your data lives only in your browser, so clearing your
               browser storage removes it. Pro subscriptions are managed through Stripe and can be cancelled any
-              time from Stripe&apos;s customer portal.
+              time from Stripe&apos;s customer portal. If you enabled cloud sync, you can delete the encrypted
+              backup from your Google Drive at any time.
             </p>
           </ProseSection>
         </div>
