@@ -17,9 +17,10 @@ interface PaywallModalProps {
   open: boolean;
   onClose: () => void;
   feature: string;
+  onUpgrade?: () => void;
 }
 
-export function PaywallModal({ open, onClose, feature }: PaywallModalProps) {
+export function PaywallModal({ open, onClose, feature, onUpgrade }: PaywallModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -57,12 +58,25 @@ export function PaywallModal({ open, onClose, feature }: PaywallModalProps) {
           </div>
         </div>
 
+        <p className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
+          ✅ Your invoice data is safe — it stays in your browser. After upgrading, you'll return right back to this editor with everything intact.
+        </p>
+
         <DialogFooter className="gap-2">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Maybe later
           </Button>
           <Button asChild size="sm">
-            <Link href="/pricing" onClick={() => track('upgrade_click', { source: 'paywall', feature })}>Upgrade to Pro</Link>
+            <Link 
+              href="/pricing" 
+              onClick={() => {
+                // Persist data before navigating away to Stripe checkout
+                if (onUpgrade) onUpgrade();
+                track('upgrade_click', { source: 'paywall', feature });
+              }}
+            >
+              Upgrade to Pro
+            </Link>
           </Button>
         </DialogFooter>
       </DialogContent>

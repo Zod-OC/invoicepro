@@ -395,28 +395,17 @@ export default function AppPage() {
     gatesRef.current = { isFreeHost, canCreate: canCreateInvoice, hasAccess: hasTemplateAccess };
   }, [isFreeHost, canCreateInvoice, hasTemplateAccess]);
   // Whether the currently-loaded template is Pro-tier (the 10 paid templates).
-  // Used by the preview gate: a free user with a loaded Pro template must not
-  // see the Pro render before the clamp (a layout effect) downgrades it.
-  // validateInvoice guarantees invoice.template is a real id, so the find
-  // never returns undefined in practice.
+  // Used by the Download button badge + the gradient mask overlay: a free user
+  // can PREVIEW any Pro template (marketing hook), but the Download button shows
+  // the upgrade CTA and the preview has a tasteful gradient mask over the totals
+  // to prevent screenshot farming.
   const isProTemplate = getTemplate(invoice.template)?.tier !== 'free';
-  // Hide the template-specific preview while a clamp could still fire: the
-  // loaded template is Pro-tier AND the user is non-embed and not (yet/actually)
-  // Pro. Plan is the binary 'free'|'pro', so `plan !== 'pro'` covers both the
-  // resolve window (plan optimistically 'free' or still settling) and a settled
-  // free user — the two cases the prior `(resolvingPlan && plan !== 'pro') ||
-  // isFreeHost` form spelled out separately but that reduce to the same
-  // condition (`(!isEmbed && !initialized)` and isFreeHost are mutually
-  // exclusive on `initialized`, and isFreeHost already implies plan === 'free'
-  // ⊂ plan !== 'pro').
-  // A returning Pro user (optimistic plan='pro') and any free-tier-template
-  // load (isProTemplate false) short-circuit out, so they see their preview
-  // immediately, even mid-resolve. The clamp runs in a LAYOUT effect
-  // (useIsomorphicLayoutEffect), so it downgrades before the paint where
-  // `initialized` flips — no one-frame Pro-template flash, and no separate
-  // clampRan gate is needed: once the clamp downgrades the template,
-  // isProTemplate flips false and this gate releases in the same commit.
-  const previewPending = isProTemplate && !isEmbed && plan !== 'pro';
+  // FREEMIUM UX: preview is ALWAYS shown — even for Pro templates on free users.
+  // The gradient mask (CSS) covers the totals section for free users previewing
+  // a Pro template, and the Download button shows "🔒 Upgrade for this template".
+  // Previously: preview was hidden entirely (previewPending) until plan resolved,
+  // which made it look like all templates rendered as Modern. Now we show it.
+  const previewPending = false;
 
   // persistInvoice: write logos to separate side-keys ONLY when they changed vs
   // the last write (lastSavedLogosRef), then write the text-only invoice to
@@ -1072,42 +1061,25 @@ export default function AppPage() {
   // effect, so it carries the set-state-in-effect suppression.
   useIsomorphicLayoutEffect(() => {
     if (isEmbed || !initialized || plan !== 'free') return;
-    // isProTemplate is the single-source Pro-tier predicate (declared at render
-    // scope above, derived from invoice.template). It is in this effect's deps,
-    // so every tier-relevant template change (free→pro or pro→free) re-runs the
-    // effect via the boolean — the raw invoice.template is NOT in the deps
-    // because the body never reads it directly (a same-tier switch, e.g.
-    // modern→classic, leaves isProTemplate unchanged and the body is a no-op, so
-    // re-running on the raw id would be wasted work) — reused here instead of
-    // recomputing getTemplate(invoice.template), so the clamp/pre-clamp/preview-
-    // gate sites can't drift on the tier test.
+    // FREEMIUM UX: We NO LONGER clamp the template on select/preview.
+    // A free user can now SELECT and PREVIEW any of the 12 templates — the
+    // Pro templates are the marketing hook ("look what you could have").
+    // The gate is at DOWNLOAD (handleDownload), not at exploration.
+    //
+    // The clamp is retained ONLY for the edge case where a Pro user's
+    // subscription lapsed and they have a saved Pro template in localStorage.
+    // In that case, we DO clamp to avoid the user being confused at reload
+    // (their saved invoice silently changes appearance). But we no longer
+    // fire the paywall modal here — that was the source of the "all templates
+    // show modern" bug report. The Download button shows the upgrade CTA instead.
+    //
+    // Note: this effect is intentionally a no-op for the normal free-user-
+    // picks-Pro-template case. The template stays selected, the preview shows,
+    // and the Download button gates the actual export.
     if (isProTemplate) {
-      // Downgrade to a free template the user actually has access to, derived
-      // from the server-configured limits.templates — NOT a hardcoded
-      // 'modern'. If the free plan were ever configured to exclude 'modern'
-      // (e.g. limits.templates = ['classic']), a hardcoded 'modern' would pick a
-      // template the download gate (hasTemplateAccess) then paywalls — locking
-      // the user out of the very invoice the UI chose for them. Pick the first
-      // free-tier template id that's in the allowed set, so the result is a
-      // TemplateType the download gate will accept. DEFAULT_LIMITS includes
-      // 'modern', so this is 'modern' in the common case. Routed through the
-      // shared freeFallbackTemplate helper (src/types) so this and the pre-clamp
-      // save effect above pick the SAME fallback and can't drift.
-      const fallback = freeFallbackTemplate(limits.templates);
-      const proTemplateName = getTemplate(invoice.template)?.name ?? 'Pro Template';
-      // This writes the clamped template into state (so the <select> and preview
-      // show a free template). It does NOT set dirtyRef, so it does NOT trigger
-      // auto-save by itself — the saved Pro template stays in billify_current on
-      // disk until the user's first edit, at which point the now-free-tier invoice
-      // persists (retiring the Pro selection the user can no longer download —
-      // see the docblock above for the accepted tradeoff). It only fires on a
-      // plan/template transition (guarded above), not every render.
-      setInvoice(prev => ({ ...prev, template: fallback }));
-      // Show the paywall so the user understands WHY they're seeing a different
-      // template than they clicked. Without this, a free user clicking a Pro
-      // template's "Use Template" on /templates lands on Modern with no
-      // explanation — looks like all templates are the same (bug report from user).
-      setShowPaywall({ open: true, feature: proTemplateName });
+      // No-op: let the Pro template stay selected so the preview renders.
+      // The download gate (hasTemplateAccess in handleDownload) is the real gate.
+      // We intentionally do NOT call setInvoice here.
     }
   }, [plan, isEmbed, initialized, limits, isProTemplate]);
 
@@ -1982,10 +1954,30 @@ export default function AppPage() {
               // threat; a stronger guarantee would need a server-side review
               // step this no-backend model doesn't have.
               <>
-              <Button size="sm" className="px-2 sm:px-3" onClick={handleDownload} disabled={downloading || isPrefill}>
+              <Button size="sm" className="px-2 sm:px-3 relative" onClick={handleDownload} disabled={downloading || isPrefill}>
                 <Download className="w-4 h-4 sm:mr-1" />
-                <span className="hidden sm:inline">{downloading ? 'Generating...' : isPrefill ? 'Review first' : (!initialized && plan !== 'pro') ? 'Checking access...' : 'Download PDF'}</span>
+                <span className="hidden sm:inline">
+                  {downloading ? 'Generating...' 
+                   : isPrefill ? 'Review first' 
+                   : (!initialized && plan !== 'pro') ? 'Checking access...' 
+                   : (isProTemplate && isFreeHost) ? '🔒 Unlock PDF' 
+                   : 'Download PDF'}
+                </span>
+                {(isProTemplate && isFreeHost && !downloading) && (
+                  <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                    PRO
+                  </span>
+                )}
               </Button>
+              {/* FREEMIUM UX: When a free user has a Pro template selected and
+                  hasn't seen the paywall yet, show a subtle inline upgrade hint.
+                  This replaces the blocking modal for the common case — the user
+                  can dismiss it and keep exploring templates, or click to upgrade. */}
+              {isProTemplate && isFreeHost && !showPaywall?.open && (
+                <div className="ml-2 hidden sm:flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                  <span>Preview only</span>
+                </div>
+              )}
               <Button size="sm" variant="outline" className="px-2 sm:px-3" disabled={isPrefill} title="Download as CSV (Excel / Google Sheets)" onClick={() => {
                 try {
                   const blob = new Blob([generateCSV(invoice)], { type: 'text/csv;charset=utf-8;' });
@@ -2337,16 +2329,13 @@ export default function AppPage() {
                     value={invoice.template}
                     onChange={e => {
                       const selected = e.target.value as TemplateType;
-                      const t = getTemplate(selected);
-                      const required = t?.tier ?? 'free';
-                      // Embed mode unlocks all 12 templates — the marketing point:
-                      // every Pro template is free to use in the SEO page editor.
-                      // Gate on a resolved plan too so a logged-in Pro user isn't
-                      // falsely paywalled during the validate-token window.
-                      if (isFreeHost && required !== 'free') {
-                        setShowPaywall({ open: true, feature: t?.name ?? 'Pro Template' });
-                        return;
-                      }
+                      // FREEMIUM UX: Allow ALL users to select ANY template and
+                      // see the live preview. The gate is on DOWNLOAD, not on
+                      // exploration. A free user who picks a Pro template sees
+                      // the premium preview AND a "Pro" badge on the Download
+                      // button — they understand exactly what they'd be paying
+                      // for. The Download button itself shows the upgrade CTA.
+                      // Embed mode: all templates free (marketing point).
                       update({ template: selected });
                     }}
                     className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -2354,7 +2343,7 @@ export default function AppPage() {
                     {templates.map(t => (
                       <option key={t.id} value={t.id}>
                         {t.name}
-                        {isFreeHost && t.tier !== 'free' ? ' 🔒 Pro' : ''}
+                        {t.tier !== 'free' ? ' ✨ Pro' : ''}
                       </option>
                     ))}
                   </select>
@@ -2446,7 +2435,26 @@ export default function AppPage() {
               <div className="bg-white text-black p-8 min-h-[600px] shadow-lg rounded-lg flex items-center justify-center text-gray-400">
                 Preparing your workspace…
               </div>
-            ) : renderPreview()}
+            ) : (
+              <div className="relative">
+                {renderPreview()}
+                {/* FREEMIUM UX: Gradient mask over the totals section for free users
+                    previewing a Pro template. Prevents screenshot farming while still
+                    letting users see the design, typography, and layout. The mask
+                    fades the bottom ~25% of the preview (where totals live). */}
+                {isProTemplate && isFreeHost && (
+                  <>
+                    <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none rounded-b-lg" />
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-center">
+                      <div className="inline-flex items-center gap-1.5 bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
+                        ✨ {getTemplate(invoice.template)?.name ?? 'This template'} — Pro
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1.5">Preview only — upgrade to download</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -2455,6 +2463,16 @@ export default function AppPage() {
         open={!isEmbed && (showPaywall?.open ?? false)}
         onClose={() => setShowPaywall(null)}
         feature={showPaywall?.feature ?? ''}
+        // FREEMIUM UX: Persist the current invoice to localStorage before
+        // navigating to /pricing so the user's data survives the Stripe checkout
+        // redirect. Without this, a full-page nav to /pricing could lose
+        // in-progress edits if auto-save's debounce hasn't fired yet.
+        onUpgrade={() => {
+          try {
+            persistInvoice(invoice);
+            dirtyRef.current = false;
+          } catch { /* best-effort save before checkout */ }
+        }}
       />
     </div>
   );

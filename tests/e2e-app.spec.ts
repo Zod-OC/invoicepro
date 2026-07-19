@@ -174,9 +174,12 @@ test.describe('E2E — Invoice Builder', () => {
     expect(JSON.parse(stored!).template).toBe('executive');
   });
 
-  // The clamp must still fire for a FREE user who loads a Pro template via a
-  // crafted ?invoice= URL (the tier-leak defense the clamp exists for).
-  test('free user loading a crafted Pro template via ?invoice= is clamped to modern', async ({ page }) => {
+  // FREEMIUM UX: A free user who loads a Pro template (via crafted URL or
+  // by selecting one in the dropdown) is ALLOWED to preview it. The gate is at
+  // DOWNLOAD, not at preview. The template stays selected so the user can see
+  // what the premium design looks like — this is the marketing hook that
+  // converts free users to Pro. The Download button shows the upgrade CTA.
+  test('free user loading a Pro template can PREVIEW it (freemium UX)', async ({ page }) => {
     const crafted = {
       id: 'test-craft-1',
       number: 'INV-CRAFT-1',
@@ -204,8 +207,8 @@ test.describe('E2E — Invoice Builder', () => {
     await page.goto(`/app?invoice=${b64url}`);
     await page.waitForSelector('input[placeholder="Company name"]', { state: 'visible' });
 
-    // Once plan resolves (no token → 'free'), the Pro template is clamped to 'modern'.
-    await expect(page.getByTestId('template-select')).toHaveValue('modern');
+    // The template STAYS selected (no clamp) — freemium UX: preview is allowed.
+    await expect(page.getByTestId('template-select')).toHaveValue('creative');
   });
 });
 
@@ -226,3 +229,36 @@ test.describe('E2E — Invoice Builder', () => {
  *    npx playwright show-report test-report
  *
  * =============================================================== */
+
+// ============================================================
+// FREEMIUM UX REGRESSION TESTS
+// Principle: Gate the ACTION (export), never the PREVIEW.
+// A free user must be able to SELECT and PREVIEW any Pro template.
+// The Download button shows the upgrade CTA, the preview shows the design.
+// ============================================================
+
+test.describe('Freemium UX — preview allowed, download gated', () => {
+  test('free user can switch to any Pro template and see it in the dropdown', async ({ page }) => {
+    await page.goto('/app');
+    await page.waitForSelector('input[placeholder="Company name"]', { state: 'visible' });
+
+    // Select a Pro template
+    await page.getByTestId('template-select').selectOption('bold');
+    
+    // The dropdown should show 'bold' selected (no clamp)
+    await expect(page.getByTestId('template-select')).toHaveValue('bold');
+  });
+
+  test('free user with Pro template sees download button indicate Pro feature', async ({ page }) => {
+    await page.goto('/app');
+    await page.waitForSelector('input[placeholder="Company name"]', { state: 'visible' });
+
+    // Select a Pro template
+    await page.getByTestId('template-select').selectOption('corporate');
+    
+    // The download button should reflect the Pro gate
+    // (either a badge, different label, or upgrade CTA)
+    const downloadBtn = page.locator('button:has-text("Unlock")');
+    await expect(downloadBtn).toBeVisible({ timeout: 5000 });
+  });
+});
