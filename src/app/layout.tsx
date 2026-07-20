@@ -33,6 +33,26 @@ export const metadata: Metadata = {
     publisher: "Billify",
 };
 
+// Defined at module scope BEFORE RootLayout (was previously declared after
+// the function body, a TDZ violation at runtime in stricter bundlers).
+const noscriptStyles = `
+  .noscript-fallback {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0b1220;
+    color: #fff;
+    z-index: 99999;
+  }
+  .noscript-inner {
+    max-width: 480px;
+    padding: 2rem;
+    text-align: center;
+  }
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -75,6 +95,14 @@ export default function RootLayout({
         )}
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        {/* WCAG 2.4.1 Bypass Blocks — keyboard users can skip the nav.
+            Visually hidden until focused. */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded"
+        >
+          Skip to main content
+        </a>
         <noscript>
           <style>{noscriptStyles}</style>
           <div className="noscript-fallback">
@@ -84,29 +112,8 @@ export default function RootLayout({
             </div>
           </div>
         </noscript>
-        <FrameGuard>{children}</FrameGuard>
+        <main id="main"><FrameGuard>{children}</FrameGuard></main>
       </body>
     </html>
   );
 }
-
-const noscriptStyles = `
-  .noscript-fallback {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #0a0a0a;
-    z-index: 9999;
-  }
-  .noscript-inner {
-    text-align: center;
-    max-width: 480px;
-    padding: 2rem;
-    color: #e5e5e5;
-    font-family: system-ui, sans-serif;
-  }
-  .noscript-inner h1 { font-size: 1.5rem; margin-bottom: 1rem; }
-  .noscript-inner p { font-size: 1rem; line-height: 1.5; opacity: 0.8; }
-`;

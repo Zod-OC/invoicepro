@@ -5,7 +5,7 @@ branch: master
 current_feature: 7
 features_total: 7
 features_done: 6
-features_failed: 1
+features_failed: 0
 open_issues:
   - "#5: Fix analytics docblock (1-line fix)"
   - "#6: PDF drawDetails inline layout"
