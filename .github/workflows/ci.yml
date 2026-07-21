@@ -1,0 +1,43 @@
+name: CI
+
+# R6 fix: minimal CI gate. Runs on every PR to master. Gates type-check
+# and lint as hard failures. E2e tests are target-URL-dependent (Playwright
+# runs against billify.me) and excluded from this gate — they run on a
+# nightly cron instead, see .github/workflows/e2e-nightly.yml if added.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    name: build + typecheck + lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: ESLint (zero warnings gate)
+        run: npx eslint . --max-warnings=0 --ext .ts,.tsx,.js,.jsx
+
+      - name: Next.js build
+        run: npx next build
+        env:
+          # Build-time env vars. Use placeholder Clerk key so ClerkProvider
+          # doesn't fail the build. NEXT_PUBLIC_* values are inlined at
+          # build time and never used at runtime in CI.
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_dummy_key_for_ci_only
+          NEXT_PUBLIC_API_URL: /api

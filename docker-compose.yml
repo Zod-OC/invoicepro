@@ -71,7 +71,10 @@ services:
     environment:
       POSTGRES_DB: umami
       POSTGRES_USER: umami
-      POSTGRES_PASSWORD: 795b8e7fcdfb16a55375db63aa8f69a64eaf98ac
+      # R1 fix: secrets moved to env var interpolation. The repo is public;
+      # previously these were hardcoded literals committed at fc7d0519,
+      # 135c3b9, f4b52a0f. Set in Coolify's env store, NOT in this file.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set in deploy env}
     volumes:
       - billify-pgdata:/var/lib/postgresql/data
     # Resource limits — the box is small (~2GB), and Coolify + nginx + api
@@ -101,8 +104,11 @@ services:
       # redacts credentials embedded in URL strings (replacing them with literal
       # '***'), but does NOT redact standalone password values. The command
       # override below assembles DATABASE_URL at runtime from these parts.
-      DB_PASSWORD: 795b8e7fcdfb16a55375db63aa8f69a64eaf98ac
-      UMAMI_SALT: 3df04bbb86d9d1e3d52c637caef82768
+      # R1 fix: secrets moved to env var interpolation. See R1 note above.
+      # Coolify will set these in its env store. The :? suffix makes compose
+      # fail-fast if they're missing.
+      DB_PASSWORD: ${DB_PASSWORD:?Set in deploy env}
+      UMAMI_SALT: ${UMAMI_SALT:?Set in deploy env}
     # Construct DATABASE_URL at runtime so Coolify never sees a credential URL
     # in the environment block (which it would redact to '***').
     # $$ in docker-compose escapes to $ so the shell expands the vars, not compose.

@@ -1987,17 +1987,45 @@ export default function AppPage() {
                   <span>Preview only</span>
                 </div>
               )}
-              <Button size="sm" variant="outline" className="px-2 sm:px-3" disabled={isPrefill} title="Download as CSV (Excel / Google Sheets)" onClick={() => {
+              <Button size="sm" variant="outline" className="px-2 sm:px-3" disabled={isPrefill} title="Download as CSV (Excel / Google Sheets)" onClick={async () => {
                 try {
-                  const blob = new Blob([generateCSV(invoice)], { type: 'text/csv;charset=utf-8;' });
+                  // R5 fix: mirror handleDownload's gating. Previously the CSV
+                  // button only checked isPrefill, so free users could export
+                  // unlimited Pro-template data and bypass the monthly cap.
+                  // Same gates as PDF: authoritative plan + Pro-template check
+                  // + monthly cap under the Web Lock + recordInvoice.
+                  if (isEmbed) return;
+                  const authoritative = await awaitInitialized(28000);
+                  const csvGates = gatesRef.current;
+                  const capBound = authoritative && csvGates.isFreeHost;
+                  const csvInv = invoiceRef.current;
+                  if (capBound && !csvGates.hasAccess(csvInv.template)) {
+                    setShowPaywall({ open: true, feature: 'Pro Template' });
+                    return;
+                  }
+                  const deliver = await navigator.locks.request(
+                    'billify-monthly-cap',
+                    async () => {
+                      const cur = readMonthCount();
+                      if (capBound && !csvGates.canCreate(cur)) {
+                        setShowPaywall({ open: true, feature: 'Unlimited Invoices' });
+                        return 'paywall' as const;
+                      }
+                      writeMonthCount(cur + 1);
+                      return 'ok' as const;
+                    }
+                  );
+                  if (deliver !== 'ok') return;
+                  const blob = new Blob([generateCSV(csvInv)], { type: 'text/csv;charset=utf-8;' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
-                  a.download = `Invoice-${invoice.number || 'export'}.csv`;
+                  a.download = `Invoice-${csvInv.number || 'export'}.csv`;
                   document.body.appendChild(a);
                   a.click();
-                  document.body.removeChild(a);
+                  a.remove();
                   URL.revokeObjectURL(url);
+                  recordInvoice(csvInv, 'sent');
                 } catch (err) {
                   console.error(err);
                   alert(PDF_FAILED_MSG);

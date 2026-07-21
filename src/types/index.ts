@@ -241,13 +241,20 @@ export function currencySymbol(code: string): string {
 // SSR prerender and client hydration. Both variants share ONE cache, keyed by
 // variant — see currencyFormatter.
 export function formatCurrencyPdf(amount: number, currency: string): string {
+  // R8 fix: clamp NaN/Infinity to 0 so the PDF never renders "NaN" as a total.
+  // Transient NaN happens mid-edit (e.g. user types "1-" in a rate field).
+  const safe = Number.isFinite(amount) ? amount : 0;
   const nf = currencyFormatter(currency, 'pdf');
-  return nf ? nf.format(amount) : `${currency} ${amount.toFixed(2)}`;
+  return nf ? nf.format(safe) : `${currency} ${safe.toFixed(2)}`;
 }
 
 export function calculateTotals(items: InvoiceItem[], taxRate: number) {
-  const subtotal = items.reduce((sum, item) => sum + item.quantity * item.rate, 0);
-  const tax = subtotal * (taxRate / 100);
+  // R8 fix: guard each numeric input. quantity/rate can be NaN during editing;
+  // taxRate is user-editable and can also go NaN mid-keystroke.
+  const safeNum = (n: number) => Number.isFinite(n) ? n : 0;
+  const safeTax = safeNum(taxRate);
+  const subtotal = items.reduce((sum, item) => sum + safeNum(item.quantity) * safeNum(item.rate), 0);
+  const tax = subtotal * (safeTax / 100);
   const total = subtotal + tax;
   return { subtotal, tax, total };
 }

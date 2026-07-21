@@ -125,20 +125,32 @@ registerPrice('STRIPE_PRICE_PRO_YEARLY',   'pro',  'yearly');
 registerPrice('STRIPE_PRICE_TEAM_MONTHLY', 'team', 'monthly');
 registerPrice('STRIPE_PRICE_TEAM_YEARLY',  'team', 'yearly');
 
-// Fallback to test-mode IDs if env not set (dev/preview only)
+// R3 fix: removed the silent test-mode price ID fallback. Previously, if any of
+// the four STRIPE_PRICE_* env vars were unset, the server would warn and
+// silently use hardcoded test price IDs — meaning a production deploy that
+// forgot one env var would charge to a test mode price, and live payments
+// would fail at the webhook (priceId not in PRICE_IDS). Fail-fast instead.
 if (Object.keys(PRICE_IDS).length === 0) {
-  console.warn('WARNING: STRIPE_PRICE_* env vars not set — using test-mode price IDs');
+  const isProd = process.env.NODE_ENV === 'production';
+  if (isProd) {
+    throw new Error(
+      'STRIPE_PRICE_* env vars are not set. Required: STRIPE_PRICE_PRO_MONTHLY, ' +
+      'STRIPE_PRICE_PRO_YEARLY, STRIPE_PRICE_TEAM_MONTHLY, STRIPE_PRICE_TEAM_YEARLY. ' +
+      'Configure these in your deploy env (e.g. Coolify) before going live.'
+    );
+  }
+  console.warn('Dev mode: STRIPE_PRICE_* env vars not set — using test-mode price IDs');
   const TEST_PRICES = {
     'pro':  { monthly: 'price_1TmDYJ0G5k5sFLG4xMEjuHL1', yearly: 'price_1TmDbW0G5k5sFLG4l9YiH5ve' },
     'team': { monthly: 'price_1TmDbX0G5k5sFLG4kYYoLj2N', yearly: 'price_1TmDbX0G5k5sFLG4Ur9Dmh5w' },
   };
+
   for (const [plan, periods] of Object.entries(TEST_PRICES)) {
     PRICE_IDS[periods.monthly] = plan;
     PRICE_IDS[periods.yearly]  = plan;
     PLAN_PRICES[plan] = periods;
   }
 }
-
 // Single source of truth: api/plan-limits.json. The client (src/lib/
 // plan-limits.ts) imports the SAME JSON for its embed short-circuit and
 // optimistic stored-plan restore, so the server-emitted limits and the client's

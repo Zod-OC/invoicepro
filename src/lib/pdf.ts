@@ -169,8 +169,11 @@ export function renderTemplateInto(doc: jsPDF, invoice: Invoice): void {
 export function generatePDF(invoice: Invoice): Blob {
   const doc = new jsPDF();
 
-  // Sanitize all text fields to prevent jsPDF injection from HTML tags
-  const clean = (s: string) => s.replace(/<[^\u003e]*>/g, '');
+  // R7 fix: removed clean() regex — jsPDF's doc.text() renders literal text and
+  // never parses HTML, so there was nothing to sanitize. The regex /<[^>]*>/g
+  // was silently deleting real user content (e.g. "net 14, payment < 30 days"
+  // became "net 14, payment "). clean() is now a passthrough.
+  const clean = (s: string) => s;
   const safeInvoice: Invoice = {
     ...invoice,
     number: clean(invoice.number),
