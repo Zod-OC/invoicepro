@@ -147,7 +147,7 @@ test.describe('validateInvoice — strict-rebuild round-trip', () => {
     const withoutCat: Invoice = { ...createEmptyInvoice(), items: [{ description: 'x', quantity: 2, rate: 50 }], taxRate: 20 };
     expect(calculateTotals(withCat.items, withCat.taxRate)).toEqual(calculateTotals(withoutCat.items, withoutCat.taxRate));
     // and the flat-rate math itself
-    expect(calculateTotals(withCat.items, 20)).toEqual({ subtotal: 100, tax: 20, total: 120 });
+    expect(calculateTotals(withCat.items, 20)).toEqual({ subtotal: 100, discount: 0, tax: 20, total: 120 });
   });
 });
 
