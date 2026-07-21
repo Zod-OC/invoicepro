@@ -2,7 +2,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Invoice, TemplateType, formatCurrencyPdf, calculateTotals } from '@/types';
+import { Invoice, TemplateType, formatCurrencyPdf, calculateTotals, resolveTaxConfig, taxConfigLabel, rcTotal } from '@/types';
 import { SITE_HOST } from '@/lib/site';
 
 // PDF footer brand line for the three template renderers that print the host
@@ -36,7 +36,7 @@ const TEMPLATE_RENDERERS: Record<TemplateType, (doc: jsPDF, invoice: Invoice) =>
   creative: generateCreative,
 };
 
-// Shared autoTable `foot` (Subtotal / Tax (rate%) / Total rows) for every
+// Shared autoTable `foot` (Subtotal / Tax (label rate%) / Total rows) for every
 // renderer. The 12 renderers' foot blocks were byte-identical except for the
 // column count (4 for every table, 5 for Classic) and Consulting's uppercase
 // labels — and had just been re-edited in lockstep (subtotal/taxAmount/total →
@@ -55,18 +55,83 @@ const TEMPLATE_RENDERERS: Record<TemplateType, (doc: jsPDF, invoice: Invoice) =>
 // Subtotal/Tax/Total amounts across all 12 templates. Taking `columns` and
 // deriving the blanks here removes that off-by-one foot-gun. `labels` defaults
 // to the title-case strings every renderer but Consulting uses.
+//
+// Issue #21 — the tax row now uses the TaxConfig label ("VAT (20%)" instead of
+// "Tax (20%)"), and a reverse-charge invoice reports the tax amount but does NOT
+// add it to the total (the buyer self-accounts for it on their own return).
+// Both come from resolveTaxConfig(invoice) so a legacy invoice with just
+// taxRate renders identically (label "Tax", reverseCharge false).
 function totalsFoot(
   invoice: Invoice,
   totals: { subtotal: number; tax: number; total: number },
   columns: number,
   labels: { subtotal: string; tax: string; total: string } = { subtotal: 'Subtotal', tax: 'Tax', total: 'Total' },
 ): string[][] {
+  const cfg = resolveTaxConfig(invoice);
+  // Reverse-charge: tax is reported (shown on its own line, annotated) but the
+  // total is just the subtotal. rcTotal returns {tax, total} with tax preserved
+  // and total collapsed to subtotal when reverseCharge is true; the non-RC path
+  // returns the original totals unchanged.
+  const rc = rcTotal(totals, cfg.reverseCharge);
+  const taxLabel = taxConfigLabel(cfg);
   const blanks: string[] = Array.from({ length: columns - 2 }, () => '');
   return [
     [...blanks, labels.subtotal, formatCurrencyPdf(totals.subtotal, invoice.currency)],
-    [...blanks, `${labels.tax} (${invoice.taxRate}%)`, formatCurrencyPdf(totals.tax, invoice.currency)],
-    [...blanks, labels.total, formatCurrencyPdf(totals.total, invoice.currency)],
+    // Tax row: "<label> (<rate>%)" — e.g. "VAT (20%)" or "Sales Tax (8.5%)".
+    // On a reverse-charge invoice the rate/label still surface (the buyer needs
+    // to know what to self-account), but the total below excludes the tax.
+    [...blanks, `${labels.tax === 'Tax' ? taxLabel : labels.tax} (${cfg.rate}%)`, formatCurrencyPdf(rc.tax, invoice.currency)],
+    [...blanks, labels.total, formatCurrencyPdf(rc.total, invoice.currency)],
   ];
+}
+
+// ─── Issue #21: reverse-charge + tax-ID annotation (post-table) ──────────
+// Renders the "VAT No: <id>" and "Reverse Charge" annotations BELOW the totals
+// table, in small gray type, when applicable. Returns the Y after the last line
+// so the renderer's notes/terms can follow. No-op (returns baseY) when there's
+// nothing to draw, so a legacy invoice with no TaxConfig renders exactly as
+// before. The annotation is intentionally SEPARATE from the inline party-block
+// details (drawDetailsInline etc.) — EN 16931 puts the tax-line annotation next
+// to the totals it relates to, while the seller/buyer identity sits with the
+// parties. Placing it here also means it lands on the same page as the total
+// regardless of how long the items table grew.
+function drawTaxAnnotation(
+  doc: jsPDF,
+  invoice: Invoice,
+  baseY: number,
+  x: number,
+): number {
+  const cfg = resolveTaxConfig(invoice);
+  const lines: string[] = [];
+  // "VAT No: <id>" / "GST No: <id>" / etc. — uses the tax-line label so the
+  // registration number is disambiguated from the seller-identity taxId that
+  // already renders inline with the From block. Only shown when there's an
+  // actual taxId (resolveTaxConfig falls back to from.taxId, so a user who set
+  // the seller taxId but never touched TaxConfig still sees it surface here).
+  if (cfg.taxId) {
+    const noLabel = cfg.label === 'Custom' && cfg.customLabel ? cfg.customLabel : taxConfigLabel(cfg);
+    lines.push(`${noLabel} No: ${cfg.taxId}`);
+  }
+  if (cfg.buyerTaxId) {
+    lines.push(`Buyer ${taxConfigLabel(cfg)} No: ${cfg.buyerTaxId}`);
+  }
+  if (cfg.reverseCharge) {
+    // The canonical EU reverse-charge wording. The buyer's registration number
+    // (above) and this annotation together satisfy the EN 16931 requirement.
+    lines.push('Reverse Charge');
+  }
+  if (!lines.length) return baseY;
+  const prevSize = doc.getFontSize();
+  const prevColor = doc.getTextColor();
+  const prevFont = doc.getFont();
+  doc.setFontSize(8);
+  doc.setTextColor(107, 114, 128);
+  doc.setFont('helvetica', 'normal');
+  lines.forEach((line, i) => doc.text(line, x, baseY + 5 + i * 4));
+  doc.setFontSize(prevSize);
+  doc.setTextColor(prevColor);
+  doc.setFont(prevFont.fontName, prevFont.fontStyle);
+  return baseY + 5 + lines.length * 4;
 }
 
 // ─── Compliance detail rendering (EN 16931) ──────────────────────────────
@@ -289,13 +354,18 @@ function generateModern(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  // Issue #21: VAT/GST No + Reverse Charge annotation. No-op (returns finalY)
+  // when the invoice has no tax config, so a legacy invoice's layout is
+  // unchanged. taxY pushes notes/terms down past the annotation so a 1-3 line
+  // "VAT No / Buyer VAT No / Reverse Charge" block can't overlap the notes.
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
-    doc.text('Notes:', 15, finalY + 15);
+    doc.text('Notes:', 15, taxY + 15);
     doc.setFontSize(10);
-    doc.text(invoice.notes, 15, finalY + 22);
+    doc.text(invoice.notes, 15, taxY + 22);
   }
   if (invoice.terms) {
-    doc.text(`Terms: ${invoice.terms}`, 15, finalY + 35);
+    doc.text(`Terms: ${invoice.terms}`, 15, taxY + 35);
   }
 
   doc.setFontSize(9);
@@ -360,9 +430,10 @@ function generateClassic(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
     doc.setFontSize(10);
-    doc.text(`Notes: ${invoice.notes}`, 15, finalY + 15);
+    doc.text(`Notes: ${invoice.notes}`, 15, taxY + 15);
   }
   doc.setFontSize(9);
   doc.text('Generated by Billify', 15, 290);
@@ -420,9 +491,10 @@ function generateMinimal(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
     doc.setFontSize(10);
-    doc.text(`Notes: ${invoice.notes}`, 15, finalY + 14);
+    doc.text(`Notes: ${invoice.notes}`, 15, taxY + 14);
   }
   doc.setFontSize(9);
   doc.text('Generated by Billify', 15, 290);
@@ -495,13 +567,14 @@ function generateClean(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Notes: ${invoice.notes}`, 15, finalY + 14);
+    doc.text(`Notes: ${invoice.notes}`, 15, taxY + 14);
   }
   if (invoice.terms) {
-    doc.text(`Terms: ${invoice.terms}`, 15, finalY + 22);
+    doc.text(`Terms: ${invoice.terms}`, 15, taxY + 22);
   }
   doc.setFontSize(8);
   doc.setTextColor(148, 163, 184);
@@ -568,10 +641,11 @@ function generateBold(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Notes: ${invoice.notes}`, 15, finalY + 14);
+    doc.text(`Notes: ${invoice.notes}`, 15, taxY + 14);
   }
   doc.setFontSize(9);
   doc.setTextColor(148, 163, 184);
@@ -649,13 +723,14 @@ function generateExecutive(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Notes: ${invoice.notes}`, 15, finalY + 14);
+    doc.text(`Notes: ${invoice.notes}`, 15, taxY + 14);
   }
   if (invoice.terms) {
-    doc.text(`Payment Terms: ${invoice.terms}`, 15, finalY + 22);
+    doc.text(`Payment Terms: ${invoice.terms}`, 15, taxY + 22);
   }
   doc.setFontSize(8);
   doc.setTextColor(148, 163, 184);
@@ -749,13 +824,14 @@ function generateCorporate(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Notes: ${invoice.notes}`, 15, finalY + 12);
+    doc.text(`Notes: ${invoice.notes}`, 15, taxY + 12);
   }
   if (invoice.terms) {
-    doc.text(`Terms: ${invoice.terms}`, 15, finalY + 20);
+    doc.text(`Terms: ${invoice.terms}`, 15, taxY + 20);
   }
   doc.setFontSize(8);
   doc.setTextColor(148, 163, 184);
@@ -848,10 +924,11 @@ function generateStartup(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 70);
   if (invoice.notes) {
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Notes: ${invoice.notes}`, 70, finalY + 12);
+    doc.text(`Notes: ${invoice.notes}`, 70, taxY + 12);
   }
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
@@ -943,13 +1020,14 @@ function generateFreelancer(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 20);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Notes: ${invoice.notes}`, 20, finalY + 14);
+    doc.text(`Notes: ${invoice.notes}`, 20, taxY + 14);
   }
   if (invoice.terms) {
-    doc.text(`Terms: ${invoice.terms}`, 20, finalY + 22);
+    doc.text(`Terms: ${invoice.terms}`, 20, taxY + 22);
   }
   doc.setFontSize(8);
   doc.setTextColor(148, 163, 184);
@@ -1047,10 +1125,11 @@ function generateAgency(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Notes: ${invoice.notes}`, 15, finalY + 14);
+    doc.text(`Notes: ${invoice.notes}`, 15, taxY + 14);
   }
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
@@ -1134,14 +1213,15 @@ function generateConsulting(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
     doc.setFont('courier', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Notes: ${invoice.notes}`, 15, finalY + 14);
+    doc.text(`Notes: ${invoice.notes}`, 15, taxY + 14);
   }
   if (invoice.terms) {
-    doc.text(`Terms: ${invoice.terms}`, 15, finalY + 22);
+    doc.text(`Terms: ${invoice.terms}`, 15, taxY + 22);
   }
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
@@ -1221,10 +1301,11 @@ function generateCreative(doc: jsPDF, invoice: Invoice) {
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
+  const taxY = drawTaxAnnotation(doc, invoice, finalY, 15);
   if (invoice.notes) {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
-    doc.text(invoice.notes, 15, finalY + 14);
+    doc.text(invoice.notes, 15, taxY + 14);
   }
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
