@@ -143,11 +143,12 @@ export function ClientDirectory({ invoice, onSelectClient, isPro }: ClientDirect
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive flex-shrink-0"
+                      className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive flex-shrink-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring"
                       onClick={(e) => {
                         e.stopPropagation();
                         removeClient(client.id);
                       }}
+                      aria-label={`Delete client ${client.name}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>

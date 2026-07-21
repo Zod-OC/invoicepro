@@ -1870,6 +1870,16 @@ export default function AppPage() {
 
   return (
     <div className="min-h-full flex flex-col">
+      {/* Skip-to-content link for keyboard users — visually hidden until focused.
+          Standard WCAG 2.1 AA pattern (2.4.1 Bypass Blocks). The href points to
+          #main-content; the editor container below has id="main-content" and
+          role="main". */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg focus:border focus:border-input"
+      >
+        Skip to content
+      </a>
       {/* Nav */}
       <nav className="w-full border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 h-14 flex items-center justify-between">
@@ -1878,11 +1888,17 @@ export default function AppPage() {
             <span className="font-bold text-lg hidden sm:inline">Billify</span>
           </Link>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="px-2 sm:px-3" onClick={() => {
-              const fresh = createEmptyInvoice();
-              fresh.number = consumeNextNumber();
-              applyInvoiceToEditor(fresh, true);
-            }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2 sm:px-3"
+              aria-label="Create a new blank invoice"
+              onClick={() => {
+                const fresh = createEmptyInvoice();
+                fresh.number = consumeNextNumber();
+                applyInvoiceToEditor(fresh, true);
+              }}
+            >
               <RotateCcw className="w-4 h-4" /> <span className="hidden sm:inline ml-1">New</span>
             </Button>
             {/* Sticky features — hidden in embed mode (embed is try-only, no persistence) */}
@@ -1941,7 +1957,7 @@ export default function AppPage() {
                 driven through "Open full-screen", which opens a top-level /app
                 tab (HOST mode) where the cap/paywall apply. */}
             {isEmbed ? (
-              <Button size="sm" variant="outline" className="px-2 sm:px-3" onClick={handleOpenFullScreen}>
+              <Button size="sm" variant="outline" className="px-2 sm:px-3" aria-label="Open the full Billify editor in a new tab" onClick={handleOpenFullScreen}>
                 <Maximize2 className="w-4 h-4 sm:mr-1" />
                 <span className="hidden sm:inline">Open full-screen</span>
                 <span className="sm:hidden">Full-screen</span>
@@ -1982,7 +1998,19 @@ export default function AppPage() {
               // threat; a stronger guarantee would need a server-side review
               // step this no-backend model doesn't have.
               <>
-              <Button size="sm" className="px-2 sm:px-3 relative" onClick={handleDownload} disabled={downloading || isPrefill}>
+              <Button
+                size="sm"
+                className="px-2 sm:px-3 relative"
+                onClick={handleDownload}
+                disabled={downloading || isPrefill}
+                aria-label={
+                  downloading ? 'Generating PDF, please wait'
+                  : isPrefill ? 'Review invoice before downloading'
+                  : (!initialized && plan !== 'pro') ? 'Checking access before download'
+                  : (isProTemplate && isFreeHost) ? 'Unlock Pro template to download PDF'
+                  : 'Download invoice as PDF'
+                }
+              >
                 <Download className="w-4 h-4 sm:mr-1" />
                 <span className="hidden sm:inline">
                   {downloading ? 'Generating...' 
@@ -2006,7 +2034,7 @@ export default function AppPage() {
                   <span>Preview only</span>
                 </div>
               )}
-              <Button size="sm" variant="outline" className="px-2 sm:px-3" disabled={isPrefill} title="Download as CSV (Excel / Google Sheets)" onClick={async () => {
+              <Button size="sm" variant="outline" className="px-2 sm:px-3" disabled={isPrefill} title="Download as CSV (Excel / Google Sheets)" aria-label="Download invoice as CSV" onClick={async () => {
                 try {
                   // R5 fix: mirror handleDownload's gating. Previously the CSV
                   // button only checked isPrefill, so free users could export
@@ -2069,7 +2097,11 @@ export default function AppPage() {
         </div>
       </nav>
 
-      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full">
+      <div
+        id="main-content"
+        role="main"
+        className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full"
+      >
         {/* Editor */}
         <div className="flex-1 p-3 sm:p-4 space-y-4 overflow-y-auto lg:max-h-[calc(100vh-3.5rem)]">
           {error && !checkoutErrorDismissed && (
@@ -2145,29 +2177,36 @@ export default function AppPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Number</Label>
-                <Input data-testid="invoice-number" value={invoice.number} onChange={e => update({ number: e.target.value })} />
+                <Label htmlFor="invoice-number" className="text-xs">Number</Label>
+                <Input id="invoice-number" data-testid="invoice-number" value={invoice.number} onChange={e => update({ number: e.target.value })} />
               </div>
               <div>
-                <Label className="text-xs">Currency</Label>
+                <Label htmlFor="invoice-currency" className="text-xs">Currency</Label>
                   <Input
+                    id="invoice-currency"
                     list="billify-currencies"
                     value={invoice.currency}
                     onChange={e => update({ currency: e.target.value.toUpperCase() })}
                     onBlur={() => { if (!isValidCurrencyCode(invoice.currency)) update({ currency: 'USD' }); }}
                     aria-invalid={!currencyValid}
+                    aria-describedby={!currencyValid ? 'invoice-currency-err' : undefined}
                     className={currencyValid ? '' : 'border-red-500 focus-visible:border-red-500'}
                     autoComplete="off"
                   />
+                  {!currencyValid && (
+                    <p id="invoice-currency-err" className="text-xs text-red-500 mt-1">
+                      Unknown currency code.
+                    </p>
+                  )}
                   {CURRENCY_DATALIST}
               </div>
               <div>
-                <Label className="text-xs">Date</Label>
-                <Input type="date" value={invoice.date} onChange={e => update({ date: e.target.value })} />
+                <Label htmlFor="invoice-date" className="text-xs">Date</Label>
+                <Input id="invoice-date" type="date" value={invoice.date} onChange={e => update({ date: e.target.value })} />
               </div>
               <div>
-                <Label className="text-xs">Due Date</Label>
-                <Input type="date" value={invoice.dueDate} onChange={e => update({ dueDate: e.target.value })} />
+                <Label htmlFor="invoice-due-date" className="text-xs">Due Date</Label>
+                <Input id="invoice-due-date" type="date" value={invoice.dueDate} onChange={e => update({ dueDate: e.target.value })} />
               </div>
             </CardContent>
           </Card>
@@ -2196,12 +2235,12 @@ export default function AppPage() {
               </CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs">Purchase Order #</Label>
-                  <Input placeholder="PO number (optional)" value={invoice.purchaseOrder ?? ''} onChange={e => update({ purchaseOrder: e.target.value })} />
+                  <Label htmlFor="invoice-po" className="text-xs">Purchase Order #</Label>
+                  <Input id="invoice-po" placeholder="PO number (optional)" value={invoice.purchaseOrder ?? ''} onChange={e => update({ purchaseOrder: e.target.value })} />
                 </div>
                 <div>
-                  <Label className="text-xs">Leitweg-ID (DE e-invoice routing)</Label>
-                  <Input placeholder="Leitweg-ID (optional)" value={invoice.leitwegId ?? ''} onChange={e => update({ leitwegId: e.target.value })} />
+                  <Label htmlFor="invoice-leitweg" className="text-xs">Leitweg-ID (DE e-invoice routing)</Label>
+                  <Input id="invoice-leitweg" placeholder="Leitweg-ID (optional)" value={invoice.leitwegId ?? ''} onChange={e => update({ leitwegId: e.target.value })} />
                 </div>
               </CardContent>
             </Card>
@@ -2212,21 +2251,21 @@ export default function AppPage() {
               <CardTitle className="text-sm font-medium">From (Your Company)</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Input placeholder="Company name" value={invoice.from.name} onChange={e => updateFrom({ name: e.target.value })} />
+              <Input aria-label="From company name" placeholder="Company name" value={invoice.from.name} onChange={e => updateFrom({ name: e.target.value })} />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input placeholder="Email" value={invoice.from.email} onChange={e => updateFrom({ email: e.target.value })} />
-                <Input placeholder="Phone" value={invoice.from.phone} onChange={e => updateFrom({ phone: e.target.value })} />
+                <Input aria-label="From email" placeholder="Email" value={invoice.from.email} onChange={e => updateFrom({ email: e.target.value })} />
+                <Input aria-label="From phone" placeholder="Phone" value={invoice.from.phone} onChange={e => updateFrom({ phone: e.target.value })} />
               </div>
-              <Input placeholder="Address" value={invoice.from.address} onChange={e => updateFrom({ address: e.target.value })} />
-              <Input placeholder="Address line 2 (optional)" value={invoice.from.addressLine2 ?? ''} onChange={e => updateFrom({ addressLine2: e.target.value })} />
+              <Input aria-label="From address" placeholder="Address" value={invoice.from.address} onChange={e => updateFrom({ address: e.target.value })} />
+              <Input aria-label="From address line 2" placeholder="Address line 2 (optional)" value={invoice.from.addressLine2 ?? ''} onChange={e => updateFrom({ addressLine2: e.target.value })} />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <Input placeholder="City" value={invoice.from.city ?? ''} onChange={e => updateFrom({ city: e.target.value })} />
-                <Input placeholder="Region / State" value={invoice.from.region ?? ''} onChange={e => updateFrom({ region: e.target.value })} />
-                <Input placeholder="Postal code" value={invoice.from.postalCode ?? ''} onChange={e => updateFrom({ postalCode: e.target.value })} />
+                <Input aria-label="From city" placeholder="City" value={invoice.from.city ?? ''} onChange={e => updateFrom({ city: e.target.value })} />
+                <Input aria-label="From region or state" placeholder="Region / State" value={invoice.from.region ?? ''} onChange={e => updateFrom({ region: e.target.value })} />
+                <Input aria-label="From postal code" placeholder="Postal code" value={invoice.from.postalCode ?? ''} onChange={e => updateFrom({ postalCode: e.target.value })} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input placeholder="Country (ISO code, e.g. DE)" maxLength={2} value={invoice.from.country ?? ''} onChange={e => updateFrom({ country: e.target.value.toUpperCase() })} />
-                <Input placeholder="Tax ID / VAT number" value={invoice.from.taxId ?? ''} onChange={e => updateFrom({ taxId: e.target.value })} />
+                <Input aria-label="From country (ISO code)" placeholder="Country (ISO code, e.g. DE)" maxLength={2} value={invoice.from.country ?? ''} onChange={e => updateFrom({ country: e.target.value.toUpperCase() })} />
+                <Input aria-label="From tax ID or VAT number" placeholder="Tax ID / VAT number" value={invoice.from.taxId ?? ''} onChange={e => updateFrom({ taxId: e.target.value })} />
               </div>
               <div>
                 <Label className="text-xs">Logo</Label>
@@ -2276,19 +2315,19 @@ export default function AppPage() {
                 placeholder="Client name (type to search saved clients)"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input placeholder="Email" value={invoice.to.email} onChange={e => updateTo({ email: e.target.value })} />
-                <Input placeholder="Phone" value={invoice.to.phone} onChange={e => updateTo({ phone: e.target.value })} />
+                <Input aria-label="Client email" placeholder="Email" value={invoice.to.email} onChange={e => updateTo({ email: e.target.value })} />
+                <Input aria-label="Client phone" placeholder="Phone" value={invoice.to.phone} onChange={e => updateTo({ phone: e.target.value })} />
               </div>
-              <Input placeholder="Address" value={invoice.to.address} onChange={e => updateTo({ address: e.target.value })} />
-              <Input placeholder="Address line 2 (optional)" value={invoice.to.addressLine2 ?? ''} onChange={e => updateTo({ addressLine2: e.target.value })} />
+              <Input aria-label="Client address" placeholder="Address" value={invoice.to.address} onChange={e => updateTo({ address: e.target.value })} />
+              <Input aria-label="Client address line 2" placeholder="Address line 2 (optional)" value={invoice.to.addressLine2 ?? ''} onChange={e => updateTo({ addressLine2: e.target.value })} />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <Input placeholder="City" value={invoice.to.city ?? ''} onChange={e => updateTo({ city: e.target.value })} />
-                <Input placeholder="Region / State" value={invoice.to.region ?? ''} onChange={e => updateTo({ region: e.target.value })} />
-                <Input placeholder="Postal code" value={invoice.to.postalCode ?? ''} onChange={e => updateTo({ postalCode: e.target.value })} />
+                <Input aria-label="Client city" placeholder="City" value={invoice.to.city ?? ''} onChange={e => updateTo({ city: e.target.value })} />
+                <Input aria-label="Client region or state" placeholder="Region / State" value={invoice.to.region ?? ''} onChange={e => updateTo({ region: e.target.value })} />
+                <Input aria-label="Client postal code" placeholder="Postal code" value={invoice.to.postalCode ?? ''} onChange={e => updateTo({ postalCode: e.target.value })} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input placeholder="Country (ISO code, e.g. FR)" maxLength={2} value={invoice.to.country ?? ''} onChange={e => updateTo({ country: e.target.value.toUpperCase() })} />
-                <Input placeholder="Tax ID / VAT number" value={invoice.to.taxId ?? ''} onChange={e => updateTo({ taxId: e.target.value })} />
+                <Input aria-label="Client country (ISO code)" placeholder="Country (ISO code, e.g. FR)" maxLength={2} value={invoice.to.country ?? ''} onChange={e => updateTo({ country: e.target.value.toUpperCase() })} />
+                <Input aria-label="Client tax ID or VAT number" placeholder="Tax ID / VAT number" value={invoice.to.taxId ?? ''} onChange={e => updateTo({ taxId: e.target.value })} />
               </div>
             </CardContent>
           </Card>
@@ -2304,6 +2343,7 @@ export default function AppPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                     <div className="sm:col-span-6">
                       <Input
+                        aria-label={`Description for line item ${idx + 1}`}
                         placeholder="Description"
                         value={item.description}
                         onChange={e => updateItem(idx, { description: e.target.value })}
@@ -2314,6 +2354,7 @@ export default function AppPage() {
                         <Input
                           type="number"
                           min={0}
+                          aria-label={`Quantity for line item ${idx + 1}`}
                           placeholder="Qty"
                           value={item.quantity}
                           onChange={e => updateItem(idx, { quantity: Number(e.target.value) })}
@@ -2324,13 +2365,21 @@ export default function AppPage() {
                           type="number"
                           min={0}
                           step="0.01"
+                          aria-label={`Rate for line item ${idx + 1}`}
                           placeholder={`Rate (${sym})`}
                           value={item.rate}
                           onChange={e => updateItem(idx, { rate: Number(e.target.value) })}
                         />
                       </div>
                       <div className="col-span-1 flex items-center justify-center">
-                        <Button variant="ghost" size="sm" className="w-full h-10" onClick={() => removeItem(idx)} disabled={invoice.items.length <= 1}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full h-10"
+                          aria-label={`Remove line item ${idx + 1}`}
+                          onClick={() => removeItem(idx)}
+                          disabled={invoice.items.length <= 1}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -2379,8 +2428,9 @@ export default function AppPage() {
                       PDF rendering ("VAT (20%)" vs "Tax (20%)") and the reverse-
                       charge logic. The rate stays in invoice.taxRate for backward
                       compatibility; taxConfig is the structured companion. */}
-                  <Label className="text-xs">Tax Type</Label>
+                  <Label htmlFor="invoice-tax-type" className="text-xs">Tax Type</Label>
                   <select
+                    id="invoice-tax-type"
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     value={invoice.taxConfig?.label ?? 'Tax'}
                     onChange={e => {
@@ -2404,8 +2454,8 @@ export default function AppPage() {
                   </select>
                 </div>
                 <div>
-                  <Label className="text-xs">Tax Rate (%)</Label>
-                  <Input type="number" min={0} max={100} value={invoice.taxRate} onChange={e => {
+                  <Label htmlFor="invoice-tax-rate" className="text-xs">Tax Rate (%)</Label>
+                  <Input id="invoice-tax-rate" type="number" min={0} max={100} value={invoice.taxRate} onChange={e => {
                     const rate = Number(e.target.value);
                     const cfg = invoice.taxConfig;
                     update({
@@ -2495,8 +2545,9 @@ export default function AppPage() {
                   </div>
                 )}
                 <div>
-                  <Label className="text-xs">Template</Label>
+                  <Label htmlFor="invoice-template" className="text-xs">Template</Label>
                   <select
+                    id="invoice-template"
                     data-testid="template-select"
                     value={invoice.template}
                     onChange={e => {
@@ -2521,8 +2572,8 @@ export default function AppPage() {
                   </select>
                 </div>
               </div>
-              <Input placeholder="Notes" value={invoice.notes} onChange={e => update({ notes: e.target.value })} />
-              <Input placeholder="Terms" value={invoice.terms} onChange={e => update({ terms: e.target.value })} />
+              <Input aria-label="Notes" placeholder="Notes" value={invoice.notes} onChange={e => update({ notes: e.target.value })} />
+              <Input aria-label="Terms" placeholder="Terms" value={invoice.terms} onChange={e => update({ terms: e.target.value })} />
             </CardContent>
           </Card>
 
@@ -2587,7 +2638,21 @@ export default function AppPage() {
         </div>
 
         {/* Preview */}
-        <div className="flex-1 p-3 sm:p-4 bg-gray-100 dark:bg-zinc-900 overflow-y-auto lg:max-h-[calc(100vh-3.5rem)]">
+        {/* aria-live=polite: announce total changes to screen reader users
+            without interrupting. The sr-only Live region below surfaces the
+            current total to AT users, who otherwise wouldn't know their edits
+            changed the bottom line. polite avoids interrupting in-progress
+            speech. */}
+        <div
+          className="flex-1 p-3 sm:p-4 bg-gray-100 dark:bg-zinc-900 overflow-y-auto lg:max-h-[calc(100vh-3.5rem)]"
+          aria-live="polite"
+          aria-atomic="false"
+        >
+          <div className="sr-only" aria-live="polite">
+            Total {formatCurrency(total, invoice.currency)}
+            {tax > 0 ? `, tax ${formatCurrency(tax, invoice.currency)}` : ''}
+            {'.'}
+          </div>
           <div className="sticky top-0">
             <Badge variant="outline" className="mb-2">Live Preview</Badge>
             {/* Don't render the template-specific preview while a Pro template is

@@ -191,9 +191,10 @@ export function InvoiceHistory({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring"
                               onClick={() => onRemoveRecord(record.id)}
                               title="Delete"
+                              aria-label={`Delete invoice ${record.number}`}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
