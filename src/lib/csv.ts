@@ -17,8 +17,17 @@ function csvText(value: string): string {
 // Numeric fields are computed numbers (no user-text injection surface) so they
 // pass through raw; only text fields are escaped.
 export function generateCSV(invoice: Invoice): string {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   const num = (n: number) => String(n);
+  // Issue #19: insert a Discount row between Subtotal and Tax ONLY when the
+  // invoice has a discount that resolves to a non-zero amount. The label mirrors
+  // the PDF ("Discount (10%)" for percentage, "Discount" for fixed); the amount
+  // is negative per accounting convention, matching the PDF's "-USD 10.00" form.
+  const discountRows: string[][] = totals.discount > 0
+    ? [[invoice.discount?.type === 'percentage'
+        ? `Discount (${invoice.discount.value}%)`
+        : 'Discount', '', '', num(-totals.discount)]]
+    : [];
   const rows: string[][] = [
     ['Billify Invoice', ''],
     ['Number', csvText(invoice.number)],
@@ -37,6 +46,7 @@ export function generateCSV(invoice: Invoice): string {
     ]),
     [],
     ['Subtotal', '', '', num(totals.subtotal)],
+    ...discountRows,
     ['Tax', `${invoice.taxRate}%`, '', num(totals.tax)],
     ['Total', '', '', num(totals.total)],
   ];

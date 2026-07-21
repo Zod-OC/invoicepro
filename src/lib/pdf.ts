@@ -3,6 +3,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Invoice, TemplateType, formatCurrencyPdf, calculateTotals, resolveTaxConfig, taxConfigLabel, rcTotal } from '@/types';
+import type { DiscountConfig } from '@/types';
 import { SITE_HOST } from '@/lib/site';
 import { registerUnicodeFont, selectFontFor } from '@/lib/pdf-font';
 
@@ -126,9 +127,20 @@ const TEMPLATE_RENDERERS: Record<TemplateType, (doc: jsPDF, invoice: Invoice) =>
 // add it to the total (the buyer self-accounts for it on their own return).
 // Both come from resolveTaxConfig(invoice) so a legacy invoice with just
 // taxRate renders identically (label "Tax", reverseCharge false).
+//
+// Issue #19 — the `totals` passed in here MUST already reflect the discount
+// (calculateTotals was called with invoice.discount so its `tax` and `total`
+// are computed on the discounted base). totalsFoot inserts a "Discount" row
+// between Subtotal and Tax ONLY when invoice.discount is present and its
+// resolved absolute amount > 0; the row shows the discount as a negative
+// currency amount (e.g. "-USD 10.00") per accounting convention. The label
+// includes the type ("Discount (10%)" / "Discount") so the buyer can see at a
+// glance whether it was a percentage or fixed amount. When there's no discount
+// (undefined, value 0, or resolves to 0), no row is inserted and the foot is
+// byte-identical to the pre-#19 output — preserving backward compatibility.
 function totalsFoot(
   invoice: Invoice,
-  totals: { subtotal: number; tax: number; total: number },
+  totals: { subtotal: number; discount: number; tax: number; total: number },
   columns: number,
   labels: { subtotal: string; tax: string; total: string } = { subtotal: 'Subtotal', tax: 'Tax', total: 'Total' },
 ): string[][] {
@@ -140,14 +152,27 @@ function totalsFoot(
   const rc = rcTotal(totals, cfg.reverseCharge);
   const taxLabel = taxConfigLabel(cfg);
   const blanks: string[] = Array.from({ length: columns - 2 }, () => '');
-  return [
+  const rows: string[][] = [
     [...blanks, labels.subtotal, formatCurrencyPdf(totals.subtotal, invoice.currency)],
-    // Tax row: "<label> (<rate>%)" — e.g. "VAT (20%)" or "Sales Tax (8.5%)".
-    // On a reverse-charge invoice the rate/label still surface (the buyer needs
-    // to know what to self-account), but the total below excludes the tax.
-    [...blanks, `${labels.tax === 'Tax' ? taxLabel : labels.tax} (${cfg.rate}%)`, formatCurrencyPdf(rc.tax, invoice.currency)],
-    [...blanks, labels.total, formatCurrencyPdf(rc.total, invoice.currency)],
   ];
+  // Issue #19: Discount row. `totals.discount` is the absolute amount subtracted
+  // (calculateTotals already resolved percentage → absolute). Render as negative
+  // currency. The label surfaces the type when percentage so the buyer sees the
+  // rate ("Discount (10%)"); fixed discounts show just "Discount" (the amount
+  // column already conveys the magnitude).
+  if (totals.discount > 0) {
+    const dcfg = invoice.discount;
+    const label = dcfg && dcfg.type === 'percentage'
+      ? `Discount (${dcfg.value}%)`
+      : 'Discount';
+    rows.push([...blanks, label, formatCurrencyPdf(-totals.discount, invoice.currency)]);
+  }
+  // Tax row: "<label> (<rate>%) — e.g. "VAT (20%)" or "Sales Tax (8.5%)".
+  // On a reverse-charge invoice the rate/label still surface (the buyer needs
+  // to know what to self-account), but the total below excludes the tax.
+  rows.push([...blanks, `${labels.tax === 'Tax' ? taxLabel : labels.tax} (${cfg.rate}%)`, formatCurrencyPdf(rc.tax, invoice.currency)]);
+  rows.push([...blanks, labels.total, formatCurrencyPdf(rc.total, invoice.currency)]);
+  return rows;
 }
 
 // ─── Issue #21: reverse-charge + tax-ID annotation (post-table) ──────────
@@ -371,7 +396,7 @@ export function generatePDF(invoice: Invoice): Blob {
 }
 
 function generateModern(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   // Header gradient-ish band
   doc.setFillColor(59, 130, 246);
   doc.rect(0, 0, 210, 40, 'F');
@@ -453,7 +478,7 @@ function generateModern(doc: jsPDF, invoice: Invoice) {
 }
 
 function generateClassic(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   doc.setTextColor(17, 24, 39);
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
@@ -519,7 +544,7 @@ function generateClassic(doc: jsPDF, invoice: Invoice) {
 }
 
 function generateMinimal(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   doc.setTextColor(31, 41, 55);
   doc.setFontSize(22);
   doc.setFont('helvetica', 'normal');
@@ -582,7 +607,7 @@ function generateMinimal(doc: jsPDF, invoice: Invoice) {
 // ─── Clean Template ────────────────────────────────────
 // White space, subtle borders, refined typography
 function generateClean(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   doc.setTextColor(51, 65, 85);
   doc.setFontSize(26);
   doc.setFont('helvetica', 'normal');
@@ -663,7 +688,7 @@ function generateClean(doc: jsPDF, invoice: Invoice) {
 // ─── Bold Template ────────────────────────────────────
 // High contrast, large type, strong visual hierarchy
 function generateBold(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   doc.setFillColor(15, 23, 42);
   doc.rect(0, 0, 210, 50, 'F');
 
@@ -734,7 +759,7 @@ function generateBold(doc: jsPDF, invoice: Invoice) {
 // ─── Executive Template ────────────────────────────────────
 // Formal, refined layout with accent lines and sophisticated typography
 function generateExecutive(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   // Subtle top accent line
   doc.setFillColor(180, 83, 9); // amber/teal accent
   doc.rect(0, 0, 210, 3, 'F');
@@ -819,7 +844,7 @@ function generateExecutive(doc: jsPDF, invoice: Invoice) {
 // ─── Corporate Template (Pro) ────────────────────────────
 // Two-column header, business-formal, blue accent line
 function generateCorporate(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   // Top accent band
   doc.setFillColor(30, 64, 175); // blue-800
   doc.rect(0, 0, 210, 4, 'F');
@@ -920,7 +945,7 @@ function generateCorporate(doc: jsPDF, invoice: Invoice) {
 // ─── Startup Template (Pro) ────────────────────────────────
 // Energetic, brand-color sidebar, modern SaaS look
 function generateStartup(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   // Left sidebar band
   doc.setFillColor(124, 58, 237); // purple-600
   doc.rect(0, 0, 60, 297, 'F');
@@ -1017,7 +1042,7 @@ function generateStartup(doc: jsPDF, invoice: Invoice) {
 // ─── Freelancer Template (Pro) ─────────────────────────────
 // Single column, generous whitespace, accent sidebar
 function generateFreelancer(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   // Accent vertical line on left
   doc.setFillColor(236, 72, 153); // pink-500
   doc.rect(0, 0, 5, 297, 'F');
@@ -1116,7 +1141,7 @@ function generateFreelancer(doc: jsPDF, invoice: Invoice) {
 // ─── Agency Template (Team) ─────────────────────────────────
 // Dark header, white card body, full-width design
 function generateAgency(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   // Dark header band
   doc.setFillColor(17, 24, 39); // slate-900
   doc.rect(0, 0, 210, 50, 'F');
@@ -1218,7 +1243,7 @@ function generateAgency(doc: jsPDF, invoice: Invoice) {
 // ─── Consulting Template (Team) ─────────────────────────────
 // Minimalist formal, mono accents
 function generateConsulting(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   // Header with mono-style thin borders
   doc.setTextColor(15, 23, 42);
   doc.setFontSize(14);
@@ -1310,7 +1335,7 @@ function generateConsulting(doc: jsPDF, invoice: Invoice) {
 // ─── Creative Template (Team) ───────────────────────────────
 // Bright accent stripe, big number, art-direction style
 function generateCreative(doc: jsPDF, invoice: Invoice) {
-  const totals = calculateTotals(invoice.items, invoice.taxRate);
+  const totals = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   // Big number on the left
   doc.setTextColor(245, 158, 11); // amber-500
   doc.setFontSize(90);

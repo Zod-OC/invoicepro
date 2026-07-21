@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Invoice, createEmptyInvoice, formatCurrency, calculateTotals, templates, currencies, currencySymbol, TemplateType, TaxCategory, PaymentMeans, TAX_CATEGORIES, TAX_CATEGORY_LABELS, UNIT_CODES, PAYMENT_METHODS, DEFAULT_PAYMENT_CODE, isValidCurrencyCode, validateInvoice, getTemplate, isTemplateId, freeFallbackTemplate, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES, isValidLogoDataUrl, stripLogos, TaxConfig, TaxLabel, TAX_LABELS, TAX_PRESETS, resolveTaxConfig, taxConfigLabel, rcTotal } from '@/types';
+import { Invoice, createEmptyInvoice, formatCurrency, calculateTotals, templates, currencies, currencySymbol, TemplateType, TaxCategory, PaymentMeans, TAX_CATEGORIES, TAX_CATEGORY_LABELS, UNIT_CODES, PAYMENT_METHODS, DEFAULT_PAYMENT_CODE, isValidCurrencyCode, validateInvoice, getTemplate, isTemplateId, freeFallbackTemplate, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES, isValidLogoDataUrl, stripLogos, TaxConfig, TaxLabel, TAX_LABELS, TAX_PRESETS, resolveTaxConfig, taxConfigLabel, rcTotal, DiscountConfig, DiscountType, DISCOUNT_TYPES, DISCOUNT_TYPE_LABELS } from '@/types';
 import { generatePDF } from '@/lib/pdf';
 import { generateCSV } from '@/lib/csv';
 import { useSubscription, getStoredPlan } from '@/hooks/useSubscription';
@@ -1613,7 +1613,12 @@ export default function AppPage() {
     );
   }
 
-  const { subtotal, tax, total } = calculateTotals(invoice.items, invoice.taxRate);
+  // Issue #19: pass invoice.discount so calculateTotals applies it AFTER subtotal,
+  // BEFORE tax. Destructure `discount` (the resolved absolute amount) for the
+  // live-preview line. Pre-#19 invoices (no discount field) keep rendering
+  // identically: discount is undefined → calculateTotals returns discount: 0,
+  // and the preview's `discount > 0` guard skips the row.
+  const { subtotal, discount, tax, total } = calculateTotals(invoice.items, invoice.taxRate, invoice.discount);
   const sym = currencySymbol(invoice.currency);
   const currencyValid = isValidCurrencyCode(invoice.currency);
 
@@ -1827,6 +1832,20 @@ export default function AppPage() {
             <span className="text-gray-600">Subtotal</span>
             <span>{formatCurrency(subtotal, invoice.currency)}</span>
           </div>
+          {/* Issue #19: Discount row. Mirrors the PDF's totalsFoot — only shown
+              when the discount resolves to a non-zero absolute amount. Label
+              surfaces the percentage rate when applicable; amount is negative
+              per accounting convention. Pre-#19 invoices (no discount) skip it. */}
+          {discount > 0 && (
+            <div className="flex justify-between py-1">
+              <span className="text-gray-600">
+                {invoice.discount?.type === 'percentage'
+                  ? `Discount (${invoice.discount.value}%)`
+                  : 'Discount'}
+              </span>
+              <span>{formatCurrency(-discount, invoice.currency)}</span>
+            </div>
+          )}
           {tax > 0 && (
             <div className="flex justify-between py-1">
               <span className="text-gray-600">Tax ({invoice.taxRate}%)</span>
@@ -2394,6 +2413,54 @@ export default function AppPage() {
                       taxConfig: cfg ? { ...cfg, rate } : undefined,
                     });
                   }} />
+                </div>
+                {/* Issue #19: Discount controls. A discount type dropdown + value
+                    input. The discount is applied AFTER subtotal, BEFORE tax. When
+                    the type is 'percentage', the value is a 0–100 percentage of
+                    the subtotal; when 'fixed', it's an absolute currency amount.
+                    Setting value to 0 (or clearing) effectively removes the
+                    discount — calculateTotals / totalsFoot / the preview all gate
+                    on discount > 0, so a 0-value discount produces no row on the
+                    PDF/CSV/preview. invoice.discount stays undefined for pre-#19
+                    invoices, so they render identically. */}
+                <div>
+                  <Label htmlFor="invoice-discount-type" className="text-xs">Discount Type</Label>
+                  <select
+                    id="invoice-discount-type"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={invoice.discount?.type ?? 'percentage'}
+                    onChange={e => {
+                      const type = e.target.value as DiscountType;
+                      // Preserve the existing value when switching types is
+                      // misleading (a 10% → fixed would mean $10 off), so reset
+                      // to 0 on type change and let the user re-enter. Keeps the
+                      // math intuitive and avoids a surprise total change.
+                      update({
+                        discount: { type, value: 0 },
+                      });
+                    }}
+                  >
+                    {DISCOUNT_TYPES.map(t => <option key={t} value={t}>{DISCOUNT_TYPE_LABELS[t]}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="invoice-discount-value" className="text-xs">
+                    Discount Value{invoice.discount?.type === 'percentage' ? ' (%)' : ''}
+                  </Label>
+                  <Input
+                    id="invoice-discount-value"
+                    type="number"
+                    min={0}
+                    max={invoice.discount?.type === 'percentage' ? 100 : undefined}
+                    value={invoice.discount?.value ?? 0}
+                    onChange={e => {
+                      const value = Number(e.target.value);
+                      const type: DiscountType = invoice.discount?.type ?? 'percentage';
+                      update({
+                        discount: { type, value: Number.isFinite(value) ? Math.max(0, value) : 0 },
+                      });
+                    }}
+                  />
                 </div>
                 {/* Issue #21: Reverse charge toggle + country presets.
                     Shown only when a tax type is selected (not the default 'Tax').

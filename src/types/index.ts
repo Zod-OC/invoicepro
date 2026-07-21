@@ -50,6 +50,33 @@ export interface TaxConfig {
   reverseCharge: boolean;   // EU reverse-charge: tax is NOT added to total
 }
 
+// ─── Issue #19: DiscountConfig (percentage or fixed) ─────────────────────
+// Structured discount descriptor. Backward-compatible with the existing
+// flat-rate Invoice: when an invoice has no `discount` field, or value is 0,
+// calculateTotals / totalsFoot / CSV all skip the discount entirely and render
+// identically to pre-#19 invoices.
+//
+// `type: 'percentage'` → value is a percentage of the subtotal (e.g. value=10
+//   subtracts 10% of subtotal). `type: 'fixed'` → value is an absolute currency
+//   amount subtracted from the subtotal (clamped to [0, subtotal] so a
+//   mistyped fixed discount can't drive the taxable base negative).
+export type DiscountType = 'percentage' | 'fixed';
+
+export interface DiscountConfig {
+  type: DiscountType;
+  value: number;            // percentage points (0–100) when type==='percentage',
+                            // absolute currency amount when type==='fixed'
+}
+
+// Editor dropdown options. Array (not a Record) so the picker order is
+// source-controlled. Exported for src/app/app/page.tsx.
+export const DISCOUNT_TYPES: readonly DiscountType[] = ['percentage', 'fixed'];
+
+export const DISCOUNT_TYPE_LABELS: Record<DiscountType, string> = {
+  percentage: 'Percentage (%)',
+  fixed: 'Fixed amount',
+};
+
 // Editor dropdown options. Order is source-controlled (unlike a Record key
 // enumeration), so the picker surfaces the common "Sales Tax / VAT / GST"
 // first and the escape hatch "Custom" last. TAX_LABELS is exported for the
@@ -119,6 +146,11 @@ export interface Invoice {
   // The PDF and totals path go through resolveTaxConfig so neither branch needs
   // a separate "legacy" case.
   taxConfig?: TaxConfig;
+  // Issue #19: structured discount (percentage or fixed). Optional + backward-
+  // compatible: when absent or value===0, calculateTotals / totalsFoot / CSV
+  // skip the discount entirely (no "Discount" row on the PDF), so pre-#19
+  // invoices render identically. Applied AFTER subtotal, BEFORE tax.
+  discount?: DiscountConfig;
   currency: string;
   template: TemplateType;
   status: InvoiceStatus;
@@ -317,15 +349,42 @@ export function formatCurrencyPdf(amount: number, currency: string): string {
   return nf ? nf.format(safe) : `${currency} ${safe.toFixed(2)}`;
 }
 
-export function calculateTotals(items: InvoiceItem[], taxRate: number) {
+export function calculateTotals(
+  items: InvoiceItem[],
+  taxRate: number,
+  // Issue #19: optional discount. Backward-compatible: omitted by every existing
+  // caller (useInvoiceHistory, csv.ts, page.tsx, the 12 PDF renderers), so they
+  // all keep getting { subtotal, tax, total } with no discount. The discount is
+  // applied AFTER subtotal, BEFORE tax (per the issue spec) — so the taxable
+  // base is (subtotal − discount), not the raw subtotal. The returned `discount`
+  // is the ABSOLUTE amount subtracted (already resolved from percentage), so
+  // callers that need it for a PDF/CSV line don't re-resolve it.
+  discount?: DiscountConfig,
+): { subtotal: number; discount: number; tax: number; total: number } {
   // R8 fix: guard each numeric input. quantity/rate can be NaN during editing;
   // taxRate is user-editable and can also go NaN mid-keystroke.
   const safeNum = (n: number) => Number.isFinite(n) ? n : 0;
   const safeTax = safeNum(taxRate);
   const subtotal = items.reduce((sum, item) => sum + safeNum(item.quantity) * safeNum(item.rate), 0);
-  const tax = subtotal * (safeTax / 100);
-  const total = subtotal + tax;
-  return { subtotal, tax, total };
+  // Resolve the discount to an absolute amount. Zero/absent/invalid → 0, which
+  // keeps the math (and the returned shape) identical to pre-#19 for callers
+  // that don't pass a discount. Fixed amounts are clamped to [0, subtotal] so
+  // a mistyped value can't drive the taxable base (or the total) negative;
+  // percentages are clamped to [0, 100] for the same reason.
+  let discountAmount = 0;
+  if (discount && (discount.type === 'percentage' || discount.type === 'fixed')) {
+    const raw = safeNum(discount.value);
+    if (discount.type === 'percentage') {
+      const pct = Math.max(0, Math.min(100, raw));
+      discountAmount = subtotal * (pct / 100);
+    } else {
+      discountAmount = Math.max(0, Math.min(subtotal, raw));
+    }
+  }
+  const taxableBase = subtotal - discountAmount;
+  const tax = taxableBase * (safeTax / 100);
+  const total = taxableBase + tax;
+  return { subtotal, discount: discountAmount, tax, total };
 }
 
 // ─── Issue #21: TaxConfig resolution + helpers ───────────────────────────
@@ -392,6 +451,23 @@ export function rcTotal(totals: { subtotal: number; tax: number; total: number }
 
 function isValidTaxLabel(v: unknown): v is TaxLabel {
   return typeof v === 'string' && (TAX_LABELS as readonly string[]).includes(v);
+}
+
+// Sanitize a raw discount at the validateInvoice ingestion boundary: a crafted
+// payload may carry an unknown type or NaN value. Returns undefined when the
+// payload isn't a usable object (so calculateTotals / totalsFoot / CSV all skip
+// the discount via their `if (discount && …)` guards) — never throws. A value
+// of 0 is KEPT (the user might explicitly clear a discount), which is harmless
+// because the totals path treats 0 as "no discount" and the PDF row is gated on
+// `discount.value > 0`. Returned `type` is always a known DiscountType literal.
+function sanitizeDiscount(v: unknown): DiscountConfig | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const o = v as Record<string, unknown>;
+  const type = o.type === 'fixed' ? 'fixed' : 'percentage'; // default → percentage
+  const value = typeof o.value === 'number' && Number.isFinite(o.value)
+    ? Math.max(0, o.value) // negative makes no sense as a discount magnitude
+    : 0;
+  return { type, value };
 }
 
 // Sanitize a raw taxConfig at the validateInvoice ingestion boundary: a
@@ -685,6 +761,11 @@ export function validateInvoice(raw: unknown): Invoice | null {
   const fromTaxId = optString((o.from as unknown as Record<string, unknown> | undefined)?.taxId);
   const toTaxId = optString((o.to as unknown as Record<string, unknown> | undefined)?.taxId);
   const taxConfig = sanitizeTaxConfig(o.taxConfig, taxRate, fromTaxId, toTaxId);
+  // Issue #19: optional discount. sanitizeDiscount returns undefined for a
+  // non-object payload, so pre-#19 invoices (no discount field) stay undefined
+  // and calculateTotals / totalsFoot / CSV all skip the discount row. A value
+  // of 0 is retained but treated as "no discount" by the rendering path.
+  const discount = sanitizeDiscount(o.discount);
   return {
     id: isValidString(o.id) ? o.id : generateId(),
     number: isValidString(o.number) ? o.number : `INV-${Math.floor(Math.random() * 9000) + 1000}`,
@@ -697,6 +778,7 @@ export function validateInvoice(raw: unknown): Invoice | null {
     terms: isValidString(o.terms) ? o.terms : 'Net 14',
     taxRate,
     taxConfig,
+    discount,
     currency,
     template,
     status: isValidString(o.status) && ['draft', 'sent', 'paid'].includes(o.status) ? (o.status as InvoiceStatus) : 'draft',
