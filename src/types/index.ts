@@ -21,6 +21,70 @@ export interface CompanyInfo {
 // change the computed total — calculateTotals stays flat-rate (invoice.taxRate).
 export type TaxCategory = 'standard' | 'reduced' | 'zero' | 'exempt' | 'reverse' | 'excluded';
 
+// ─── Issue #21: TaxConfig (VAT / GST / Sales Tax / MwSt / Custom) ─────────
+// Structured tax descriptor for EU/UK/AU users. Backward-compatible with the
+// existing flat `taxRate` field: when an invoice has `taxRate` but no
+// `taxConfig`, resolveTaxConfig() synthesizes a default `{ label: 'Tax',
+// rate: taxRate, reverseCharge: false }` so every code path that consumed
+// `invoice.taxRate` keeps working unchanged.
+//
+// `taxId`/`buyerTaxId` here DUPLICATE `from.taxId`/`to.taxId` on purpose:
+//   - The CompanyInfo taxId fields are seller/buyer identity, attached to the
+//     party for UBL/EN 16931 export and rendered inline with the address block.
+//   - The TaxConfig taxId/buyerTaxId are the tax-regime-scoped registration
+//     numbers shown next to the tax line on the PDF (e.g. "VAT No: GB123456789"
+//     under the totals), which is the EN 16931 convention. In practice a user
+//     who has set from.taxId will see it surface in both places; users who only
+//     fill the TaxConfig get just the tax-line annotation. resolveTaxConfig()
+//     falls back to from.taxId when taxConfig.taxId is unset so the PDF shows
+//     the seller's registration number by the VAT label without forcing a
+//     duplicate field.
+export type TaxLabel = 'Tax' | 'Sales Tax' | 'VAT' | 'GST' | 'MwSt' | 'Custom';
+
+export interface TaxConfig {
+  label: TaxLabel;          // "VAT" / "GST" / "Sales Tax" / "MwSt" / "Tax" / "Custom"
+  customLabel?: string;     // user-supplied text when label === 'Custom'
+  rate: number;             // percentage, 0–100 (same scale as taxRate)
+  taxId?: string;           // seller tax registration number for this regime
+  buyerTaxId?: string;      // buyer tax registration number (needed for RC)
+  reverseCharge: boolean;   // EU reverse-charge: tax is NOT added to total
+}
+
+// Editor dropdown options. Order is source-controlled (unlike a Record key
+// enumeration), so the picker surfaces the common "Sales Tax / VAT / GST"
+// first and the escape hatch "Custom" last. TAX_LABELS is exported for the
+// editor <select> in src/app/app/page.tsx.
+export const TAX_LABELS: readonly TaxLabel[] = ['Tax', 'Sales Tax', 'VAT', 'GST', 'MwSt', 'Custom'];
+
+export const TAX_LABEL_DISPLAY: Record<TaxLabel, string> = {
+  Tax: 'Tax',
+  'Sales Tax': 'Sales Tax',
+  VAT: 'VAT',
+  GST: 'GST',
+  MwSt: 'MwSt',
+  Custom: 'Custom',
+};
+
+// Country presets for the quick-pick row. `label` is the TaxLabel the preset
+// applies (so picking "VAT 20% UK" sets label=VAT, rate=20, currency/country
+// are NOT auto-applied — the user might invoice in EUR from a UK-registered
+// seller). Sorted by the issue's call-out order (UK / DE / FR).
+export interface TaxPreset {
+  id: string;       // stable key for the preset button
+  label: TaxLabel;  // VAT / GST / etc.
+  rate: number;
+  country: string;  // ISO 3166-1 alpha-2, for display only
+  name: string;     // human label e.g. "VAT 20% (UK)"
+}
+
+export const TAX_PRESETS: readonly TaxPreset[] = [
+  { id: 'vat-uk', label: 'VAT', rate: 20, country: 'GB', name: 'VAT 20% (UK)' },
+  { id: 'vat-de', label: 'VAT', rate: 19, country: 'DE', name: 'VAT 19% (DE)' },
+  { id: 'vat-fr', label: 'VAT', rate: 21, country: 'FR', name: 'VAT 21% (FR)' },
+  { id: 'gst-au', label: 'GST', rate: 10, country: 'AU', name: 'GST 10% (AU)' },
+  { id: 'mwst-ch', label: 'MwSt', rate: 7.7, country: 'CH', name: 'MwSt 7.7% (CH)' },
+];
+
 export interface InvoiceItem {
   description: string;
   quantity: number;
@@ -50,6 +114,11 @@ export interface Invoice {
   notes: string;
   terms: string;
   taxRate: number;
+  // Issue #21: structured tax config (VAT/GST/etc). Optional + backward-
+  // compatible: when absent, resolveTaxConfig() synthesizes one from taxRate.
+  // The PDF and totals path go through resolveTaxConfig so neither branch needs
+  // a separate "legacy" case.
+  taxConfig?: TaxConfig;
   currency: string;
   template: TemplateType;
   status: InvoiceStatus;
@@ -257,6 +326,93 @@ export function calculateTotals(items: InvoiceItem[], taxRate: number) {
   const tax = subtotal * (safeTax / 100);
   const total = subtotal + tax;
   return { subtotal, tax, total };
+}
+
+// ─── Issue #21: TaxConfig resolution + helpers ───────────────────────────
+// resolveTaxConfig returns a fully-populated TaxConfig for an invoice:
+//   - If `invoice.taxConfig` is present (and structurally valid), it's used
+//     directly (rate coerced to a finite number, label coerced to a known
+//     TaxLabel — a crafted payload can't smuggle an arbitrary string).
+//   - Otherwise we synthesize one from `invoice.taxRate` (the legacy flat
+//     field). This keeps every consumer backward-compatible: callers that used
+//     `invoice.taxRate` switch to `resolveTaxConfig(invoice).rate` and keep
+//     rendering the same value for existing saved invoices.
+//
+// `taxId` falls back to `invoice.from.taxId` so the PDF surfaces the seller's
+// registration number by the VAT label even when the user hasn't filled the
+// TaxConfig-specific field. `buyerTaxId` falls back to `invoice.to.taxId` so
+// the reverse-charge annotation can name the buyer's registration number from
+// the party block without a duplicate field.
+export function resolveTaxConfig(invoice: Pick<Invoice, 'taxRate' | 'taxConfig' | 'from' | 'to'>): TaxConfig {
+  const cfg = invoice.taxConfig;
+  const fallbackRate = Number.isFinite(invoice.taxRate) ? invoice.taxRate : 0;
+  if (cfg && typeof cfg === 'object') {
+    const rate = Number.isFinite(cfg.rate) ? Math.max(0, Math.min(100, cfg.rate)) : fallbackRate;
+    const label = isValidTaxLabel(cfg.label) ? cfg.label : 'Tax';
+    const customLabel = typeof cfg.customLabel === 'string' && cfg.customLabel.trim() ? cfg.customLabel : undefined;
+    return {
+      label,
+      customLabel,
+      rate,
+      taxId: optString(cfg.taxId) ?? optString(invoice.from.taxId),
+      buyerTaxId: optString(cfg.buyerTaxId) ?? optString(invoice.to.taxId),
+      reverseCharge: cfg.reverseCharge === true,
+    };
+  }
+  return {
+    label: 'Tax',
+    rate: fallbackRate,
+    taxId: optString(invoice.from.taxId),
+    buyerTaxId: optString(invoice.to.taxId),
+    reverseCharge: false,
+  };
+}
+
+// The human label for the tax LINE on the PDF — "VAT" / "GST" / "Sales Tax" /
+// "MwSt" / "Tax", or the user's customLabel when label==='Custom'. Used by the
+// PDF's totalsFoot and the editor's live preview.
+export function taxConfigLabel(cfg: TaxConfig): string {
+  if (cfg.label === 'Custom' && cfg.customLabel) return cfg.customLabel;
+  return TAX_LABEL_DISPLAY[cfg.label] ?? 'Tax';
+}
+
+// A reverse-charge invoice does NOT add tax to the total — the buyer accounts
+// for it on their own VAT return (EU reverse-charge mechanism, B2B across
+// member states). calculateTotals() itself stays flat-rate (issue constraint:
+// don't touch it), so reverseCharge is applied as a post-step by callers:
+// resolveTaxConfig gives them `reverseCharge`, and they subtract the tax when
+// computing the final total. See pdf.ts (totalsFootRC + rcTotal) for the
+// canonical PDF path and the editor preview mirror.
+export function rcTotal(totals: { subtotal: number; tax: number; total: number }, reverseCharge: boolean): { tax: number; total: number } {
+  if (!reverseCharge) return { tax: totals.tax, total: totals.total };
+  // Tax is still reported (it's the reverse-charge amount the buyer must
+  // self-account for), but it is NOT added to the seller's total.
+  return { tax: totals.tax, total: totals.subtotal };
+}
+
+function isValidTaxLabel(v: unknown): v is TaxLabel {
+  return typeof v === 'string' && (TAX_LABELS as readonly string[]).includes(v);
+}
+
+// Sanitize a raw taxConfig at the validateInvoice ingestion boundary: a
+// crafted payload may carry an unknown label, NaN rate, or wrong-typed
+// reverseCharge. Returns undefined when the payload isn't a usable object so
+// the migration helper resolves from taxRate instead — never throws.
+function sanitizeTaxConfig(v: unknown, fallbackRate: number, fromTaxId: string | undefined, toTaxId: string | undefined): TaxConfig | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const o = v as Record<string, unknown>;
+  const label = isValidTaxLabel(o.label) ? o.label : 'Tax';
+  const rate = typeof o.rate === 'number' && Number.isFinite(o.rate)
+    ? Math.max(0, Math.min(100, o.rate))
+    : fallbackRate;
+  return {
+    label,
+    customLabel: typeof o.customLabel === 'string' && o.customLabel.trim() ? o.customLabel : undefined,
+    rate,
+    taxId: optString(o.taxId) ?? fromTaxId,
+    buyerTaxId: optString(o.buyerTaxId) ?? toTaxId,
+    reverseCharge: o.reverseCharge === true,
+  };
 }
 
 export function generateId(): string {
@@ -516,6 +672,19 @@ export function validateInvoice(raw: unknown): Invoice | null {
         accountName: optString(o.paymentMeans.accountName),
       }
     : undefined;
+  // Issue #21: taxRate stays the canonical flat-rate field (clamped, backward-
+  // compatible). taxConfig is the OPTIONAL structured sibling — sanitized so a
+  // crafted payload can't smuggle an unknown label, a NaN rate, or a wrong-
+  // typed reverseCharge. When absent it stays undefined and resolveTaxConfig
+  // synthesizes one from taxRate at render time.
+  const taxRate = isValidNumber(o.taxRate) ? Math.max(0, Math.min(100, o.taxRate)) : 0;
+  // from/to haven't been sanitized yet at this point (that happens below), so
+  // read their taxId defensively via the unknown-cast path used elsewhere in
+  // this validator — an absent or non-object from/to is already rejected by
+  // isValidCompanyInfo above, so we only get here with a usable shape.
+  const fromTaxId = optString((o.from as unknown as Record<string, unknown> | undefined)?.taxId);
+  const toTaxId = optString((o.to as unknown as Record<string, unknown> | undefined)?.taxId);
+  const taxConfig = sanitizeTaxConfig(o.taxConfig, taxRate, fromTaxId, toTaxId);
   return {
     id: isValidString(o.id) ? o.id : generateId(),
     number: isValidString(o.number) ? o.number : `INV-${Math.floor(Math.random() * 9000) + 1000}`,
@@ -526,7 +695,8 @@ export function validateInvoice(raw: unknown): Invoice | null {
     items,
     notes: isValidString(o.notes) ? o.notes : '',
     terms: isValidString(o.terms) ? o.terms : 'Net 14',
-    taxRate: isValidNumber(o.taxRate) ? Math.max(0, Math.min(100, o.taxRate)) : 0,
+    taxRate,
+    taxConfig,
     currency,
     template,
     status: isValidString(o.status) && ['draft', 'sent', 'paid'].includes(o.status) ? (o.status as InvoiceStatus) : 'draft',
