@@ -2356,9 +2356,77 @@ export default function AppPage() {
             <CardContent className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs">Tax Rate (%)</Label>
-                  <Input type="number" min={0} max={100} value={invoice.taxRate} onChange={e => update({ taxRate: Number(e.target.value) })} />
+                  {/* Issue #21: Tax label dropdown + rate. The label drives the
+                      PDF rendering ("VAT (20%)" vs "Tax (20%)") and the reverse-
+                      charge logic. The rate stays in invoice.taxRate for backward
+                      compatibility; taxConfig is the structured companion. */}
+                  <Label className="text-xs">Tax Type</Label>
+                  <select
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={invoice.taxConfig?.label ?? 'Tax'}
+                    onChange={e => {
+                      const label = e.target.value as TaxLabel;
+                      const preset = TAX_PRESETS.find(p => p.label === label);
+                      const rate = preset?.rate ?? invoice.taxRate;
+                      update({
+                        taxRate: rate,
+                        taxConfig: {
+                          label,
+                          customLabel: label === 'Custom' ? (invoice.taxConfig?.customLabel ?? '') : undefined,
+                          rate,
+                          taxId: invoice.taxConfig?.taxId ?? invoice.from.taxId ?? '',
+                          buyerTaxId: invoice.taxConfig?.buyerTaxId ?? invoice.to.taxId ?? '',
+                          reverseCharge: false,
+                        },
+                      });
+                    }}
+                  >
+                    {TAX_LABELS.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
                 </div>
+                <div>
+                  <Label className="text-xs">Tax Rate (%)</Label>
+                  <Input type="number" min={0} max={100} value={invoice.taxRate} onChange={e => {
+                    const rate = Number(e.target.value);
+                    const cfg = invoice.taxConfig;
+                    update({
+                      taxRate: rate,
+                      taxConfig: cfg ? { ...cfg, rate } : undefined,
+                    });
+                  }} />
+                </div>
+                {/* Issue #21: Reverse charge toggle + country presets.
+                    Shown only when a tax type is selected (not the default 'Tax').
+                    Presets quick-fill the label + rate for common jurisdictions. */}
+                {invoice.taxConfig && invoice.taxConfig.label !== 'Tax' && (
+                  <div className="sm:col-span-2 space-y-2">
+                    <div className="flex flex-wrap gap-1">
+                      {TAX_PRESETS.map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          className="rounded bg-secondary text-secondary-foreground px-2 py-1 text-xs hover:bg-secondary/80"
+                          onClick={() => update({
+                            taxRate: p.rate,
+                            taxConfig: { ...(invoice.taxConfig ?? { label: 'Tax', rate: 0, reverseCharge: false }), label: p.label, rate: p.rate },
+                          })}
+                        >
+                          {p.label} {p.rate}% {p.id.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={invoice.taxConfig?.reverseCharge ?? false}
+                        onChange={e => update({
+                          taxConfig: { ...(invoice.taxConfig ?? { label: 'VAT', rate: invoice.taxRate, reverseCharge: false }), reverseCharge: e.target.checked },
+                        })}
+                      />
+                      Reverse charge (EU B2B — buyer self-accounts tax)
+                    </label>
+                  </div>
+                )}
                 <div>
                   <Label className="text-xs">Template</Label>
                   <select
