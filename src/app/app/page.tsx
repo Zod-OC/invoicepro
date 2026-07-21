@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Invoice, createEmptyInvoice, formatCurrency, calculateTotals, templates, currencies, currencySymbol, TemplateType, TaxCategory, PaymentMeans, TAX_CATEGORIES, TAX_CATEGORY_LABELS, UNIT_CODES, PAYMENT_METHODS, DEFAULT_PAYMENT_CODE, isValidCurrencyCode, validateInvoice, getTemplate, isTemplateId, freeFallbackTemplate, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES, isValidLogoDataUrl, stripLogos } from '@/types';
+import { Invoice, createEmptyInvoice, formatCurrency, calculateTotals, templates, currencies, currencySymbol, TemplateType, TaxCategory, PaymentMeans, TAX_CATEGORIES, TAX_CATEGORY_LABELS, UNIT_CODES, PAYMENT_METHODS, DEFAULT_PAYMENT_CODE, isValidCurrencyCode, validateInvoice, getTemplate, isTemplateId, freeFallbackTemplate, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES, isValidLogoDataUrl, stripLogos, TaxConfig, TaxLabel, TAX_LABELS, TAX_PRESETS, resolveTaxConfig, taxConfigLabel, rcTotal } from '@/types';
 import { generatePDF } from '@/lib/pdf';
 import { generateCSV } from '@/lib/csv';
 import { useSubscription, getStoredPlan } from '@/hooks/useSubscription';
