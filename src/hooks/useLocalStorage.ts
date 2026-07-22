@@ -40,7 +40,7 @@ export function useLocalStorage<T>(
       // Corrupt JSON or storage disabled — keep initialValue.
     }
     setReady(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // Cross-tab synchronization: if another tab writes to the same key, update.

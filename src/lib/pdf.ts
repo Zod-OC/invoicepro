@@ -415,7 +415,7 @@ function generateModern(doc: jsPDF, invoice: Invoice) {
   doc.text(`Due: ${invoice.dueDate}`, 160, 26);
 
   // From / To
-  let y = 55;
+  const y = 55;
   doc.setTextColor(31, 41, 55);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
@@ -493,7 +493,7 @@ function generateClassic(doc: jsPDF, invoice: Invoice) {
   doc.setDrawColor(200, 200, 200);
   doc.line(15, 40, 195, 40);
 
-  let y = 55;
+  const y = 55;
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.text('From', 15, y);
@@ -553,7 +553,7 @@ function generateMinimal(doc: jsPDF, invoice: Invoice) {
   doc.setFontSize(10);
   doc.text(`#${invoice.number}  ·  ${invoice.date}  ·  Due ${invoice.dueDate}`, 15, 33);
 
-  let y = 55;
+  const y = 55;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text('FROM', 15, y);
@@ -624,7 +624,7 @@ function generateClean(doc: jsPDF, invoice: Invoice) {
   doc.setLineWidth(0.3);
   doc.line(15, 45, 195, 45);
 
-  let y = 58;
+  const y = 58;
   doc.setTextColor(51, 65, 85);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
@@ -703,7 +703,7 @@ function generateBold(doc: jsPDF, invoice: Invoice) {
   doc.text(`Date: ${invoice.date}`, 140, 30);
   doc.text(`Due: ${invoice.dueDate}`, 140, 38);
 
-  let y = 65;
+  const y = 65;
   doc.setTextColor(15, 23, 42);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
@@ -779,7 +779,7 @@ function generateExecutive(doc: jsPDF, invoice: Invoice) {
   doc.setLineWidth(0.4);
   doc.line(15, 36, 195, 36);
 
-  let y = 48;
+  const y = 48;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(100, 116, 139);
@@ -880,7 +880,7 @@ function generateCorporate(doc: jsPDF, invoice: Invoice) {
   doc.setLineWidth(0.5);
   doc.line(15, 50, 195, 50);
 
-  let y = 62;
+  const y = 62;
   doc.setTextColor(30, 64, 175);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
