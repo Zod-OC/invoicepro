@@ -54,8 +54,11 @@ function invoice(template: TemplateType, withCompliance: boolean): Invoice {
 // the own-property spy intercepts them too.
 function captureText(doc: jsPDF): { text: string; y: number }[] {
   const calls: { text: string; y: number }[] = [];
-  const orig = doc.text.bind(doc);
-  (doc as unknown as { text: (...a: unknown[]) => unknown }).text = function (...args: unknown[]) {
+  // Preserve the exact variadic signature of jsPDF's text() so `orig(...args)`
+  // (a spread of `unknown[]` into a rest-arg call) type-checks under strict mode.
+  type TextFn = (...args: Parameters<jsPDF['text']>) => ReturnType<jsPDF['text']>;
+  const orig = doc.text.bind(doc) as TextFn;
+  (doc as unknown as { text: TextFn }).text = function (...args: Parameters<jsPDF['text']>) {
     const t = Array.isArray(args[0]) ? (args[0] as unknown[]).join(' ') : String(args[0]);
     calls.push({ text: t, y: typeof args[2] === 'number' ? args[2] : NaN });
     return orig(...args);
