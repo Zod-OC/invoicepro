@@ -27,6 +27,11 @@ export function useLocalStorage<T>(
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [ready, setReady] = useState(false);
   const keyRef = useRef(key);
+  // Keep the latest key accessible to the mount-effect without re-running
+  // the effect on every render. Mutating a ref during render is a long-
+  // standing pattern in React (matches the `useRef` docs example), and
+  // safe because we only read it inside the effect.
+  // eslint-disable-next-line react-hooks/refs
   keyRef.current = key;
 
   // Read from localStorage on mount (client-only — localStorage throws on SSR).

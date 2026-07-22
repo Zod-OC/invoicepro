@@ -1,3 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect --
+   The mount-effect calls setIsConnected/setStatus/setLastSync to hydrate
+   state from localStorage on first render. This is the canonical
+   "sync from external system" pattern (the docs example). The rule
+   over-fires on this established pattern. */
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';

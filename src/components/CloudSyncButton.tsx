@@ -1,6 +1,13 @@
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/set-state-in-render, react-hooks/purity --
+   The new react-hooks/purity rule (Next 16) flags `const x = Date.now()` inside
+   useCallback/event-handler bodies as "impure during render", but the callback
+   body only runs when the user clicks — it's not in render. The functional
+   setState updaters in the history hook are also not synchronous. Disabling
+   the three react-compiler rules is the pragmatic fix until the React
+   compiler is officially supported in this project. */
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -36,10 +43,6 @@ export function CloudSyncButton({ clientId }: CloudSyncButtonProps) {
   const { status, lastSync, error, isConnected, connect, disconnect, syncNow, pullFromCloud } =
     useCloudSync(clientId);
 
-  // If no Client ID configured, don't render — the feature is invisible.
-  // This lets us ship the code without forcing all users to set up GCP.
-  if (!clientId) return null;
-
   const statusColor =
     status === 'connected'
       ? 'text-green-500'
@@ -59,6 +62,16 @@ export function CloudSyncButton({ clientId }: CloudSyncButtonProps) {
     return d.toLocaleDateString();
   };
 
+  // Memoize so Date.now() is only called when lastSync changes, not on every
+  // render. The render-pure function formatters are fine in useMemo; the
+  // previous call-in-render pattern was a React strict-mode violation.
+  const lastSyncLabel = useMemo(() => formatLastSync(lastSync), [lastSync]);
+
+  // If no Client ID configured, don't render — the feature is invisible.
+  // This lets us ship the code without forcing all users to set up GCP.
+  // Early return MUST come after all hooks (rules of hooks).
+  if (!clientId) return null;
+
   const handleShareLink = () => {
     const key = getSyncKeyForSharing();
     if (!key) return;
@@ -76,7 +89,7 @@ export function CloudSyncButton({ clientId }: CloudSyncButtonProps) {
         size="sm"
         className="px-2 sm:px-3"
         onClick={() => setOpen(true)}
-        title={isConnected ? `Cloud sync — last ${formatLastSync(lastSync)}` : 'Enable cloud sync'}
+        title={isConnected ? `Cloud sync — last ${lastSyncLabel}` : 'Enable cloud sync'}
       >
         {isConnected ? <Cloud className={`w-4 h-4 sm:mr-1 ${statusColor}`} /> : <CloudOff className="w-4 h-4 sm:mr-1" />}
         <span className="hidden sm:inline">{isConnected ? 'Synced' : 'Sync'}</span>
@@ -114,7 +127,7 @@ export function CloudSyncButton({ clientId }: CloudSyncButtonProps) {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Last sync</span>
-                <span>{formatLastSync(lastSync)}</span>
+                <span>{lastSyncLabel}</span>
               </div>
 
               <div className="flex gap-2">

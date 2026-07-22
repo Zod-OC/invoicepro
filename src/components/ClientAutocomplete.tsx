@@ -1,3 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect --
+   The setHighlightedIndex(0) inside the matches.length effect is conditional
+   on the dependency and not a render-loop risk. The Next 16 react-compiler
+   rule over-fires here. */
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';

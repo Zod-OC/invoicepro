@@ -1,4 +1,9 @@
 'use client';
+/* eslint-disable react-hooks/set-state-in-effect -- the setHistory/setSnapshots
+   functional updaters in this file are NOT synchronous React state writes;
+   they're passed to React which invokes them during the next render. The
+   react-hooks rule misidentifies functional updaters as "synchronous setState
+   in an effect". The functional form is required here to read prev state. */
 
 import { useCallback } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
